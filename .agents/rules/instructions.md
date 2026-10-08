@@ -30,7 +30,9 @@ Respeite estritamente a localização e a responsabilidade de cada pasta. Não c
 ## 3. Fluxo de Dados e Regras de Camadas (Crucial)
 O fluxo de execução deve respeitar uma hierarquia rigorosa: **UI -> Action -> Service -> Repository**.
 
-* **UI (Pages/Features):** Consomem as Actions. Podem ser Server Components ou Client Components.
+* **UI (Pages/Features):** Consomem as Actions.
+  * As páginas em `src/app/*` (ex: `src/app/painel/page.tsx`) devem atuar como **Server Components puros**, responsáveis pela busca de dados iniciais, leitura de parâmetros de rota e delegação do conteúdo principal para os módulos correspondentes em `src/features/*`.
+  * Os componentes em `src/features/*` contêm os blocos visuais de cada funcionalidade e concentram as interações do cliente (`'use client'`) apenas onde estritamente necessário.
 * **Actions (`src/actions`):**
   * Devem conter obrigatoriamente a diretiva `'use server'` no topo do ficheiro.
   * Têm de validar a sessão do utilizador autenticado antes de qualquer chamada.
@@ -62,3 +64,11 @@ O fluxo de execução deve respeitar uma hierarquia rigorosa: **UI -> Action -> 
 
 ## 6. Documentação e Ferramental (MCP)
 * Sempre que precisar de confirmar especificações do Supabase, Mercado Pago, Next.js ou Shadcn UI, utilize os recursos MCP disponíveis para validar padrões actualizados antes de gerar soluções complexas.
+
+## 7. Padrões de Layout e Consistência de Telas (Anti-Card Inception)
+* **Espaçamento Raiz Unificado:** Toda tela do painel (`src/features/*`) deve utilizar invariavelmente o espaçamento padrão `flex-1 p-4 sm:p-6 space-y-6 w-full`. Nenhuma tela deve restringir a largura com `max-w-*` arbitrário que cause desalinhamento.
+* **Cabeçalhos de Página Soltos (Sem Card):** O topo da tela (saudação de boas-vindas, título da página ou resumo principal) **NUNCA** deve ser colocado dentro de um card (`bg-card border`). Deve ser renderizado diretamente no fluxo da página (`flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1`), com o título à esquerda e ações/seletores à direita (ex: botão `Nova Dívida`).
+* **Tipografia de Títulos Padronizada (SEM ÍCONES):** O título principal de toda tela deve ter a classe exata `h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white"` acompanhado de subtítulo `p className="text-xs sm:text-sm text-zinc-400 font-mono"`. **É terminantemente PROIBIDO adicionar emojis ou ícones gráficos antes ou depois do texto nos títulos (h1, h2, h3).** O título deve ser texto puro e limpo.
+* **Seções e Listagens de Dados:** Cabeçalhos de listas e seções (ex: Promessas, Ocorrências do Dia, Lista de Devedores) devem ser diretos no layout (`space-y-4 pt-1`). Os itens da lista devem ser os cards individuais (`space-y-3` ou `grid`). **É estritamente proibido criar um card gigante externo que envolva uma lista inteira de cards internos ("card inception").**
+* **Uso Correto de Cards:** Utilize cards (`rounded-2xl border border-border bg-card`) apenas para unidades semânticas individuais: cards de KPI numéricos, gráficos analíticos, ou cada card individual de dívida/devedor.
+* **Nomenclatura Semântica:** Mantenha sempre "Dívidas" em vez de "Cobranças", e "Dívida" em vez de "Ficha".

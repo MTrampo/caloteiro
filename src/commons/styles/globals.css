@@ -48,87 +48,85 @@
 
 @layer base {
   :root {
-    /* Fundo Slate-950 e texto Slate-50 */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Fundo Preto Neutro e Superfícies Grafite (Zinc Puro) */
+    --background: 240 10% 3.9%;          /* zinc-950 (#09090b) */
+    --foreground: 0 0% 98%;              /* zinc-50 */
 
-    /* Cartões e painéis Slate-900 */
-    --card: 222.2 47.4% 11.2%;
-    --card-foreground: 210 40% 98%;
+    --card: 240 10% 6.5%;                /* zinc-900 puro (#18181b) */
+    --card-foreground: 0 0% 98%;
 
-    --popover: 222.2 47.4% 11.2%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 240 10% 6.5%;
+    --popover-foreground: 0 0% 98%;
 
-    /* Destaque Detetive / Acento: Cyan Neon */
-    --primary: 188.7 94.5% 42.7%;        /* cyan-500 */
-    --primary-foreground: 222.2 84% 4.9%; /* texto escuro no cyan */
+    /* Ação Principal: Destaque de autoridade e valor (Estilo Linear/Vercel) */
+    --primary: 0 0% 98%;                 /* zinc-50 / branco puro nítido */
+    --primary-foreground: 240 10% 3.9%;  /* zinc-950 / texto preto no botão */
 
-    --secondary: 217.2 32.6% 17.5%;      /* slate-800 */
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 240 3.7% 15.9%;         /* zinc-800 (#27272a) */
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%; /* slate-400 */
+    --muted: 240 3.7% 15.9%;             /* zinc-800 */
+    --muted-foreground: 240 5% 64.9%;    /* zinc-400 (#a1a1aa) */
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
 
-    /* Alerta Vermelho / Calote Confirmado */
-    --destructive: 349.7 89.2% 60.2%;     /* rose-500 */
-    --destructive-foreground: 210 40% 98%;
+    /* Semáforo Financeiro */
+    --destructive: 349.7 89.2% 60.2%;    /* rose-500 (Calote / Perigo) */
+    --destructive-foreground: 0 0% 98%;
 
-    /* Bordas e Inputs em Slate-800 */
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 188.7 94.5% 42.7%;            /* foco no cyan */
+    --border: 240 3.7% 15.9%;            /* zinc-800 divisores limpos */
+    --input: 240 3.7% 15.9%;             /* zinc-800 */
+    --ring: 240 4.9% 83.9%;              /* zinc-200 foco neutro */
 
-    /* Pix Confirmado / Caso Resolvido */
-    --success: 156 72% 52%;               /* emerald-400 */
-    --success-foreground: 222.2 84% 4.9%;
+    /* Sucesso Financeiro: Pix Confirmado / Milagreiro */
+    --success: 156 72% 52%;               /* emerald-400 (#34d399) */
+    --success-foreground: 240 10% 3.9%;
 
     /* Sidebar Tokens */
-    --sidebar: 222.2 47.4% 11.2%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 188.7 94.5% 42.7%;
-    --sidebar-primary-foreground: 222.2 84% 4.9%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 188.7 94.5% 42.7%;
+    --sidebar: 240 10% 4.5%;             /* zinc-950 ligeiramente elevado */
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 240 10% 3.9%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 240 4.9% 83.9%;
 
     --radius: 0.625rem;
   }
 
   .dark {
-    /* Mantém fidelidade plena ao Gabinete do Detetive no dark mode */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 47.4% 11.2%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 47.4% 11.2%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 188.7 94.5% 42.7%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    /* Paleta Caixa-Forte Noturna no Dark Mode */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 6.5%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 6.5%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 10% 3.9%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 349.7 89.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 188.7 94.5% 42.7%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
     --success: 156 72% 52%;
-    --success-foreground: 222.2 84% 4.9%;
-    --sidebar: 222.2 47.4% 11.2%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 188.7 94.5% 42.7%;
-    --sidebar-primary-foreground: 222.2 84% 4.9%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 188.7 94.5% 42.7%;
+    --success-foreground: 240 10% 3.9%;
+    --sidebar: 240 10% 4.5%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 240 10% 3.9%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 240 4.9% 83.9%;
   }
 
   * {

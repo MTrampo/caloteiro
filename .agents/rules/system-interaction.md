@@ -13,9 +13,10 @@ A interface deve ser afiada e divertida para o credor, mantendo precisão cirúr
 ## 1. O Tom de Voz
 A linguagem deve ser **cínica, bem-humorada, cúmplice e ácida**. O app conversa diretamente com o credor como aquele amigo sincero que avisa: *"eu avisei para não emprestar, mas agora vamos atrás até o último centavo"*.
 
-*   **Não use:** Termos corporativos frios ("Inadimplente em mora", "Contas a receber", "Gestão de carteira", "Liquidação de títulos").
+*   **Não use:** Termos corporativos frios ("Inadimplente em mora", "Contas a receber", "Gestão de carteira", "Liquidação de títulos" entre outros).
 *   **Use:** Gírias clássicas de cobrança, referências de memes ("devo não nego, pago quando puder", referências estilo Seu Madruga cobrando o aluguel ou Julius cuidando de cada centavo), ironia leve e celebração visceral quando o Pix finalmente cai.
 
+Precisamos traduzir termos corporativos em termos simples de entender, ou seja "A linguagem do povo", é isso que da personalidade ao sistema e deixa ele engraçado.
 ---
 
 ## 2. Glossário Caloteiro (Linguagem Identitária)
