@@ -72,7 +72,7 @@ export function NewDebtorSheet({ onAddDebtor, children }: NewDebtorSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger render={children || (
+      <SheetTrigger render={React.isValidElement(children) ? children : (
         <Button size="default" className="bg-white hover:bg-zinc-200 text-zinc-950 font-bold rounded-xl shadow-xs gap-2">
           <FaUserPlus className="size-3.5" />
           <span>Cadastrar Devedor</span>

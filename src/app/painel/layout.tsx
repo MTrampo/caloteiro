@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s | Caloteiro",
     default: "Painel | Caloteiro",
   },
-  description: "Radar de cobrança e gestão de promessas de pagamento.",
+  description: "Central de cobrança e gestão de promessas de pagamento.",
   robots: {
     index: false,
     follow: false,

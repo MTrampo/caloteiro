@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import "@/commons/styles/globals.css";
 import { fontBody, fontTitle } from "@/commons/styles/fonts";
 import { cn } from "@/commons/lib/utils";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  title: "Caloteiro — Radar de Cobrança e Gestão de Devedores",
+  title: "Caloteiro — Central de Cobrança e Gestão de Devedores",
   description:
     "O Gabinete do Detetive: anote cada centavo na pista, monitore caloteiros em fuga e comemore cada Pix confirmado.",
 };
@@ -22,6 +23,7 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-background text-foreground antialiased font-sans flex flex-col">
         {children}
+        <Toaster richColors theme="dark" position="top-right" />
       </body>
     </html>
   );

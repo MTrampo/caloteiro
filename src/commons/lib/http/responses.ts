@@ -11,41 +11,41 @@ export const ApiResponse = {
 
   Created: <T>(input: ResponseInput<T>): ResponseProps<T> => ({
     status: HttpStatusEnum.Created,
-    message: input.message,
-    data: input.data as T,
+    message: input.message || "Recurso criado com sucesso",
+    data: (input.data ?? null) as T,
   }),
 
   BadRequest: <T = null>(input: ResponseInput<T>): ResponseProps<T> => ({
     status: HttpStatusEnum.BadRequest,
-    message: input.message,
+    message: input.message || "Requisição inválida",
     data: (input.data ?? null) as T,
     error: input.error
   }),
 
   Unauthorized: <T = null>(input: ResponseInput<T>): ResponseProps<T> => ({
     status: HttpStatusEnum.Unauthorized,
-    message: input.message,
+    message: input.message || "Não autorizado",
     data: (input.data ?? null) as T,
     error: input.error
   }),
 
   NotFound: <T = null>(input: ResponseInput<T>): ResponseProps<T> => ({
     status: HttpStatusEnum.NotFound,
-    message: input.message,
+    message: input.message || "Recurso não encontrado",
     data: (input.data ?? null) as T,
     error: input.error
   }),
 
   Forbidden: <T = null>(input: ResponseInput<T>): ResponseProps<T> => ({
     status: HttpStatusEnum.Forbidden,
-    message: input.message,
+    message: input.message || "Acesso proibido",
     data: (input.data ?? null) as T,
     error: input.error
   }),
 
   Conflict: <T = null>(input: ResponseInput<T>): ResponseProps<T> => ({
     status: HttpStatusEnum.Conflict,
-    message: input.message,
+    message: input.message || "Conflito de dados",
     data: (input.data ?? null) as T,
     error: input.error
   }),

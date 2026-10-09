@@ -2,7 +2,7 @@ export type GreetingScenario = "overdue" | "due_soon" | "all_clear" | "empty"
 
 const OVERDUE_PUNCHLINES = [
   "Hoje temos {overdue} promessas vencidas e {critical} sumidos esperando aquele 'bom dia, sumido'.",
-  "Acorda, credor! Tem gente postando foto no churrasco enquanto a sua parcela continua no vácuo.",
+  "Acorda, investigador! Tem gente postando foto no churrasco enquanto a sua parcela continua no vácuo.",
   "Dia de teste de paciência: {overdue} devedores já fingiram demência. Hora de mandar a cobrança matinal.",
   "O silêncio do caloteiro é ensurdecedor. Não deixe eles esquecerem que o boleto não perdoa.",
 ]
@@ -35,7 +35,7 @@ export const CREDITOR_WISDOM_QUOTES = [
   },
   {
     quote: "Se você emprestou R$ 50 e a pessoa nunca mais apareceu, você não tomou calote: você comprou sua paz com desconto.",
-    author: "Sabedoria Popular do Credor",
+    author: "Sabedoria Popular do Investigador",
     subtext: "Mas se for mais que R$ 100, a gente vai atrás até o último centavo.",
   },
   {
@@ -45,7 +45,7 @@ export const CREDITOR_WISDOM_QUOTES = [
   },
   {
     quote: "Parente que pede dinheiro emprestado não é família, é teste de resistência emocional.",
-    author: "Credor Experiente",
+    author: "Investigador Experiente",
     subtext: "Cobre com educação, mas cobre sem dó.",
   },
 ]

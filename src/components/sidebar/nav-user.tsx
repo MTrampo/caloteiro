@@ -25,7 +25,7 @@ import Link from "next/link"
 
 export function NavUser({
   user = {
-    name: "Credor Investigador",
+    name: "Investigador Chefe",
     email: "detetive@caloteiro.app",
     avatar: "",
     plan: "Plano Individual",
@@ -55,7 +55,7 @@ export function NavUser({
             <Avatar className="size-8 rounded-lg">
               <AvatarImage src={user.avatar} alt={user.name} />
               <AvatarFallback className="rounded-lg bg-zinc-800 border border-zinc-700/80 text-zinc-100 font-bold font-mono text-xs">
-                CI
+                INV
               </AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">

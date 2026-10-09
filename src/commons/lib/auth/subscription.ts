@@ -40,7 +40,7 @@ export async function getCookieSubscriptionPayload(userId?: string): Promise<Sub
 
     let targetUserId = userId
     if (!targetUserId) {
-      const { getUserLoggedApi } = await import('@/back/account/service/auth.api')
+      const { getUserLoggedApi } = await import('@/server/account/service/auth.api')
       const userResult = await getUserLoggedApi()
       targetUserId = userResult?.data?.user?.id
     }

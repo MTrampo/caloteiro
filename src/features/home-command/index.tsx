@@ -101,7 +101,7 @@ export function HomeCommandFeature() {
       {/* 3. Feed de Ocorrências / Linha do Tempo com Ações Imediatas */}
       <DailyFeed feed={data.feed} />
 
-      {/* 4. Pílula de Humor & Sabedoria Ácida do Credor */}
+      {/* 4. Pílula de Humor & Sabedoria Ácida do Investigador */}
       <CreditorWisdom initialWisdom={initialWisdom} />
     </div>
   )

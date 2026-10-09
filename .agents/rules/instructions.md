@@ -10,7 +10,7 @@ Você é um assistente de codificação sénior a atuar neste projeto. Siga rigo
 * **Framework:** Next.js 16 (App Router)
 * **Estilização:** Tailwind CSS
 * **Componentes de UI:** Shadcn UI
-* **Backend as a Service / DB:** Supabase (Autenticação com @supabase/ssr, Base de Dados, Storage, RLS)
+* **serverend as a Service / DB:** Supabase (Autenticação com @supabase/ssr, Base de Dados, Storage, RLS)
 * **Validação:** Zod
 * **Pagamentos:** Mercado Pago
 
@@ -22,7 +22,7 @@ Respeite estritamente a localização e a responsabilidade de cada pasta. Não c
 * `src/components/*`: Componentes reutilizáveis compostos (buttons, cards, dialogs, forms, etc.).
 * `src/features`: Componentes de escopo específico ou blocos de páginas (debtors, debts, dashboard, etc.).
 * `src/actions`: Módulos de integração (Server Actions) entre a interface e o domínio de negócio.
-* `src/back`: Camada de domínio, regras de negócio e persistência, dividida por módulos (ex: `src/back/debtors`).
+* `src/server`: Camada de domínio, regras de negócio e persistência, dividida por módulos (ex: `src/server/debtors`).
 * `src/store`: Gestão de estado global de cliente (se estritamente necessário, via Zustand).
 * `src/commons`: Utilitários, esquemas Zod partilhados, enums, modelos, tipos globais e clientes base.
 * `src/schemas`: Scripts de migração SQL, políticas RLS e definições de tabelas do Supabase.
@@ -39,11 +39,11 @@ O fluxo de execução deve respeitar uma hierarquia rigorosa: **UI -> Action -> 
   * Têm de validar a entrada de dados via **Zod** antes de chamar a camada de Service.
   * Retornam sempre uma resposta tipada padronizada: `{ success: true, data: T }` ou `{ success: false, error: string }`.
   * Não acedem à base de dados diretamente; delegam a execução aos Services.
-* **Services (`src/back/[dominio]/service/*.api.ts`):**
+* **Services (`src/server/[dominio]/service/*.api.ts`):**
   * Concentram toda a regra de negócio (cálculos de juros, penalizações, validações de contrato).
   * São orquestrados apenas pelas Actions.
   * Consomem os Repositories para carregar ou gravar dados.
-* **Repositories (`src/back/[dominio]/repository/*.supabase.ts`):**
+* **Repositories (`src/server/[dominio]/repository/*.supabase.ts`):**
   * Contêm a lógica de acesso a dados (Supabase, consultas e mutações).
   * Operam com o cliente Supabase associado à sessão do utilizador (`@supabase/ssr`).
   * Toda e qualquer operação de escrita e leitura deve respeitar o isolamento por utilizador (`userId`) e políticas ativas de Row Level Security (RLS).
@@ -72,3 +72,4 @@ O fluxo de execução deve respeitar uma hierarquia rigorosa: **UI -> Action -> 
 * **Seções e Listagens de Dados:** Cabeçalhos de listas e seções (ex: Promessas, Ocorrências do Dia, Lista de Devedores) devem ser diretos no layout (`space-y-4 pt-1`). Os itens da lista devem ser os cards individuais (`space-y-3` ou `grid`). **É estritamente proibido criar um card gigante externo que envolva uma lista inteira de cards internos ("card inception").**
 * **Uso Correto de Cards:** Utilize cards (`rounded-2xl border border-border bg-card`) apenas para unidades semânticas individuais: cards de KPI numéricos, gráficos analíticos, ou cada card individual de dívida/devedor.
 * **Nomenclatura Semântica:** Mantenha sempre "Dívidas" em vez de "Cobranças", e "Dívida" em vez de "Ficha".
+* **PROIBIÇÃO ABSOLUTA DE BADGES/PÍLULAS NO TOPO:** É terminantemente PROIBIDO adicionar badges, tags ou pílulas (ex: "CENTRAL DE INTELIGÊNCIA", "RESGATE DE ACESSO", badges de categoria ou status) acima de títulos no topo de páginas ou no cabeçalho de e-mails. O cabeçalho deve ser limpo e direto (apenas logo e título), sem enfeites de badge flutuantes que poluem o visual.

@@ -20,6 +20,11 @@
 # production
 /build
 
+# agents
+/.gemini/
+/.agents/
+/.antigravitycli/
+
 # misc
 .DS_Store
 *.pem

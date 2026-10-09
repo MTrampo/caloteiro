@@ -67,18 +67,47 @@ const DEFAULT_TEMPLATES = {
     "Alerta vermelho, {nome}. Você sumiu há {dias_atraso} dias. Já posso ligar pra sua mãe ou você vai honrar essa promessa agora? Chave Pix: {chave_pix}.",
 }
 
-export function SettingsFeature() {
-  const [pixType, setPixType] = React.useState("cpf")
-  const [pixKey, setPixKey] = React.useState("123.456.789-00")
-  const [accountOwner, setAccountOwner] = React.useState("Vinicius")
-  const [bankName, setBankName] = React.useState("Nubank")
+import Link from "next/link"
+import { toast } from "sonner"
+import { saveCreditorSettingsAction } from "@/actions/settings"
+import type { CreditorSettings } from "@/commons/models/user"
+import type { UserPermissions } from "@/commons/models/subscription"
+import { FaLock } from "react-icons/fa6"
+
+interface SettingsFeatureProps {
+  initialSettings?: CreditorSettings | null
+  permissions?: UserPermissions
+}
+
+export function SettingsFeature({
+  initialSettings,
+  permissions = {
+    maxDebtors: 1,
+    canCustomTemplates: false,
+    canExportReports: false,
+    isSubscriptionActive: false,
+  },
+}: SettingsFeatureProps) {
+  const [pixType, setPixType] = React.useState<string>(initialSettings?.pix_key_type || "cpf")
+  const [pixKey, setPixKey] = React.useState(initialSettings?.pix_key || "")
+  const [accountOwner, setAccountOwner] = React.useState(initialSettings?.pix_holder_name || "")
+  const [bankName, setBankName] = React.useState(initialSettings?.pix_bank_name || "")
+  const [isSaving, setIsSaving] = React.useState(false)
   const [savedSuccess, setSavedSuccess] = React.useState(false)
   const [copiedVariable, setCopiedVariable] = React.useState<string | null>(null)
 
+  const canCustomTemplates = permissions.canCustomTemplates
+
   // Templates de mensagens do WhatsApp
-  const [template1, setTemplate1] = React.useState(DEFAULT_TEMPLATES.template1)
-  const [template2, setTemplate2] = React.useState(DEFAULT_TEMPLATES.template2)
-  const [template3, setTemplate3] = React.useState(DEFAULT_TEMPLATES.template3)
+  const [template1, setTemplate1] = React.useState(
+    initialSettings?.template_friendly || DEFAULT_TEMPLATES.template1
+  )
+  const [template2, setTemplate2] = React.useState(
+    initialSettings?.template_acid || DEFAULT_TEMPLATES.template2
+  )
+  const [template3, setTemplate3] = React.useState(
+    initialSettings?.template_critical || DEFAULT_TEMPLATES.template3
+  )
 
   // Tolerâncias
   const [criticalDays, setCriticalDays] = React.useState(30)
@@ -91,15 +120,38 @@ export function SettingsFeature() {
   }
 
   const handleResetTemplate = (num: 1 | 2 | 3) => {
+    if (!canCustomTemplates) return
     if (num === 1) setTemplate1(DEFAULT_TEMPLATES.template1)
     if (num === 2) setTemplate2(DEFAULT_TEMPLATES.template2)
     if (num === 3) setTemplate3(DEFAULT_TEMPLATES.template3)
   }
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSavedSuccess(true)
-    setTimeout(() => setSavedSuccess(false), 3000)
+    try {
+      setIsSaving(true)
+      const res = await saveCreditorSettingsAction({
+        pix_key_type: pixType as any,
+        pix_key: pixKey,
+        pix_holder_name: accountOwner,
+        pix_bank_name: bankName,
+        template_friendly: canCustomTemplates ? template1 : undefined,
+        template_acid: canCustomTemplates ? template2 : undefined,
+        template_critical: canCustomTemplates ? template3 : undefined,
+      })
+
+      if (res.success) {
+        setSavedSuccess(true)
+        toast.success("Armas de cobrança e Chave Pix calibradas no cofre!")
+        setTimeout(() => setSavedSuccess(false), 3000)
+      } else {
+        toast.error(res.error)
+      }
+    } catch {
+      toast.error("Erro ao salvar configurações do investigador.")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -108,7 +160,7 @@ export function SettingsFeature() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="space-y-1">
           <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white">
-            Configurações do Credor
+            Configurações do Investigador
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 font-mono">
             Armas de cobrança, chave Pix padrão e modelos de mensagens para o WhatsApp.
@@ -237,6 +289,23 @@ export function SettingsFeature() {
             </span>
           </div>
 
+          {!canCustomTemplates && (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+              <div className="flex items-center gap-2 text-amber-300">
+                <FaLock className="size-3.5 shrink-0 text-amber-400" />
+                <span>
+                  A edição de mensagens é exclusiva para planos com armas personalizadas. Seu plano utiliza os modelos padrão de alta conversão.
+                </span>
+              </div>
+              <Link
+                href="/painel/conta"
+                className="text-amber-400 underline shrink-0 hover:text-amber-200 font-bold"
+              >
+                Ver Planos
+              </Link>
+            </div>
+          )}
+
           {/* Painel Explicativo das Variáveis Dinâmicas */}
           <div className="rounded-xl bg-zinc-950/70 border border-zinc-800/80 p-4 space-y-3">
             <div className="flex items-center gap-2">
@@ -302,21 +371,26 @@ export function SettingsFeature() {
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleResetTemplate(1)}
-                  className="text-[11px] font-mono text-zinc-400 hover:text-white flex items-center gap-1 self-start sm:self-auto transition-colors"
-                >
-                  <FaRotateLeft className="size-2.5" />
-                  <span>Restaurar padrão</span>
-                </button>
+                {canCustomTemplates && (
+                  <button
+                    type="button"
+                    onClick={() => handleResetTemplate(1)}
+                    className="text-[11px] font-mono text-zinc-400 hover:text-white flex items-center gap-1 self-start sm:self-auto transition-colors"
+                  >
+                    <FaRotateLeft className="size-2.5" />
+                    <span>Restaurar padrão</span>
+                  </button>
+                )}
               </div>
 
               <textarea
                 rows={2}
+                disabled={!canCustomTemplates}
                 value={template1}
                 onChange={(e) => setTemplate1(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-200 focus:outline-hidden focus:border-emerald-500 leading-relaxed transition-colors"
+                className={`w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-200 focus:outline-hidden focus:border-emerald-500 leading-relaxed transition-colors ${
+                  !canCustomTemplates ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               />
             </div>
 
@@ -333,21 +407,26 @@ export function SettingsFeature() {
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleResetTemplate(2)}
-                  className="text-[11px] font-mono text-zinc-400 hover:text-white flex items-center gap-1 self-start sm:self-auto transition-colors"
-                >
-                  <FaRotateLeft className="size-2.5" />
-                  <span>Restaurar padrão</span>
-                </button>
+                {canCustomTemplates && (
+                  <button
+                    type="button"
+                    onClick={() => handleResetTemplate(2)}
+                    className="text-[11px] font-mono text-zinc-400 hover:text-white flex items-center gap-1 self-start sm:self-auto transition-colors"
+                  >
+                    <FaRotateLeft className="size-2.5" />
+                    <span>Restaurar padrão</span>
+                  </button>
+                )}
               </div>
 
               <textarea
                 rows={2}
+                disabled={!canCustomTemplates}
                 value={template2}
                 onChange={(e) => setTemplate2(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-200 focus:outline-hidden focus:border-amber-500 leading-relaxed transition-colors"
+                className={`w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-200 focus:outline-hidden focus:border-amber-500 leading-relaxed transition-colors ${
+                  !canCustomTemplates ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               />
             </div>
 
@@ -364,21 +443,26 @@ export function SettingsFeature() {
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleResetTemplate(3)}
-                  className="text-[11px] font-mono text-zinc-400 hover:text-white flex items-center gap-1 self-start sm:self-auto transition-colors"
-                >
-                  <FaRotateLeft className="size-2.5" />
-                  <span>Restaurar padrão</span>
-                </button>
+                {canCustomTemplates && (
+                  <button
+                    type="button"
+                    onClick={() => handleResetTemplate(3)}
+                    className="text-[11px] font-mono text-zinc-400 hover:text-white flex items-center gap-1 self-start sm:self-auto transition-colors"
+                  >
+                    <FaRotateLeft className="size-2.5" />
+                    <span>Restaurar padrão</span>
+                  </button>
+                )}
               </div>
 
               <textarea
                 rows={2}
+                disabled={!canCustomTemplates}
                 value={template3}
                 onChange={(e) => setTemplate3(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-200 focus:outline-hidden focus:border-rose-500 leading-relaxed transition-colors"
+                className={`w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-200 focus:outline-hidden focus:border-rose-500 leading-relaxed transition-colors ${
+                  !canCustomTemplates ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               />
             </div>
           </div>
@@ -449,9 +533,10 @@ export function SettingsFeature() {
         <div className="flex justify-end gap-3 pt-2">
           <Button
             type="submit"
-            className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-6 py-2.5 rounded-xl shadow-xs"
+            disabled={isSaving}
+            className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-6 py-2.5 rounded-xl shadow-xs cursor-pointer flex items-center gap-2"
           >
-            Salvar Configurações
+            {isSaving ? "Gravando no Cofre..." : "Salvar Configurações"}
           </Button>
         </div>
       </form>
