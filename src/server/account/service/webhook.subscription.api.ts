@@ -1,3 +1,5 @@
+import "server-only";
+
 import { ApiResponse } from "@/commons/lib/http/responses";
 import type { InvoiceInsertPayload } from "@/commons/models/payment";
 import type { Subscription } from "@/commons/models/subscription";
@@ -58,7 +60,7 @@ const webhookUpdateSubscriptionPreapprovalApi = async (preapproval: PreApprovalR
   // Disparo de E-mails transacionais via Resend
   const targetEmail = preapproval.payer_email || subscription.mp_payer_email;
   if (targetEmail) {
-    // Buscar nome do investigador no profile
+    // Buscar nome do tubarão no profile
     const supabase = internalSupabase();
     const { data: profile } = await supabase
       .from("profiles")
@@ -66,7 +68,7 @@ const webhookUpdateSubscriptionPreapprovalApi = async (preapproval: PreApprovalR
       .eq("id", subscription.user_id)
       .maybeSingle();
 
-    const recipientName = profile?.name || "Investigador";
+    const recipientName = profile?.name || "Tubarão";
 
     // 1. Boas-vindas na primeira autorização
     if (nextStatus === "authorized" && previousStatus !== "authorized") {
@@ -139,7 +141,7 @@ const webhookSaveInvoiceFromAuthorizedPaymentApi = async (authorizedPayment: Inv
         .eq("id", subscription.user_id)
         .maybeSingle();
 
-      const recipientName = profile?.name || "Investigador";
+      const recipientName = profile?.name || "Tubarão";
       const amountFormatted = formatCurrencyBRL(authorizedPayment.transaction_amount ?? subscription.base_value ?? 0);
 
       if (paymentStatus === "approved") {

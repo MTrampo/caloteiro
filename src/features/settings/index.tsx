@@ -70,7 +70,7 @@ const DEFAULT_TEMPLATES = {
 import Link from "next/link"
 import { toast } from "sonner"
 import { saveCreditorSettingsAction } from "@/actions/settings"
-import type { CreditorSettings } from "@/commons/models/user"
+import type { CreditorSettings, CreditorSettingsFormInputs } from "@/commons/models/user"
 import type { UserPermissions } from "@/commons/models/subscription"
 import { FaLock } from "react-icons/fa6"
 
@@ -82,9 +82,14 @@ interface SettingsFeatureProps {
 export function SettingsFeature({
   initialSettings,
   permissions = {
-    maxDebtors: 1,
+    maxDebtors: 2,
     canCustomTemplates: false,
     canExportReports: false,
+    canAccessFinancial: false,
+    canDebtorPortal: false,
+    canRiskScore: false,
+    canAttachReceipts: false,
+    isFreePlan: true,
     isSubscriptionActive: false,
   },
 }: SettingsFeatureProps) {
@@ -131,7 +136,7 @@ export function SettingsFeature({
     try {
       setIsSaving(true)
       const res = await saveCreditorSettingsAction({
-        pix_key_type: pixType as any,
+        pix_key_type: (pixType || null) as CreditorSettingsFormInputs["pix_key_type"],
         pix_key: pixKey,
         pix_holder_name: accountOwner,
         pix_bank_name: bankName,
@@ -148,7 +153,7 @@ export function SettingsFeature({
         toast.error(res.error)
       }
     } catch {
-      toast.error("Erro ao salvar configurações do investigador.")
+      toast.error("Erro ao salvar configurações do tubarão.")
     } finally {
       setIsSaving(false)
     }
@@ -160,7 +165,7 @@ export function SettingsFeature({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="space-y-1">
           <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white">
-            Configurações do Investigador
+            Configurações do Tubarão
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 font-mono">
             Armas de cobrança, chave Pix padrão e modelos de mensagens para o WhatsApp.

@@ -1,12 +1,12 @@
 "use server";
 
-import { serverSupabase } from "@/commons/lib/supabase/server";
-import {
-  creditorSettingsSchema,
-  type CreditorSettingsFormInputs,
-  type CreditorSettings,
+import { creditorSettingsSchema } from "@/commons/validations/user";
+import type {
+  CreditorSettingsFormInputs,
+  CreditorSettings,
 } from "@/commons/models/user";
 import type { UserPermissions } from "@/commons/models/subscription";
+import { getUserLoggedApi } from "@/server/account/service/auth.api";
 import {
   getCreditorSettingsApi,
   saveCreditorSettingsApi,
@@ -27,19 +27,15 @@ export async function getCreditorSettingsAction(): Promise<
   }>
 > {
   try {
-    const supabase = await serverSupabase();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const userResponse = await getUserLoggedApi();
+    if (userResponse.status !== HttpStatusEnum.Ok || !userResponse.data?.user) {
       return {
         success: false,
         error: "Acesso negado. Usuário não autenticado.",
       };
     }
 
+    const user = userResponse.data.user;
     const response = await getCreditorSettingsApi(user.id);
 
     if (response.status !== HttpStatusEnum.Ok || !response.data) {
@@ -69,13 +65,8 @@ export async function saveCreditorSettingsAction(
   data: CreditorSettingsFormInputs
 ): Promise<ActionResponse<CreditorSettings>> {
   try {
-    const supabase = await serverSupabase();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const userResponse = await getUserLoggedApi();
+    if (userResponse.status !== HttpStatusEnum.Ok || !userResponse.data?.user) {
       return {
         success: false,
         error: "Acesso negado. Faça login para continuar.",
@@ -90,6 +81,7 @@ export async function saveCreditorSettingsAction(
       };
     }
 
+    const user = userResponse.data.user;
     const response = await saveCreditorSettingsApi(user.id, parsed.data as Partial<CreditorSettings>);
 
     if (response.status !== HttpStatusEnum.Ok || !response.data) {
@@ -111,4 +103,3 @@ export async function saveCreditorSettingsAction(
     };
   }
 }
-

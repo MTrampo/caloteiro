@@ -1,3 +1,5 @@
+import "server-only";
+
 import { resend, EMAIL_FROM } from "@/commons/lib/resend"
 import {
   renderWelcomeSubscriptionHtml,

@@ -1,5 +1,7 @@
 "use client"
 
+import * as React from "react"
+import { useRouter } from "next/navigation"
 import {
   Avatar,
   AvatarFallback,
@@ -19,16 +21,17 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { FaCreditCard, FaRightFromBracket, FaSliders, FaUser } from "react-icons/fa6"
+import { FaCreditCard, FaRightFromBracket, FaUser } from "react-icons/fa6"
 import { ChevronsUpDown } from "lucide-react"
 import Link from "next/link"
+import { signOutAction } from "@/actions/auth"
 
 export function NavUser({
   user = {
-    name: "Investigador Chefe",
-    email: "detetive@caloteiro.app",
+    name: "Tubarão",
+    email: "tubarao@caloteiro.app",
     avatar: "",
-    plan: "Plano Individual",
+    plan: "Tubarão Lixa",
   },
 }: {
   user?: {
@@ -39,6 +42,16 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+  const [isPending, startTransition] = React.useTransition()
+
+  const handleSignOut = () => {
+    startTransition(async () => {
+      await signOutAction()
+      router.push("/entrar")
+      router.refresh()
+    })
+  }
 
   return (
     <SidebarMenu>
@@ -102,12 +115,11 @@ export function NavUser({
             <DropdownMenuSeparator className="bg-zinc-800" />
             <DropdownMenuItem
               className="flex items-center gap-2 cursor-pointer text-rose-400 hover:text-rose-300 focus:text-rose-300"
-              onClick={() => {
-                window.location.href = "/"
-              }}
+              disabled={isPending}
+              onClick={handleSignOut}
             >
               <FaRightFromBracket className="size-3.5" />
-              <span>Sair da Sessão</span>
+              <span>{isPending ? "Saindo..." : "Sair da Sessão"}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

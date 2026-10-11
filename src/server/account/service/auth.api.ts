@@ -1,3 +1,5 @@
+import "server-only";
+
 import type {
   ResetPasswordRequestBody,
   SignInRequestBody,
@@ -13,11 +15,13 @@ import {
   signInWithEmail,
   updatePassword,
   verifyCode,
+  resendOtpCode,
   getProfileByUserIdSupabase,
 } from "../repository/auth.supabase";
 import { getSubscriptionByUserIdSupabase } from "../repository/subscription.supabase";
 import { resolveAuthError } from "@/commons/errors/auth";
 import { ApiResponse } from "@/commons/lib/http/responses";
+import { HttpStatusEnum } from "@/commons/enums/http";
 import type { SubscriptionPayloadCookie } from "@/commons/models/subscription";
 import { clearCookieSubscription, setCookieSubscription } from "@/commons/lib/auth/subscription";
 import { isSubscriptionActive } from "@/commons/lib/http/security";
@@ -26,6 +30,21 @@ export const signInUserApi = async (body: SignInRequestBody) => {
   const { data, error } = await signInWithEmail(body.email, body.password);
 
   if (error) {
+    if (
+      error.code === "email_not_confirmed" ||
+      error.message?.toLowerCase().includes("email not confirmed")
+    ) {
+      return {
+        status: HttpStatusEnum.Forbidden,
+        message: "Seu e-mail ainda não foi confirmado. Digite o código de 8 dígitos para validar seu acesso.",
+        data: {
+          needsEmailVerification: true,
+          email: body.email,
+        },
+        error: "email_not_confirmed",
+      };
+    }
+
     const { message, status } = resolveAuthError(error.code);
     return {
       status,
@@ -40,6 +59,18 @@ export const signInUserApi = async (body: SignInRequestBody) => {
       message: "Falha na autenticação.",
       error: "Sessão ou usuário não retornados.",
     });
+  }
+
+  if (!data.user.email_confirmed_at) {
+    return {
+      status: HttpStatusEnum.Forbidden,
+      message: "Seu e-mail ainda não foi confirmado. Digite o código de 8 dígitos para validar seu acesso.",
+      data: {
+        needsEmailVerification: true,
+        email: body.email,
+      },
+      error: "email_not_confirmed",
+    };
   }
 
   const userId = data.user.id;
@@ -98,20 +129,17 @@ export const signUpUserApi = async (body: UserRequestBody) => {
   const userId = data?.user?.id;
   if (!userId) {
     return ApiResponse.InternalError({
-      message: "Erro inesperado ao criar conta do investigador.",
+      message: "Erro inesperado ao criar conta do tubarão.",
       error: "Usuário autenticado, mas ID não encontrado.",
     });
   }
 
-  // Criação explícita do perfil no servidor (sem triggers mágicos)
-  await createProfileSupabase(
+  await createProfileSupabase({
     userId,
-    body.name,
-    body.email,
-    body.nickname,
-    null,
-    null
-  );
+    name: body.name,
+    email: body.email,
+    nickname: body.nickname,
+  });
 
   return ApiResponse.Ok({
     message: `Código de verificação enviado para ${body.email}`,
@@ -150,6 +178,32 @@ export const sendPasswordResetEmailApi = async (email: string) => {
   return ApiResponse.Ok({
     message: `E-mail de recuperação enviado para ${email}.`,
     data: data,
+  });
+};
+
+export const resendOtpCodeApi = async (
+  email: string,
+  type: "signup" | "recovery" = "signup"
+) => {
+  if (type === "recovery") {
+    return await sendPasswordResetEmailApi(email);
+  }
+
+  const error = await resendOtpCode(email);
+
+  if (error) {
+    const { message, status } = resolveAuthError(error.code);
+    return {
+      status,
+      message,
+      data: null,
+      error: error.message,
+    };
+  }
+
+  return ApiResponse.Ok({
+    message: `Novo código de confirmação enviado para ${email}.`,
+    data: { resent: true },
   });
 };
 
@@ -204,10 +258,10 @@ export const resetUserPasswordApi = async (body: ResetPasswordRequestBody) => {
 export const getUserLoggedApi = async () => {
   const { data, error } = await getUserLogged();
 
-  if (error) {
+  if (error || !data?.user) {
     return ApiResponse.Unauthorized({
       message: "Erro ao buscar usuário logado.",
-      error: error.message,
+      error: error?.message || "Usuário não autenticado.",
     });
   }
 

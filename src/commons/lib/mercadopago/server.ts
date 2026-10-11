@@ -1,3 +1,5 @@
+import "server-only";
+
 import { MercadoPagoConfig, PreApproval, PreApprovalPlan, Invoice } from 'mercadopago';
 
 export const client = new MercadoPagoConfig({ 

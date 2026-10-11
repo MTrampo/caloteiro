@@ -55,6 +55,10 @@ export type Database = {
           max_debtors: number | null;
           custom_templates: boolean;
           export_reports: boolean;
+          can_access_financial: boolean;
+          can_debtor_portal: boolean;
+          can_risk_score: boolean;
+          can_attach_receipts: boolean;
           is_default: boolean;
           created_at: string | null;
           updated_at: string | null;
@@ -65,6 +69,10 @@ export type Database = {
           max_debtors?: number | null;
           custom_templates?: boolean;
           export_reports?: boolean;
+          can_access_financial?: boolean;
+          can_debtor_portal?: boolean;
+          can_risk_score?: boolean;
+          can_attach_receipts?: boolean;
           is_default?: boolean;
           created_at?: string | null;
           updated_at?: string | null;
@@ -75,6 +83,10 @@ export type Database = {
           max_debtors?: number | null;
           custom_templates?: boolean;
           export_reports?: boolean;
+          can_access_financial?: boolean;
+          can_debtor_portal?: boolean;
+          can_risk_score?: boolean;
+          can_attach_receipts?: boolean;
           is_default?: boolean;
           created_at?: string | null;
           updated_at?: string | null;
@@ -97,6 +109,8 @@ export type Database = {
           sort_order: number | null;
           created_at: string | null;
           updated_at: string | null;
+          shark: string | null;
+          button: string | null;
         };
         Insert: {
           id?: string;
@@ -113,6 +127,8 @@ export type Database = {
           sort_order?: number | null;
           created_at?: string | null;
           updated_at?: string | null;
+          shark?: string | null;
+          button?: string | null;
         };
         Update: {
           id?: string;
@@ -129,6 +145,8 @@ export type Database = {
           sort_order?: number | null;
           created_at?: string | null;
           updated_at?: string | null;
+          shark?: string | null;
+          button?: string | null;
         };
         Relationships: [
           {

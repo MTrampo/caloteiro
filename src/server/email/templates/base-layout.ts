@@ -19,7 +19,7 @@ export function renderBaseEmailLayout(options: BaseEmailLayoutOptions): string {
     previewText,
     bannerSvgPath,
     bannerSvgAlt = "Ilustração Caloteiro",
-    name = "Investigador",
+    name = "Tubarão",
     contentHtml,
     highlightCardHtml,
     buttonText,

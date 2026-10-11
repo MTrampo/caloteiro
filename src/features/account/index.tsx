@@ -9,10 +9,8 @@ import type { Profile } from "@/commons/models/user";
 import type { Subscription } from "@/commons/models/subscription";
 import {
   FaUser,
-  FaShieldHalved,
   FaBolt,
   FaArrowRight,
-  FaRotateLeft,
   FaCheck,
   FaBan,
 } from "react-icons/fa6";
@@ -74,13 +72,13 @@ export function AccountFeature({ profile, subscription }: AccountFeatureProps) {
             Minha Conta e Assinatura
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 font-mono">
-            Dados cadastrais do investigador e controle do arsenal ativo no Mercado Pago.
+            Dados cadastrais do tubarão e controle do arsenal ativo no Mercado Pago.
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Card 1: Ficha do Investigador */}
+        {/* Card 1: Ficha do Tubarão */}
         <div className="lg:col-span-1 rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-5">
           <div className="flex items-center gap-2.5 pb-3 border-b border-zinc-800">
             <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
@@ -88,10 +86,10 @@ export function AccountFeature({ profile, subscription }: AccountFeatureProps) {
             </div>
             <div>
               <h3 className="font-heading text-base font-bold text-white">
-                Ficha do Investigador
+                Ficha do Tubarão
               </h3>
               <p className="text-xs text-zinc-400 font-mono">
-                Identificação do investigador responsável
+                Identificação do tubarão responsável
               </p>
             </div>
           </div>
@@ -223,7 +221,7 @@ export function AccountFeature({ profile, subscription }: AccountFeatureProps) {
               </span>
             )}
 
-            <Link href="/assinatura">
+            <Link href="/assinatura?trocar=true">
               <Button className="bg-emerald-600 hover:bg-emerald-500 text-white font-heading font-bold rounded-xl text-xs px-5 py-2.5 flex items-center gap-2 cursor-pointer shadow-sm">
                 <span>Mudar Arsenal de Cobrança</span>
                 <FaArrowRight className="size-3" />

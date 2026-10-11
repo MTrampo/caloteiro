@@ -1,17 +1,16 @@
 "use server";
 
-import { serverSupabase } from "@/commons/lib/supabase/server";
 import {
   getActivePlansApi,
   cancelSubscriptionApi,
+  createCheckoutSessionApi,
 } from "@/server/account/service/subscription.api";
-import {
-  getSubscriptionByUserIdSupabase,
-  upsertSubscriptionSupabase,
-} from "@/server/account/repository/subscription.supabase";
-import { createPreApprovalSubscriptionApi } from "@/server/payment/service/payment.api";
+import { getUserLoggedApi } from "@/server/account/service/auth.api";
 import { HttpStatusEnum } from "@/commons/enums/http";
-import type { Plan } from "@/commons/models/subscription";
+import type {
+  Plan,
+  CheckoutSessionResult,
+} from "@/commons/models/subscription";
 
 export type ActionResponse<T> =
   | { success: true; data: T }
@@ -47,85 +46,53 @@ export async function getActivePlansAction(): Promise<ActionResponse<Plan[]>> {
  */
 export async function createCheckoutSubscriptionAction(
   planId: string
-): Promise<ActionResponse<{ initPoint: string }>> {
+): Promise<ActionResponse<CheckoutSessionResult>> {
   try {
-    const supabase = await serverSupabase();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user || !user.email) {
+    const userResponse = await getUserLoggedApi();
+    if (
+      userResponse.status !== HttpStatusEnum.Ok ||
+      !userResponse.data?.user ||
+      !userResponse.data.user.email
+    ) {
       return {
         success: false,
         error: "Acesso negado. Usuário não autenticado.",
       };
     }
 
-    // 1. Busca dados do plano selecionado
-    const { data: plan, error: planError } = await supabase
-      .from("plans")
-      .select("*, config_plan:config_plans(*)")
-      .eq("id", planId)
-      .eq("is_active", true)
-      .single();
-
-    if (planError || !plan) {
+    const user = userResponse.data.user;
+    if (!user.email) {
       return {
         success: false,
-        error: "Plano selecionado inválido ou indisponível.",
+        error: "Acesso negado. Usuário sem e-mail cadastrado.",
       };
     }
 
-    // 2. Busca ou inicializa registro de subscription no banco (1:1 com user_id)
-    let subscription = await getSubscriptionByUserIdSupabase(user.id);
+    // 1. Delega a execução da criação da sessão para a camada de Service usando DTO tipado
+    const sessionResponse = await createCheckoutSessionApi({
+      userId: user.id,
+      userEmail: user.email,
+      planId,
+    });
 
-    if (!subscription) {
-      const { data: created, error: createError } = await upsertSubscriptionSupabase({
-        user_id: user.id,
-        plan_id: plan.id,
-        base_value: plan.price,
-        mp_status: "pending",
-      });
-
-      if (createError || !created) {
-        return {
-          success: false,
-          error: "Erro ao inicializar assinatura local.",
-        };
-      }
-      subscription = created as any;
-    }
-
-    // 3. Invoca o serviço de checkout do Mercado Pago
-    const mpResponse = await createPreApprovalSubscriptionApi(
-      user.email,
-      subscription!.id,
-      Number(plan.price),
-      plan.name,
-      true // 7 dias grátis
-    );
-
-    if (mpResponse.status !== HttpStatusEnum.Ok || !mpResponse.data?.initPoint) {
+    if (sessionResponse.status !== HttpStatusEnum.Ok || !sessionResponse.data) {
       return {
         success: false,
         error:
-          mpResponse.message ||
-          "Não foi possível iniciar o checkout no Mercado Pago no momento.",
+          sessionResponse.message ||
+          "Não foi possível processar a assinatura no momento.",
       };
     }
 
     return {
       success: true,
-      data: {
-        initPoint: mpResponse.data.initPoint,
-      },
+      data: sessionResponse.data,
     };
   } catch (err) {
     console.error("[createCheckoutSubscriptionAction] Erro inesperado:", err);
     return {
       success: false,
-      error: "Falha ao gerar checkout com o provedor de pagamento.",
+      error: "Falha ao processar assinatura.",
     };
   }
 }
@@ -138,20 +105,20 @@ export async function cancelSubscriptionAction(
   reasonDetails?: string
 ): Promise<ActionResponse<null>> {
   try {
-    const supabase = await serverSupabase();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    const userResponse = await getUserLoggedApi();
+    if (userResponse.status !== HttpStatusEnum.Ok || !userResponse.data?.user) {
       return {
         success: false,
         error: "Acesso negado. Usuário não autenticado.",
       };
     }
 
-    const res = await cancelSubscriptionApi(user.id, reason, reasonDetails);
+    const user = userResponse.data.user;
+    const res = await cancelSubscriptionApi({
+      userId: user.id,
+      reason,
+      reasonDetails,
+    });
 
     if (res.status !== HttpStatusEnum.Ok) {
       return {
@@ -172,4 +139,3 @@ export async function cancelSubscriptionAction(
     };
   }
 }
-

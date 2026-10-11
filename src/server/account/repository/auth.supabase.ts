@@ -1,6 +1,8 @@
+import "server-only";
+
 import { serverSupabase } from "@/commons/lib/supabase/server";
 import { internalSupabase } from "@/commons/lib/supabase/internal";
-import type { UserRequestBody } from "@/commons/models/user";
+import type { CreateProfilePayload, UserRequestBody } from "@/commons/models/user";
 import { resolveAuthError } from "@/commons/errors/auth";
 import { AuthError } from "@supabase/supabase-js";
 import { APP_URL } from "@/commons/constants/env";
@@ -46,23 +48,16 @@ export const killAuthSupabase = async () => {
   return error;
 };
 
-export const createProfileSupabase = async (
-  userId: string,
-  name: string,
-  email: string,
-  nickname?: string | null,
-  avatarUrl?: string | null,
-  phone?: string | null
-) => {
+export const createProfileSupabase = async (payload: CreateProfilePayload) => {
   const supabase = await getInternalClient();
 
   const { data, error } = await supabase.from("profiles").upsert({
-    id: userId,
-    name,
-    nickname: nickname || null,
-    email,
-    avatar_url: avatarUrl || null,
-    phone: phone || null,
+    id: payload.userId,
+    name: payload.name,
+    nickname: payload.nickname || null,
+    email: payload.email,
+    avatar_url: payload.avatarUrl || null,
+    phone: payload.phone || null,
     accepted_terms: true,
     updated_at: new Date().toISOString(),
   });

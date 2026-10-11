@@ -34,6 +34,11 @@ export function resolveAuthError(errorCode?: string): { message: string; status:
         message: "Código de confirmação inválido ou expirado. Solicite um novo.",
         status: HttpStatusEnum.BadRequest,
       };
+    case "email_not_confirmed":
+      return {
+        message: "Seu e-mail ainda não foi confirmado. Digite o código de 8 dígitos para validar seu acesso.",
+        status: HttpStatusEnum.Forbidden,
+      };
     default:
       return {
         message: "Não foi possível concluir a autenticação. Tente novamente em instantes.",

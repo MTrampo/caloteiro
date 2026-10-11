@@ -1,3 +1,5 @@
+import "server-only";
+
 import { ApiResponse } from "@/commons/lib/http/responses";
 import type { CreditorSettings } from "@/commons/models/user";
 import {

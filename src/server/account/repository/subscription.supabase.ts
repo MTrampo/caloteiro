@@ -1,3 +1,5 @@
+import "server-only";
+
 import { serverSupabase } from "@/commons/lib/supabase/server";
 import { internalSupabase } from "@/commons/lib/supabase/internal";
 import type {
@@ -66,7 +68,8 @@ export const upsertSubscriptionSupabase = async (
   payload: Partial<Subscription> & { user_id: string; base_value?: number }
 ) => {
   const supabase = await getClient();
-  const { plan: _ignoredPlan, ...cleanPayload } = payload;
+  const { plan: _plan, ...cleanPayload } = payload;
+  void _plan;
 
   const { data, error } = await supabase
     .from("subscriptions")
@@ -92,7 +95,8 @@ export const updateSubscriptionByIdSupabase = async (
   payload: Partial<Subscription>
 ) => {
   const supabase = await getClient();
-  const { plan: _ignoredPlan, ...subscriptionColumns } = payload;
+  const { plan: _plan, ...subscriptionColumns } = payload;
+  void _plan;
 
   const { data, error } = await supabase
     .from("subscriptions")
@@ -133,9 +137,14 @@ export const getUserPermissionsByUserIdSupabase = async (
   userId: string
 ): Promise<UserPermissions> => {
   const fallbackPermissions: UserPermissions = {
-    maxDebtors: 1,
+    maxDebtors: 2,
     canCustomTemplates: false,
     canExportReports: false,
+    canAccessFinancial: false,
+    canDebtorPortal: false,
+    canRiskScore: false,
+    canAttachReceipts: false,
+    isFreePlan: true,
     isSubscriptionActive: false,
   };
 
@@ -152,12 +161,21 @@ export const getUserPermissionsByUserIdSupabase = async (
         Boolean(subscription.current_period_end) &&
         new Date(subscription.current_period_end!).getTime() > Date.now());
 
+    const isFree =
+      subscription.plan?.slug === "tubarao-lixa" ||
+      Number(subscription.plan?.price) === 0;
+
     const config = subscription.plan?.config_plan;
 
     return {
-      maxDebtors: config ? config.max_debtors : 1,
+      maxDebtors: config?.max_debtors !== undefined ? config.max_debtors : 2,
       canCustomTemplates: config ? Boolean(config.custom_templates) : false,
-      canExportReports: config ? Boolean(config.export_reports) : false,
+      canExportReports: false,
+      canAccessFinancial: isActive && (config ? Boolean(config.can_access_financial) : false),
+      canDebtorPortal: isActive && (config ? Boolean(config.can_debtor_portal) : false),
+      canRiskScore: isActive && (config ? Boolean(config.can_risk_score) : false),
+      canAttachReceipts: isActive && (config ? Boolean(config.can_attach_receipts) : false),
+      isFreePlan: isFree,
       isSubscriptionActive: isActive,
     };
   } catch (err) {
@@ -181,4 +199,54 @@ export const insertCancellationReasonSupabase = async (
     .single();
 
   return { data, error };
+};
+
+/**
+ * Busca um plano específico pelo ID
+ */
+export const getPlanByIdSupabase = async (planId: string): Promise<Plan | null> => {
+  const supabase = await serverSupabase();
+  const { data, error } = await supabase
+    .from("plans")
+    .select("*, config_plan:config_plans(*)")
+    .eq("id", planId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data as unknown as Plan;
+};
+
+/**
+ * Verifica se o usuário já possui histórico de assinatura ou pagamento (para elegibilidade de trial)
+ */
+export const hasActiveSubscriptionHistorySupabase = async (userId: string): Promise<boolean> => {
+  const supabase = await getClient();
+
+  const { data: sub } = await supabase
+    .from("subscriptions")
+    .select("current_period_start, mp_status")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (sub) {
+    const hasHistory = Boolean(
+      sub.current_period_start ||
+      sub.mp_status === "authorized" ||
+      sub.mp_status === "cancelled"
+    );
+    if (hasHistory) return true;
+  }
+
+  const { data: invoices } = await supabase
+    .from("invoices")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("status", "approved")
+    .limit(1);
+
+  return Boolean(invoices && invoices.length > 0);
 };

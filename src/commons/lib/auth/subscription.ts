@@ -1,7 +1,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
-import { SUB_SECRET_KEY, COOKIE_SIGNING_SECRET } from '@/commons/constants/env'
+import { SUB_SECRET_KEY } from '@/commons/constants/env'
 import { signSecureCookie, verifySecureCookie, getUserCookieSecret } from '@/commons/lib/crypto/secure-cookie'
 import type { SubscriptionPayloadCookie } from '@/commons/models/subscription'
 
@@ -23,10 +23,10 @@ export async function setCookieSubscription(payload: SubscriptionPayloadCookie |
       path: '/',
       sameSite: 'strict',
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     // No Next.js App Router, cookies não podem ser modificados durante a fase de renderização SSR.
     // Ignoramos silenciosamente se for erro de contexto SSR, e logamos apenas se for erro inesperado.
-    if (!error?.message?.includes('Cookies can only be modified')) {
+    if (error instanceof Error && !error.message.includes('Cookies can only be modified')) {
       console.error('[setCookieSubscription] Erro ao assinar e salvar cookie de assinatura:', error)
     }
   }
@@ -49,12 +49,10 @@ export async function getCookieSubscriptionPayload(userId?: string): Promise<Sub
 
     const secret = getUserCookieSecret(targetUserId)
     return await verifySecureCookie<SubscriptionPayloadCookie>(rawToken, secret)
-  } catch (error) {
+  } catch {
     return null
   }
 }
-
-
 
 export async function getCookieSubscription(): Promise<string | null> {
   const cookieStore = await cookies()
@@ -66,8 +64,8 @@ export async function clearCookieSubscription(): Promise<void> {
   try {
     const cookieStore = await cookies()
     cookieStore.delete(KEY_SUB)
-  } catch (error: any) {
-    if (!error?.message?.includes('Cookies can only be modified')) {
+  } catch (error: unknown) {
+    if (error instanceof Error && !error.message.includes('Cookies can only be modified')) {
       console.error('[clearCookieSubscription] Erro ao limpar cookie de assinatura:', error)
     }
   }

@@ -87,12 +87,12 @@ export function SignUpFlow() {
           {/* Título do Card (Sem ícones nem emojis) */}
           <div className="space-y-1 text-center sm:text-left border-b border-zinc-800/80 pb-4">
             <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white">
-              {step === "register" ? "Cadastro de Investigador" : "Confirmar E-mail"}
+              {step === "register" ? "Cadastro de Tubarão" : "Confirmar E-mail"}
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 font-mono">
               {step === "register"
-                ? "Crie seu distintivo de investigador para fichar suspeitos e rastrear promessas de pagamento."
-                : "Insira o código de 6 dígitos que enviamos para validar seu acesso."}
+                ? "Crie sua credencial de tubarão para fichar caloteiros e rastrear cada centavo na pista."
+                : "Insira o código de 8 dígitos que enviamos para validar seu acesso."}
             </p>
           </div>
 

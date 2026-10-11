@@ -6,7 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { signUpSchema, type UserSignUpFormInputs } from "@/commons/models/user";
+import { signUpSchema } from "@/commons/validations/user";
+import type { UserSignUpFormInputs } from "@/commons/models/user";
 import { FaArrowRight, FaLock, FaEnvelope, FaUser, FaTag, FaEye, FaEyeSlash } from "react-icons/fa6";
 import { Loader2 } from "lucide-react";
 
@@ -15,7 +16,7 @@ interface SignupFormProps {
 }
 
 export function SignupForm({ signUpUser }: SignupFormProps) {
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isPending, startTransition] = React.useTransition();
   const [showPassword, setShowPassword] = React.useState(false);
 
   const {
@@ -29,17 +30,14 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
       nickname: "",
       email: "",
       password: "",
-      acceptedTerms: true,
+      acceptedTerms: false,
     },
   });
 
-  const onSubmit = async (data: UserSignUpFormInputs) => {
-    try {
-      setIsLoading(true);
+  const onSubmit = (data: UserSignUpFormInputs) => {
+    startTransition(async () => {
       await signUpUser(data);
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   return (
@@ -49,7 +47,7 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
         {/* Campo Nome */}
         <div className="space-y-1.5">
           <label className="text-xs font-mono uppercase tracking-wider text-zinc-300">
-            Nome Completo
+            Nome e Sobrenome
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
@@ -59,7 +57,7 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
               type="text"
               placeholder="Ex: Zenon Barriga"
               autoComplete="name"
-              disabled={isLoading}
+              disabled={isPending}
               className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-sm h-11"
               {...register("name")}
             />
@@ -80,9 +78,9 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
             </div>
             <Input
               type="text"
-              placeholder="Ex: Seu Barriga, Julius"
+              placeholder="Ex: Seu Barriga"
               autoComplete="nickname"
-              disabled={isLoading}
+              disabled={isPending}
               className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-sm h-11"
               {...register("nickname")}
             />
@@ -104,9 +102,9 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
           </div>
           <Input
             type="email"
-            placeholder="investigador@radar.com"
+            placeholder="tubarao@radar.com"
             autoComplete="email"
-            disabled={isLoading}
+            disabled={isPending}
             className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-sm h-11"
             {...register("email")}
           />
@@ -129,14 +127,14 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
             type={showPassword ? "text" : "password"}
             placeholder="Mínimo de 6 caracteres"
             autoComplete="new-password"
-            disabled={isLoading}
+            disabled={isPending}
             className="pl-9 pr-10 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-sm h-11"
             {...register("password")}
           />
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            disabled={isLoading}
+            disabled={isPending}
             className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
             tabIndex={-1}
             aria-label={showPassword ? "Ocultar senha" : "Ver senha"}
@@ -158,7 +156,7 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
         <label className="flex items-center gap-2.5 cursor-pointer select-none">
           <input
             type="checkbox"
-            disabled={isLoading}
+            disabled={isPending}
             className="size-4 rounded-sm border-zinc-700 bg-zinc-950 text-emerald-500 focus:ring-0 focus:ring-offset-0 transition-colors cursor-pointer shrink-0"
             {...register("acceptedTerms")}
           />
@@ -191,24 +189,24 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
 
       {/* Box cômico de juramento */}
       <div className="p-3 rounded-xl bg-zinc-950/40 border border-zinc-800/80 text-[11px] font-mono text-zinc-400 leading-relaxed">
-        <span className="text-emerald-400 font-semibold">Juramento do Investigador: </span>
+        <span className="text-emerald-400 font-semibold">Juramento do Tubarão: </span>
         Ao criar conta, prometo nunca mais aceitar &ldquo;na volta a gente acerta&rdquo; sem registrar data e juros.
       </div>
 
       {/* Botão Cadastrar */}
       <Button
         type="submit"
-        disabled={isLoading}
+        disabled={isPending}
         className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-heading font-bold tracking-wide transition-all duration-200 shadow-lg shadow-emerald-950/50 cursor-pointer flex items-center justify-center gap-2 text-sm"
       >
-        {isLoading ? (
+        {isPending ? (
           <>
             <Loader2 className="size-4 animate-spin" />
             <span>Criando Acesso...</span>
           </>
         ) : (
           <>
-            <span>Iniciar Investigação dos Calotes</span>
+            <span>Criar Conta</span>
             <FaArrowRight className="size-3.5" />
           </>
         )}
@@ -216,7 +214,7 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
 
       {/* Rodapé / Link de Login */}
       <div className="pt-2 text-center text-xs text-zinc-400 font-mono">
-        <span>Já possui uma conta de investigador? </span>
+        <span>Já possui uma conta de tubarão? </span>
         <Link
           href="/entrar"
           className="text-emerald-400 hover:text-emerald-300 font-semibold underline underline-offset-4"

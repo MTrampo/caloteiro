@@ -1,6 +1,6 @@
 import Header from "@/components/header/dashboard"
 import { SettingsFeature } from "@/features/settings"
-import { serverSupabase } from "@/commons/lib/supabase/server"
+import { getUserLogged } from "@/server/account/repository/auth.supabase"
 import { getCreditorSettingsApi } from "@/server/account/service/creditor-settings.api"
 import type { UserPermissions } from "@/commons/models/subscription"
 import type { Metadata } from "next"
@@ -10,16 +10,20 @@ export const metadata: Metadata = {
 }
 
 export default async function ConfiguracoesPage() {
-  const supabase = await serverSupabase()
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await getUserLogged()
 
   let initialSettings = null
   let permissions: UserPermissions = {
-    maxDebtors: 1,
+    maxDebtors: 2,
     canCustomTemplates: false,
     canExportReports: false,
+    canAccessFinancial: false,
+    canDebtorPortal: false,
+    canRiskScore: false,
+    canAttachReceipts: false,
+    isFreePlan: true,
     isSubscriptionActive: false,
   }
 
@@ -41,4 +45,3 @@ export default async function ConfiguracoesPage() {
     </>
   )
 }
-

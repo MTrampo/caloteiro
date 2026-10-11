@@ -1,3 +1,5 @@
+import "server-only";
+
 import { internalSupabase } from "@/commons/lib/supabase/internal";
 import type { InvoiceInsertPayload } from "@/commons/models/payment";
 import type { Subscription } from "@/commons/models/subscription";

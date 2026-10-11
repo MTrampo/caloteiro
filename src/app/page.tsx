@@ -3,14 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  AlertTriangle,
   CheckCircle2,
   Clock,
   DollarSign,
   Flame,
   PlusCircle,
   Radar,
-  Search,
   ShieldAlert,
   UserX,
 } from "lucide-react";

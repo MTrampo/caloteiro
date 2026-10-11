@@ -6,8 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { signInSchema, type UserSignInFormInputs, type SendEmailFormInputs } from "@/commons/models/user";
-import { FaArrowRight, FaLock, FaEnvelope, FaKey } from "react-icons/fa6";
+import { signInSchema } from "@/commons/validations/user";
+import type { UserSignInFormInputs, SendEmailFormInputs } from "@/commons/models/user";
+import { FaArrowRight, FaLock, FaEnvelope } from "react-icons/fa6";
 import { Loader2 } from "lucide-react";
 
 interface SignInFormProps {
@@ -17,7 +18,7 @@ interface SignInFormProps {
 }
 
 export function SignInForm({ signInUser, onForgotPasswordClick }: SignInFormProps) {
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isPending, startTransition] = React.useTransition();
 
   const {
     register,
@@ -31,13 +32,10 @@ export function SignInForm({ signInUser, onForgotPasswordClick }: SignInFormProp
     },
   });
 
-  const onSubmit = async (data: UserSignInFormInputs) => {
-    try {
-      setIsLoading(true);
+  const onSubmit = (data: UserSignInFormInputs) => {
+    startTransition(async () => {
       await signInUser(data);
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   return (
@@ -45,7 +43,7 @@ export function SignInForm({ signInUser, onForgotPasswordClick }: SignInFormProp
       {/* Campo E-mail */}
       <div className="space-y-1.5">
         <label className="text-xs font-mono uppercase tracking-wider text-zinc-300 flex items-center justify-between">
-          <span>Seu E-mail</span>
+          <span>E-mail</span>
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
@@ -53,9 +51,9 @@ export function SignInForm({ signInUser, onForgotPasswordClick }: SignInFormProp
           </div>
           <Input
             type="email"
-            placeholder="investigador@radar.com"
+            placeholder="seubarriga@caloteiro.com"
             autoComplete="email"
-            disabled={isLoading}
+            disabled={isPending}
             className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-sm h-11"
             {...register("email")}
           />
@@ -69,7 +67,7 @@ export function SignInForm({ signInUser, onForgotPasswordClick }: SignInFormProp
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <label className="text-xs font-mono uppercase tracking-wider text-zinc-300">
-            Senha Secreta
+            Senha
           </label>
           {onForgotPasswordClick && (
             <button
@@ -89,7 +87,7 @@ export function SignInForm({ signInUser, onForgotPasswordClick }: SignInFormProp
             type="password"
             placeholder="••••••••"
             autoComplete="current-password"
-            disabled={isLoading}
+            disabled={isPending}
             className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-sm h-11"
             {...register("password")}
           />
@@ -102,10 +100,10 @@ export function SignInForm({ signInUser, onForgotPasswordClick }: SignInFormProp
       {/* Botão Entrar */}
       <Button
         type="submit"
-        disabled={isLoading}
+        disabled={isPending}
         className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-heading font-bold tracking-wide transition-all duration-200 shadow-lg shadow-emerald-950/50 cursor-pointer flex items-center justify-center gap-2 text-sm"
       >
-        {isLoading ? (
+        {isPending ? (
           <>
             <Loader2 className="size-4 animate-spin" />
             <span>Consultando Cofre...</span>
@@ -125,7 +123,7 @@ export function SignInForm({ signInUser, onForgotPasswordClick }: SignInFormProp
           href="/cadastrar"
           className="text-emerald-400 hover:text-emerald-300 font-semibold underline underline-offset-4"
         >
-          Criar conta de Investigador
+          Criar conta
         </Link>
       </div>
     </form>

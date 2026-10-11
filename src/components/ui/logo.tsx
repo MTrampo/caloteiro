@@ -9,28 +9,28 @@ interface LogoProps {
 
 const sizeMap = {
   sm: {
-    container: "size-8",
-    width: 32,
-    height: 32,
+    container: "size-9 rounded-xl",
+    width: 36,
+    height: 36,
     title: "text-sm",
-    subtitle: "text-[10px]",
+    subtitle: "text-[11px]",
   },
   md: {
-    container: "size-10",
+    container: "size-10 rounded-xl",
     width: 40,
     height: 40,
     title: "text-base",
     subtitle: "text-xs",
   },
   lg: {
-    container: "size-14",
+    container: "size-14 rounded-2xl",
     width: 56,
     height: 56,
     title: "text-xl",
     subtitle: "text-xs",
   },
   xl: {
-    container: "size-20",
+    container: "size-20 rounded-3xl",
     width: 80,
     height: 80,
     title: "text-2xl",
@@ -46,7 +46,7 @@ export function Logo({ className, size = "md", showText = false }: LogoProps) {
       <div
         className={cn(
           current.container,
-          "relative flex items-center justify-center shrink-0 rounded-2xl bg-zinc-900 border border-zinc-800 p-1.5 shadow-lg shadow-black/50 overflow-hidden"
+          "relative flex items-center justify-center shrink-0 bg-zinc-900 border border-zinc-800 p-1.5 shadow-lg shadow-black/50 overflow-hidden"
         )}
       >
         <Image

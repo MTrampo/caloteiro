@@ -6,15 +6,18 @@ import {
   signUpSchema,
   sendEmailSchema,
   forgotPasswordSchema,
-  type UserSignInFormInputs,
-  type UserSignUpFormInputs,
-  type ForgotPasswordFormInputs,
+} from "@/commons/validations/user";
+import type {
+  UserSignInFormInputs,
+  UserSignUpFormInputs,
+  ForgotPasswordFormInputs,
 } from "@/commons/models/user";
 
 import {
   signInUserApi,
   signUpUserApi,
   sendPasswordResetEmailApi,
+  resendOtpCodeApi,
   confirmUserEmailApi,
   resetUserPasswordApi,
   signOutApi,
@@ -32,7 +35,7 @@ export interface AuthActionResult<T = unknown> {
  */
 export async function signInUserAction(
   data: UserSignInFormInputs
-): Promise<AuthActionResult<{ redirectPath: string }>> {
+): Promise<AuthActionResult<{ redirectPath?: string; needsEmailVerification?: boolean; email?: string }>> {
   const parsed = signInSchema.safeParse(data);
   if (!parsed.success) {
     return {
@@ -43,19 +46,25 @@ export async function signInUserAction(
 
   const result = await signInUserApi(parsed.data);
 
-  if (result.status !== HttpStatusEnum.Ok || !result.data) {
+  if (result.status !== HttpStatusEnum.Ok) {
     return {
       status: result.status,
       message: result.message,
+      data: (result.data as { needsEmailVerification?: boolean; email?: string } | null) || undefined,
       error: result.error || undefined,
     };
   }
+
+  const redirectPath =
+    result.data && "redirectPath" in result.data
+      ? (result.data as { redirectPath?: string }).redirectPath || "/painel"
+      : "/painel";
 
   return {
     status: HttpStatusEnum.Ok,
     message: result.message,
     data: {
-      redirectPath: result.data.redirectPath || "/painel",
+      redirectPath,
     },
   };
 }
@@ -139,10 +148,10 @@ export async function verifyOtpCodeAction(
   email: string,
   code: string
 ): Promise<AuthActionResult<{ verified: boolean }>> {
-  if (!code || code.length !== 6) {
+  if (!code || code.length !== 8) {
     return {
       status: HttpStatusEnum.BadRequest,
-      message: "O código deve ter 6 dígitos.",
+      message: "O código deve ter 8 dígitos.",
     };
   }
 
@@ -169,9 +178,10 @@ export async function verifyOtpCodeAction(
  * Server action para reenviar código OTP
  */
 export async function resendOtpCodeAction(
-  email: string
+  email: string,
+  type: "signup" | "recovery" = "signup"
 ): Promise<AuthActionResult<{ resent: boolean }>> {
-  const result = await sendPasswordResetEmailApi(email);
+  const result = await resendOtpCodeApi(email, type);
 
   if (result.status !== HttpStatusEnum.Ok) {
     return {
@@ -183,7 +193,7 @@ export async function resendOtpCodeAction(
 
   return {
     status: HttpStatusEnum.Ok,
-    message: `Novo código enviado para ${email}`,
+    message: result.message,
     data: {
       resent: true,
     },

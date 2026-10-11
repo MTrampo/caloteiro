@@ -29,6 +29,7 @@ export function SignInFlow() {
   const router = useRouter();
   const [step, setStep] = React.useState<SignInStep>("login");
   const [email, setEmail] = React.useState("");
+  const [verificationReason, setVerificationReason] = React.useState<"signup" | "forgot-password">("signup");
 
   // Fluxo 1: Login de Usuário
   const handleSignIn = async (data: UserSignInFormInputs) => {
@@ -39,6 +40,16 @@ export function SignInFlow() {
         router.push(response.data?.redirectPath || "/painel");
         return;
       }
+
+      // Se o usuário ainda não confirmou o e-mail, redireciona para a etapa de verificação OTP
+      if (response.data?.needsEmailVerification) {
+        setEmail(response.data.email || data.email);
+        setVerificationReason("signup");
+        setStep("verify");
+        toast.info(response.message || "Quase lá! Seu e-mail ainda não foi confirmado. Digite o código de 8 dígitos que enviamos para você.");
+        return;
+      }
+
       toast.error(response.message);
     } catch {
       toast.error("Erro ao conectar à central. Tente novamente mais tarde.");
@@ -52,6 +63,7 @@ export function SignInFlow() {
       if (response.status === HttpStatusEnum.Ok) {
         toast.success(response.message);
         setEmail(data.email);
+        setVerificationReason("forgot-password");
         setStep("verify");
         return;
       }
@@ -66,8 +78,13 @@ export function SignInFlow() {
     try {
       const response = await verifyOtpCodeAction(email, data.code);
       if (response.status === HttpStatusEnum.Ok) {
-        toast.success("Código confirmado com sucesso!");
-        setStep("reset-password");
+        if (verificationReason === "forgot-password") {
+          toast.success("Código confirmado com sucesso!");
+          setStep("reset-password");
+        } else {
+          toast.success("Conta confirmada com sucesso! Bem-vindo à Central de Investigação.");
+          router.push("/painel");
+        }
         return;
       }
       toast.error(response.message);
@@ -79,7 +96,8 @@ export function SignInFlow() {
   // Fluxo 4: Reenviar código
   const handleResendCode = async () => {
     try {
-      const response = await resendOtpCodeAction(email);
+      const type = verificationReason === "forgot-password" ? "recovery" : "signup";
+      const response = await resendOtpCodeAction(email, type);
       if (response.status === HttpStatusEnum.Ok) {
         toast.success(response.message);
       } else {
@@ -125,13 +143,16 @@ export function SignInFlow() {
             <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white">
               {step === "login" && "Central de Acesso"}
               {step === "forgot-password" && "Recuperação de Acesso"}
-              {step === "verify" && "Confirmação de Identidade"}
+              {step === "verify" && (verificationReason === "signup" ? "Confirmar E-mail" : "Confirmação de Identidade")}
               {step === "reset-password" && "Cadastrar Nova Senha"}
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 font-mono">
               {step === "login" && "Entre para gerenciar suas pendências e cobrar o que é seu por direito."}
               {step === "forgot-password" && "Digite seu e-mail para enviarmos um código seguro de recuperação."}
-              {step === "verify" && "Digite o código de 6 dígitos que enviamos para sua caixa de entrada."}
+              {step === "verify" &&
+                (verificationReason === "signup"
+                  ? "Insira o código de 8 dígitos que enviamos para validar seu acesso à central."
+                  : "Digite o código de 8 dígitos que enviamos para sua caixa de entrada.")}
               {step === "reset-password" && "Crie uma senha forte para blindar seus registros de cobrança."}
             </p>
           </div>
@@ -156,13 +177,15 @@ export function SignInFlow() {
               email={email}
               verifyCode={handleVerifyOtp}
               onResendCode={handleResendCode}
-              onBack={() => setStep("forgot-password")}
+              onBack={() => setStep(verificationReason === "forgot-password" ? "forgot-password" : "login")}
             />
           )}
 
           {step === "reset-password" && (
             <ResetPasswordForm
+              email={email}
               forgotPassword={handleResetPassword}
+              onResendCode={handleResendCode}
               onBackToLogin={() => setStep("login")}
             />
           )}

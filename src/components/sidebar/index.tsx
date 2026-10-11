@@ -62,7 +62,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar aria-label="Menu Principal" collapsible="icon" className="border-r border-sidebar-border bg-sidebar" {...props}>
       <SidebarHeader className="h-14 border-b border-sidebar-border px-3.5 justify-center">
-        <Logo size="sm" showText className="w-full" />
+        <Logo size="md" showText className="w-full" />
       </SidebarHeader>
 
       <SidebarContent className="py-2">

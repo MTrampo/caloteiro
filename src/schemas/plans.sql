@@ -16,6 +16,8 @@ create table if not exists public.plans (
   is_featured boolean default false,
   is_active boolean default true,
   sort_order int4 default 0,
+  shark text,                            -- Dica/analogia da espécie de tubarão
+  button text,                           -- Texto do botão de ação do plano
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

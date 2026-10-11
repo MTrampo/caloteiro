@@ -1,3 +1,5 @@
+import "server-only";
+
 import { ApiResponse } from "@/commons/lib/http/responses";
 import type { InvoiceInsertPayload } from "@/commons/models/payment";
 import {

@@ -1,7 +1,6 @@
 import Header from "@/components/header/dashboard"
 import { AccountFeature } from "@/features/account"
-import { serverSupabase } from "@/commons/lib/supabase/server"
-import { getProfileByUserIdSupabase } from "@/server/account/repository/auth.supabase"
+import { getUserLogged, getProfileByUserIdSupabase } from "@/server/account/repository/auth.supabase"
 import { getSubscriptionByUserIdSupabase } from "@/server/account/repository/subscription.supabase"
 import type { Metadata } from "next"
 
@@ -10,10 +9,9 @@ export const metadata: Metadata = {
 }
 
 export default async function ContaPage() {
-  const supabase = await serverSupabase()
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await getUserLogged()
 
   let profile = null
   let subscription = null

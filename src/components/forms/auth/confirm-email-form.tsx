@@ -6,10 +6,12 @@ import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
+  InputOTPSeparator,
 } from "@/components/ui/input-otp";
 import type { OtpFormInputs } from "@/commons/models/user";
-import { FaArrowLeft, FaCheck, FaRotateRight } from "react-icons/fa6";
+import { FaArrowLeft, FaCheck } from "react-icons/fa6";
 import { Loader2 } from "lucide-react";
+import { ResendCodeButton } from "./resend-code-button";
 
 interface ConfirmEmailFormProps {
   email?: string;
@@ -25,45 +27,42 @@ export function ConfirmEmailForm({
   onBack,
 }: ConfirmEmailFormProps) {
   const [code, setCode] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isResending, setIsResending] = React.useState(false);
-  const [timer, setTimer] = React.useState(45);
+  const [isPending, startTransition] = React.useTransition();
+  const submittingRef = React.useRef(false);
 
-  React.useEffect(() => {
-    if (timer <= 0) return;
-    const interval = setInterval(() => {
-      setTimer((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [timer]);
+  const handleVerify = React.useCallback(
+    (otpCode: string) => {
+      if (otpCode.length !== 8 || isPending || submittingRef.current) return;
+      submittingRef.current = true;
+      startTransition(async () => {
+        try {
+          await verifyCode({ code: otpCode });
+        } finally {
+          submittingRef.current = false;
+        }
+      });
+    },
+    [isPending, verifyCode]
+  );
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (code.length !== 6) return;
-    try {
-      setIsLoading(true);
-      await verifyCode({ code });
-    } finally {
-      setIsLoading(false);
+  const handleOtpChange = (val: string) => {
+    setCode(val);
+    if (val.length === 8) {
+      handleVerify(val);
     }
   };
 
-  const handleResend = async () => {
-    if (timer > 0 || !onResendCode) return;
-    try {
-      setIsResending(true);
-      await onResendCode();
-      setTimer(60);
-    } finally {
-      setIsResending(false);
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (code.length !== 8) return;
+    handleVerify(code);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="text-center space-y-1">
         <p className="text-xs font-mono text-zinc-400">
-          Código de 6 dígitos enviado para:
+          Código de 8 dígitos enviado para:
         </p>
         <p className="text-sm font-mono font-bold text-emerald-400 break-all">
           {email || "seu e-mail"}
@@ -72,31 +71,38 @@ export function ConfirmEmailForm({
 
       <div className="flex flex-col items-center justify-center space-y-2">
         <InputOTP
-          maxLength={6}
+          maxLength={8}
           value={code}
-          onChange={(val) => setCode(val)}
-          disabled={isLoading}
+          onChange={handleOtpChange}
+          disabled={isPending}
         >
-          <InputOTPGroup className="gap-2">
-            <InputOTPSlot index={0} className="size-11 sm:size-12 text-base font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-            <InputOTPSlot index={1} className="size-11 sm:size-12 text-base font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-            <InputOTPSlot index={2} className="size-11 sm:size-12 text-base font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-            <InputOTPSlot index={3} className="size-11 sm:size-12 text-base font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-            <InputOTPSlot index={4} className="size-11 sm:size-12 text-base font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-            <InputOTPSlot index={5} className="size-11 sm:size-12 text-base font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-          </InputOTPGroup>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <InputOTPGroup className="gap-1 sm:gap-1.5">
+              <InputOTPSlot index={0} className="size-9 sm:size-11 text-sm sm:text-base font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
+              <InputOTPSlot index={1} className="size-9 sm:size-11 text-sm sm:text-base font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
+              <InputOTPSlot index={2} className="size-9 sm:size-11 text-sm sm:text-base font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
+              <InputOTPSlot index={3} className="size-9 sm:size-11 text-sm sm:text-base font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
+            </InputOTPGroup>
+            <InputOTPSeparator className="text-zinc-600" />
+            <InputOTPGroup className="gap-1 sm:gap-1.5">
+              <InputOTPSlot index={4} className="size-9 sm:size-11 text-sm sm:text-base font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
+              <InputOTPSlot index={5} className="size-9 sm:size-11 text-sm sm:text-base font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
+              <InputOTPSlot index={6} className="size-9 sm:size-11 text-sm sm:text-base font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
+              <InputOTPSlot index={7} className="size-9 sm:size-11 text-sm sm:text-base font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
+            </InputOTPGroup>
+          </div>
         </InputOTP>
         <span className="text-[11px] font-mono text-zinc-500">
-          Digite os 6 números recebidos no e-mail
+          Digite os 8 números recebidos no e-mail
         </span>
       </div>
 
       <Button
         type="submit"
-        disabled={isLoading || code.length !== 6}
+        disabled={isPending || code.length !== 8}
         className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-heading font-bold tracking-wide transition-all duration-200 shadow-lg shadow-emerald-950/50 cursor-pointer flex items-center justify-center gap-2 text-sm"
       >
-        {isLoading ? (
+        {isPending ? (
           <>
             <Loader2 className="size-4 animate-spin" />
             <span>Validando Código...</span>
@@ -122,23 +128,14 @@ export function ConfirmEmailForm({
           </button>
         )}
 
-        <button
-          type="button"
-          onClick={handleResend}
-          disabled={timer > 0 || isResending}
-          className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-emerald-400 disabled:opacity-50 disabled:hover:text-zinc-400 transition-colors cursor-pointer"
-        >
-          {isResending ? (
-            <Loader2 className="size-3 animate-spin" />
-          ) : (
-            <FaRotateRight className="size-3" />
-          )}
-          <span>
-            {timer > 0 ? `Reenviar código em ${timer}s` : "Reenviar código"}
-          </span>
-        </button>
+        {onResendCode && (
+          <ResendCodeButton
+            onResend={onResendCode}
+            initialSeconds={300}
+            storageKey={`resend_confirm_${email || "default"}`}
+          />
+        )}
       </div>
     </form>
   );
 }
-

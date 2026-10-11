@@ -1,3 +1,5 @@
+import "server-only";
+
 import { serverSupabase } from "@/commons/lib/supabase/server";
 import type { CreditorSettings } from "@/commons/models/user";
 

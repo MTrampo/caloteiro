@@ -34,18 +34,23 @@ O fluxo de execução deve respeitar uma hierarquia rigorosa: **UI -> Action -> 
   * As páginas em `src/app/*` (ex: `src/app/painel/page.tsx`) devem atuar como **Server Components puros**, responsáveis pela busca de dados iniciais, leitura de parâmetros de rota e delegação do conteúdo principal para os módulos correspondentes em `src/features/*`.
   * Os componentes em `src/features/*` contêm os blocos visuais de cada funcionalidade e concentram as interações do cliente (`'use client'`) apenas onde estritamente necessário.
 * **Actions (`src/actions`):**
-  * Devem conter obrigatoriamente a diretiva `'use server'` no topo do ficheiro.
-  * Têm de validar a sessão do utilizador autenticado antes de qualquer chamada.
+  * Devem conter obrigatoriamente a diretiva `'use server'` no topo do ficheiro (único local onde essa diretiva é permitida).
+  * Têm de validar a sessão do utilizador autenticado antes de qualquer chamada (utilizando `getUserLoggedApi()` do domínio `account/service/auth.api`).
   * Têm de validar a entrada de dados via **Zod** antes de chamar a camada de Service.
   * Retornam sempre uma resposta tipada padronizada: `{ success: true, data: T }` ou `{ success: false, error: string }`.
-  * Não acedem à base de dados diretamente; delegam a execução aos Services.
+  * **Nunca acedem à base de dados nem instanciam `serverSupabase()` diretamente;** delegam toda execução aos Services.
+* **Camada Server (`src/server`): Blindagem Obrigatória com `server-only`:**
+  * **Obrigatoriedade de Blindagem:** Todo ficheiro criado dentro de `src/server/**` (seja repository, service ou infraestrutura do servidor) **DEVE conter obrigatoriamente `import "server-only";` na primeiríssima linha do arquivo**.
+  * **Proibição de `'use server'`:** É terminantemente PROIBIDO adicionar `'use server'` na camada `src/server`. `'use server'` transforma funções em endpoints RPC públicos na internet, o que causaria bypass de autenticação e falha crítica de segurança.
 * **Services (`src/server/[dominio]/service/*.api.ts`):**
+  * Devem conter `import "server-only";` no topo.
   * Concentram toda a regra de negócio (cálculos de juros, penalizações, validações de contrato).
   * São orquestrados apenas pelas Actions.
   * Consomem os Repositories para carregar ou gravar dados.
 * **Repositories (`src/server/[dominio]/repository/*.supabase.ts`):**
+  * Devem conter `import "server-only";` no topo.
   * Contêm a lógica de acesso a dados (Supabase, consultas e mutações).
-  * Operam com o cliente Supabase associado à sessão do utilizador (`@supabase/ssr`).
+  * São os **únicos locais autorizados** a consumir os clientes Supabase de servidor (`serverSupabase` e `internalSupabase`).
   * Toda e qualquer operação de escrita e leitura deve respeitar o isolamento por utilizador (`userId`) e políticas ativas de Row Level Security (RLS).
   * O tipo de dados deve seguir a tipagem gerada do Supabase (`src/commons/types/database.types.ts`).
 
@@ -73,3 +78,13 @@ O fluxo de execução deve respeitar uma hierarquia rigorosa: **UI -> Action -> 
 * **Uso Correto de Cards:** Utilize cards (`rounded-2xl border border-border bg-card`) apenas para unidades semânticas individuais: cards de KPI numéricos, gráficos analíticos, ou cada card individual de dívida/devedor.
 * **Nomenclatura Semântica:** Mantenha sempre "Dívidas" em vez de "Cobranças", e "Dívida" em vez de "Ficha".
 * **PROIBIÇÃO ABSOLUTA DE BADGES/PÍLULAS NO TOPO:** É terminantemente PROIBIDO adicionar badges, tags ou pílulas (ex: "CENTRAL DE INTELIGÊNCIA", "RESGATE DE ACESSO", badges de categoria ou status) acima de títulos no topo de páginas ou no cabeçalho de e-mails. O cabeçalho deve ser limpo e direto (apenas logo e título), sem enfeites de badge flutuantes que poluem o visual.
+
+## 8. Organização de Validações, Modelos e Assinaturas de Métodos (Clean Code)
+* **Separação Rígida entre `validations` e `models`:**
+  * `src/commons/validations/`: Responsabilidade exclusiva para esquemas de validação de runtime com Zod (`z.object`, `z.email()`, etc.). Não deve conter interfaces TypeScript manuais.
+  * `src/commons/models/`: Responsabilidade exclusiva para contratos e tipagens estáticas em TypeScript (Interfaces de domínio, DTOs de entrada e saída, e tipos inferidos de formulários).
+* **Espelhamento de Arquivos 1:1:** O nome dos arquivos em `src/commons/validations` deve espelhar exatamente os de `src/commons/models` (ex: `validations/user.ts` <-> `models/user.ts`, `validations/subscription.ts` <-> `models/subscription.ts`).
+* **Sintaxe Zod 4 Atualizada:** É obrigatório o uso de `z.email(...)` em vez da sintaxe depreciada `z.string().email(...)`.
+* **Proibição de Parâmetros Soltos em Excesso (DTOs Obrigatórios):**
+  * É proibido criar funções em Repositories ou Services com mais de 2 parâmetros primitivos soltos (ex: `fn(userId, name, email, nickname, avatar, phone)`).
+  * Toda mutação ou conjunto de parâmetros com 3 ou mais campos deve obrigatoriamente ser agrupado em uma interface DTO/Payload tipada em `src/commons/models` (ex: `CreateProfilePayload`, `UpdateSubscriptionPayload`).

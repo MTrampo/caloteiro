@@ -3,7 +3,11 @@ export interface ConfigPlan {
   name: string;
   max_debtors: number | null; // null = ilimitado
   custom_templates: boolean;
-  export_reports: boolean;
+  export_reports?: boolean;
+  can_access_financial: boolean;
+  can_debtor_portal: boolean;
+  can_risk_score: boolean;
+  can_attach_receipts: boolean;
   is_default: boolean;
   created_at?: string | null;
   updated_at?: string | null;
@@ -24,6 +28,8 @@ export interface Plan {
   sort_order?: number;
   created_at?: string | null;
   updated_at?: string | null;
+  shark?: string | null;
+  button?: string | null;
   config_plan?: ConfigPlan | null;
 }
 
@@ -54,6 +60,37 @@ export interface SubscriptionPayloadCookie {
 export interface UserPermissions {
   maxDebtors: number | null;
   canCustomTemplates: boolean;
-  canExportReports: boolean;
+  canExportReports?: boolean;
+  canAccessFinancial: boolean;
+  canDebtorPortal: boolean;
+  canRiskScore: boolean;
+  canAttachReceipts: boolean;
+  isFreePlan: boolean;
   isSubscriptionActive: boolean;
+}
+
+/**
+ * Payload estruturado para criação de sessão de checkout de assinatura
+ */
+export interface CreateCheckoutSessionPayload {
+  userId: string;
+  userEmail: string;
+  planId: string;
+}
+
+/**
+ * Resultado do fluxo de checkout de assinatura
+ */
+export interface CheckoutSessionResult {
+  initPoint: string | null;
+  isFree: boolean;
+}
+
+/**
+ * Payload para registro de cancelamento de assinatura
+ */
+export interface CancelSubscriptionPayload {
+  userId: string;
+  reason: string;
+  reasonDetails?: string;
 }

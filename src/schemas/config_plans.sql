@@ -8,7 +8,11 @@ create table if not exists public.config_plans (
   name text not null,
   max_debtors int4 default 1,            -- NULL indica devedores ilimitados
   custom_templates boolean default false, -- Se pode customizar templates de cobrança
-  export_reports boolean default false,   -- Se pode exportar relatórios
+  export_reports boolean default false,   -- Descontinuado (relatórios desativados)
+  can_access_financial boolean default false, -- Acesso ao painel financeiro consolidado (/painel/dividas)
+  can_debtor_portal boolean default false,    -- Link de acompanhamento externo para o devedor
+  can_risk_score boolean default false,       -- Nível de Cara de Pau (Score de Risco do devedor)
+  can_attach_receipts boolean default false,  -- Anexo de comprovantes de pagamento (exclusivo Tubarão Cabeça Chato)
   is_default boolean default false,
   created_at timestamptz default now(),
   updated_at timestamptz default now()

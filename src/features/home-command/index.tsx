@@ -6,11 +6,6 @@ import { GreetingBanner } from "./components/greeting-banner"
 import { TriageKPIsGrid } from "./components/triage-kpis"
 import { DailyFeed } from "./components/daily-feed"
 import { CreditorWisdom } from "./components/creditor-wisdom"
-import {
-  generateDynamicPunchline,
-  getRandomWisdomQuote,
-  getTimeGreeting,
-} from "./utils/greeting-helper"
 
 // Mock inicial enriquecido com ocorrências realistas e dinâmicas
 const defaultCommandData: CommandCenterData = {
@@ -71,20 +66,33 @@ const defaultCommandData: CommandCenterData = {
   },
 }
 
-export function HomeCommandFeature() {
-  const [data] = React.useState<CommandCenterData>(defaultCommandData)
+export interface HomeCommandFeatureProps {
+  initialUserName?: string
+  initialPunchline?: string
+  initialTimeGreeting?: string
+  initialWisdom?: {
+    quote: string
+    author: string
+    subtext: string
+  }
+}
 
-  const punchline = React.useMemo(() => {
-    return generateDynamicPunchline({
-      overdueCount: 2,
-      criticalCount: data.kpis.criticalOverdueCount,
-      dueSoonCount: data.kpis.dueSoonCount,
-      totalCount: 16,
-    })
-  }, [data.kpis])
+export function HomeCommandFeature({
+  initialUserName,
+  initialPunchline,
+  initialTimeGreeting,
+  initialWisdom,
+}: HomeCommandFeatureProps = {}) {
+  const [data] = React.useState<CommandCenterData>(() => ({
+    ...defaultCommandData,
+    userName: initialUserName || defaultCommandData.userName,
+    wisdomQuote: initialWisdom || defaultCommandData.wisdomQuote,
+  }))
 
-  const timeGreeting = React.useMemo(() => getTimeGreeting(), [])
-  const initialWisdom = React.useMemo(() => getRandomWisdomQuote(), [])
+  // Usar valores fornecidos pelo SSR para garantir 100% de paridade na hidratação
+  const punchline = initialPunchline ?? "Dia de teste de paciência: 2 devedores já fingiram demência. Hora de mostrar os dentes e mandar a cobrança matinal."
+  const timeGreeting = initialTimeGreeting ?? "Olá"
+  const wisdom = initialWisdom ?? data.wisdomQuote
 
   return (
     <div className="flex-1 p-4 sm:p-6 space-y-6 w-full">
@@ -101,8 +109,8 @@ export function HomeCommandFeature() {
       {/* 3. Feed de Ocorrências / Linha do Tempo com Ações Imediatas */}
       <DailyFeed feed={data.feed} />
 
-      {/* 4. Pílula de Humor & Sabedoria Ácida do Investigador */}
-      <CreditorWisdom initialWisdom={initialWisdom} />
+      {/* 4. Pílula de Humor & Sabedoria Ácida do Tubarão */}
+      <CreditorWisdom initialWisdom={wisdom} />
     </div>
   )
 }

@@ -60,7 +60,7 @@ export function verifyMercadoPagoSignature(headers: Headers, rawUrl: string): Ve
   let remoteBuf: Buffer;
   try {
     remoteBuf = Buffer.from(v1, 'hex');
-  } catch (e) {
+  } catch {
     return { ok: false, status: 400, error: 'Hash remoto inválido' };
   }
 
