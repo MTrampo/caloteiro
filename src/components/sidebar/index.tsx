@@ -40,7 +40,7 @@ const navigation: NavRoot = {
         },
         {
           title: "Devedores",
-          url: "/painel/dividas/devedores",
+          url: "/painel/devedores",
           icon: <FaUsers className="size-3.5" />,
         },
       ],
@@ -58,7 +58,11 @@ const navigation: NavRoot = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  user?: import("./nav-user").NavUserData
+}
+
+export function AppSidebar({ user, ...props }: AppSidebarProps) {
   return (
     <Sidebar aria-label="Menu Principal" collapsible="icon" className="border-r border-sidebar-border bg-sidebar" {...props}>
       <SidebarHeader className="h-14 border-b border-sidebar-border px-3.5 justify-center">
@@ -70,7 +74,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-slate-800/80 p-2">
-        <NavUser />
+        <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
   )

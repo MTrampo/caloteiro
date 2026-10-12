@@ -1,6 +1,7 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { getCurrentUserSessionProfileApi } from "@/server/account/service/auth.api"
 import type { Metadata } from "next"
 
 export const dynamic = "force-dynamic"
@@ -17,11 +18,23 @@ export const metadata: Metadata = {
   },
 }
 
-export default function PainelLayout({
+export default async function PainelLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const { user, profile, planName } = await getCurrentUserSessionProfileApi()
+
+  const sidebarUserData = user
+    ? {
+        name: profile?.name || (user.user_metadata?.name as string | undefined) || "Tubarão",
+        nickname: profile?.nickname || (user.user_metadata?.nickname as string | undefined) || null,
+        email: user.email || "tubarao@caloteiro.app",
+        avatar: profile?.avatar_url || null,
+        plan: planName,
+      }
+    : undefined
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <TooltipProvider delay={0}>
@@ -33,7 +46,7 @@ export default function PainelLayout({
             } as React.CSSProperties
           }
         >
-          <AppSidebar />
+          <AppSidebar user={sidebarUserData} />
           <SidebarInset className="min-h-screen flex flex-col bg-background">
             {children}
           </SidebarInset>

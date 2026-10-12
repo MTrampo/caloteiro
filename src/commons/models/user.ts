@@ -29,6 +29,21 @@ export interface Profile {
   updated_at?: string | null;
 }
 
+/**
+ * Perfil higienizado e formatado para a UI (Nav, Configurações, Conta)
+ */
+export interface ProfileFormatted {
+  id: string;
+  email: string;
+  name: string;
+  nickname: string | null;
+  displayName: string; // Apelido se existir, senão primeiro nome, senão "Tubarão"
+  avatarUrl: string | null;
+  phone: string | null;
+  planName?: string;
+  planSlug?: string;
+}
+
 export interface CreditorSettings {
   id: string;
   user_id: string;

@@ -55,6 +55,8 @@ export interface SubscriptionPayloadCookie {
   currentPeriodEnd?: string | null;
   userId?: string | null;
   planSlug?: string | null;
+  planName?: string | null;
+  permissions?: UserPermissions;
 }
 
 export interface UserPermissions {
@@ -67,6 +69,28 @@ export interface UserPermissions {
   canAttachReceipts: boolean;
   isFreePlan: boolean;
   isSubscriptionActive: boolean;
+}
+
+/**
+ * Payload para solicitação de troca de plano (Upgrade ou Downgrade)
+ */
+export interface ChangeSubscriptionPlanPayload {
+  userId: string;
+  userEmail: string;
+  targetPlanId: string;
+}
+
+/**
+ * Resultado da operação de troca de plano
+ */
+export interface PlanChangeResult {
+  isUpgrade: boolean;
+  previousPlanName: string;
+  newPlanName: string;
+  newPrice: number;
+  effectiveNextBilling: boolean;
+  isFreePlan: boolean;
+  initPoint?: string | null;
 }
 
 /**

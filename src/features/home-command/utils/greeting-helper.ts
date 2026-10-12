@@ -6,14 +6,14 @@ const OVERDUE_PUNCHLINES = [
   "Dia de teste de paciência: {overdue} devedores já fingiram demência. Hora de mostrar os dentes e mandar a cobrança matinal.",
   "O silêncio do caloteiro é ensurdecedor. Não deixe eles esquecerem que tubarão não dorme de barriga vazia.",
   "Cheiro de calote na água: {overdue} parcelas atrasadas. Nadou, nadou e morreu na praia do 'te pago amanhã'.",
-  "Tubarão paciente vira comida de peixe pequeno. Tem {critical} figurinhas achando que seu dinheiro foi doação.",
+  "Tubarão paciente vira comida de peixe pequeno. Tem {critical} devedores achando que seu dinheiro foi doação.",
   "A barbatana já cortou a superfície: {overdue} promessas furadas. Hora de cobrar antes que o devedor troque de número.",
   "O Pix não cai do céu e o caloteiro não paga por telepatia. Mande o recado certeiro e recupere o que é seu.",
 ]
 
 const DUE_SOON_PUNCHLINES = [
   "Atenção redobrada hoje: {dueSoon} cobranças vencem nas próximas horas. Fique com o app do banco engatilhado.",
-  "Dia de teste de caráter: {dueSoon} figurinhas prometeram pagar hoje. Vamos ver se o Pix cai ou se inventam um velório do periquito.",
+  "Dia de teste de caráter: {dueSoon} caloteiros prometeram pagar hoje. Vamos ver se o Pix cai ou se inventam um velório do periquito.",
   "Cobranças na boca do gol. Tubarão na espreita: fique de olho no extrato antes de fechar o expediente.",
   "Vigilância ativa: tem promessa vencendo hoje. Mantenha a chave Pix copiada no bolso.",
   "A maré está subindo: {dueSoon} promessas prestes a vencer. Hora de circular o barco e lembrar quem é o dono da grana.",

@@ -96,7 +96,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <div className="font-heading text-2xl md:text-3xl font-extrabold text-rose-400">
-                2 figurinhas
+                2 caloteiros
               </div>
               <p className="text-xs text-slate-400 mt-1 flex items-center gap-1 font-mono">
                 <Clock className="size-3 text-rose-500" /> Maior atraso: 18 dias

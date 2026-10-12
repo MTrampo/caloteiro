@@ -25,25 +25,38 @@ import { FaCreditCard, FaRightFromBracket, FaUser } from "react-icons/fa6"
 import { ChevronsUpDown } from "lucide-react"
 import Link from "next/link"
 import { signOutAction } from "@/actions/auth"
+import { formatProperName, getNameInitials } from "@/commons/utils/format"
+
+export interface NavUserData {
+  name: string
+  nickname?: string | null
+  email: string
+  avatar?: string | null
+  plan?: string
+}
 
 export function NavUser({
   user = {
     name: "Tubarão",
+    nickname: null,
     email: "tubarao@caloteiro.app",
     avatar: "",
     plan: "Tubarão Lixa",
   },
 }: {
-  user?: {
-    name: string
-    email: string
-    avatar?: string
-    plan?: string
-  }
+  user?: NavUserData
 }) {
   const { isMobile } = useSidebar()
   const router = useRouter()
   const [isPending, startTransition] = React.useTransition()
+
+  // Formatação segura de nomes
+  const formattedNickname = user.nickname ? formatProperName(user.nickname) : null
+  const formattedFullName = user.name ? formatProperName(user.name) : "Tubarão"
+
+  // Dá preferência ao apelido/vulgo; se não tiver, usa o nome formatado
+  const displayName = formattedNickname || formattedFullName
+  const initials = getNameInitials(displayName, "TB")
 
   const handleSignOut = () => {
     startTransition(async () => {
@@ -65,17 +78,21 @@ export function NavUser({
               />
             }
           >
-            <Avatar className="size-8 rounded-lg">
-              <AvatarImage src={user.avatar} alt={user.name} />
+            <Avatar className="size-8 rounded-lg shrink-0">
+              <AvatarImage src={user.avatar || undefined} alt={displayName} />
               <AvatarFallback className="rounded-lg bg-zinc-800 border border-zinc-700/80 text-zinc-100 font-bold font-mono text-xs">
-                INV
+                {initials}
               </AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold text-white">{user.name}</span>
-              <span className="truncate text-xs text-muted-foreground">{user.plan}</span>
+            <div className="grid flex-1 min-w-0 text-left text-sm leading-tight">
+              <span className="truncate font-semibold text-white" title={displayName}>
+                {displayName}
+              </span>
+              <span className="truncate text-xs text-muted-foreground font-mono" title={user.plan}>
+                {user.plan || "Tubarão Lixa"}
+              </span>
             </div>
-            <ChevronsUpDown className="ml-auto size-3.5 text-muted-foreground" />
+            <ChevronsUpDown className="ml-auto size-3.5 shrink-0 text-muted-foreground" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="min-w-56 rounded-lg bg-zinc-900 border-zinc-800 text-zinc-200"
@@ -84,15 +101,19 @@ export function NavUser({
             sideOffset={4}
           >
             <div className="flex items-center gap-2 px-2 py-2 text-left text-sm">
-              <Avatar className="size-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
+              <Avatar className="size-8 rounded-lg shrink-0">
+                <AvatarImage src={user.avatar || undefined} alt={displayName} />
                 <AvatarFallback className="rounded-lg bg-zinc-800 border border-zinc-700/80 text-zinc-100 font-bold font-mono text-xs">
-                  CI
+                  {initials}
                 </AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold text-white">{user.name}</span>
-                <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+              <div className="grid flex-1 min-w-0 text-left text-sm leading-tight">
+                <span className="truncate font-semibold text-white" title={displayName}>
+                  {displayName}
+                </span>
+                <span className="truncate text-xs text-muted-foreground font-mono" title={user.email}>
+                  {user.email}
+                </span>
               </div>
             </div>
             <DropdownMenuSeparator className="bg-zinc-800" />

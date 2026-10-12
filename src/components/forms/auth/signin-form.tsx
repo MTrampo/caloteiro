@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { signInSchema } from "@/commons/validations/user";
 import type { UserSignInFormInputs, SendEmailFormInputs } from "@/commons/models/user";
 import { FaArrowRight, FaLock, FaEnvelope } from "react-icons/fa6";
@@ -41,10 +42,10 @@ export function SignInForm({ signInUser, onForgotPasswordClick }: SignInFormProp
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {/* Campo E-mail */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-mono uppercase tracking-wider text-zinc-300 flex items-center justify-between">
-          <span>E-mail</span>
-        </label>
+      <Field>
+        <FieldLabel>
+          E-mail
+        </FieldLabel>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
             <FaEnvelope className="size-3.5" />
@@ -58,17 +59,15 @@ export function SignInForm({ signInUser, onForgotPasswordClick }: SignInFormProp
             {...register("email")}
           />
         </div>
-        {errors.email && (
-          <p className="text-xs text-rose-400 font-mono mt-1">{errors.email.message}</p>
-        )}
-      </div>
+        <FieldError errors={errors.email ? [errors.email] : undefined} />
+      </Field>
 
       {/* Campo Senha */}
-      <div className="space-y-1.5">
+      <Field>
         <div className="flex items-center justify-between">
-          <label className="text-xs font-mono uppercase tracking-wider text-zinc-300">
+          <FieldLabel>
             Senha
-          </label>
+          </FieldLabel>
           {onForgotPasswordClick && (
             <button
               type="button"
@@ -92,10 +91,8 @@ export function SignInForm({ signInUser, onForgotPasswordClick }: SignInFormProp
             {...register("password")}
           />
         </div>
-        {errors.password && (
-          <p className="text-xs text-rose-400 font-mono mt-1">{errors.password.message}</p>
-        )}
-      </div>
+        <FieldError errors={errors.password ? [errors.password] : undefined} />
+      </Field>
 
       {/* Botão Entrar */}
       <Button

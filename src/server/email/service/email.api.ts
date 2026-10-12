@@ -141,3 +141,37 @@ export async function sendCancellationEmailApi(
     return { success: false, error: error instanceof Error ? error.message : String(error) }
   }
 }
+
+import { renderPlanChangeHtml, PlanChangeEmailData } from "../templates"
+
+/**
+ * Envia e-mail de Confirmação de Mudança de Plano (Upgrade ou Downgrade)
+ */
+export async function sendPlanChangeEmailApi(
+  toEmail: string,
+  data: PlanChangeEmailData
+): Promise<SendEmailResponse> {
+  try {
+    const { subject, html } = renderPlanChangeHtml(data)
+    console.info(`📧 [EMAIL_SERVICE:PlanChange] Enviando e-mail de mudança de plano para: ${toEmail}`)
+
+    const response = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: [toEmail],
+      subject,
+      html,
+    })
+
+    if (response.error) {
+      console.error(`❌ [EMAIL_SERVICE:PlanChange] Erro ao enviar pelo Resend:`, response.error)
+      return { success: false, error: response.error.message }
+    }
+
+    console.info(`✅ [EMAIL_SERVICE:PlanChange] E-mail enviado com sucesso | ID: ${response.data?.id}`)
+    return { success: true, id: response.data?.id }
+  } catch (error) {
+    console.error(`❌ [EMAIL_SERVICE:PlanChange] Erro inesperado:`, error)
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
+  }
+}
+

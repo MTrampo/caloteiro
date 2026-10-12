@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import {
   InputOTP,
   InputOTPGroup,
@@ -100,10 +101,10 @@ export function ResetPasswordForm({
       </div>
 
       {/* Campo Nova Senha */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-mono uppercase tracking-wider text-zinc-300">
+      <Field>
+        <FieldLabel>
           Nova Senha
-        </label>
+        </FieldLabel>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
             <FaLock className="size-3.5" />
@@ -120,16 +121,14 @@ export function ResetPasswordForm({
             }}
           />
         </div>
-        {errors.password && (
-          <p className="text-xs text-rose-400 font-mono mt-1">{errors.password.message}</p>
-        )}
-      </div>
+        <FieldError errors={errors.password ? [errors.password] : undefined} />
+      </Field>
 
       {/* Campo Confirmar Nova Senha */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-mono uppercase tracking-wider text-zinc-300">
+      <Field>
+        <FieldLabel>
           Confirmar Nova Senha
-        </label>
+        </FieldLabel>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
             <FaShieldHalved className="size-3.5" />
@@ -142,10 +141,8 @@ export function ResetPasswordForm({
             {...register("confirmPassword")}
           />
         </div>
-        {errors.confirmPassword && (
-          <p className="text-xs text-rose-400 font-mono mt-1">{errors.confirmPassword.message}</p>
-        )}
-      </div>
+        <FieldError errors={errors.confirmPassword ? [errors.confirmPassword] : undefined} />
+      </Field>
 
       <Button
         type="submit"

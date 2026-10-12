@@ -1,176 +1,223 @@
 "use client"
 
 import * as React from "react"
-import { Debtor, DebtorStatus } from "./types"
+import Link from "next/link"
+import { FaMagnifyingGlass, FaUserPlus, FaRotateRight } from "react-icons/fa6"
 import { DebtorCard } from "./components/debtor-card"
-import { NewDebtorSheet } from "./components/new-debtor-sheet"
-import { FaMagnifyingGlass } from "react-icons/fa6"
+import { DebtorCardSkeleton } from "./components/debtor-card-skeleton"
+import { getDebtorsAction } from "@/actions/debtors"
+import type { DebtorItemFormatted } from "./types"
 
-const initialDebtors: Debtor[] = [
-  {
-    id: "d-1",
-    name: "Marcio Ramos",
-    nickname: "Marcio da Oficina",
-    phone: "(11) 98765-4321",
-    relationship: "Amigo de Infância",
-    riskLevel: "high",
-    status: "atraso_leve",
-    activeDebtsCount: 1,
-    paidDebtsCount: 2,
-    pixKey: "11987654321",
-    classicExcuses: "Falou que o banco bloqueou o aplicativo dele até segunda",
-  },
-  {
-    id: "d-2",
-    name: "Cleiton Lopes",
-    nickname: "Cunhado",
-    phone: "(11) 99888-7766",
-    relationship: "Parente",
-    riskLevel: "extreme",
-    status: "critico",
-    activeDebtsCount: 2,
-    paidDebtsCount: 0,
-    pixKey: "11998887766",
-    classicExcuses: "Disse que o vale ia cair às 16h mas o chefe viajou",
-  },
-  {
-    id: "d-3",
-    name: "Ricardo Alvarenga",
-    nickname: "Ricardinho do Futebol",
-    phone: "(11) 97777-6655",
-    relationship: "Colega",
-    riskLevel: "medium",
-    status: "em_dia",
-    activeDebtsCount: 1,
-    paidDebtsCount: 4,
-    pixKey: "11977776655",
-  },
-  {
-    id: "d-4",
-    name: "Beto Silveira",
-    nickname: "Beto Churrasqueiro",
-    phone: "(11) 96666-5544",
-    relationship: "Amigo",
-    riskLevel: "low",
-    status: "em_dia",
-    activeDebtsCount: 0,
-    paidDebtsCount: 6,
-    pixKey: "11966665544",
-  },
-]
+interface DebtorsFeatureProps {
+  initialDebtors?: DebtorItemFormatted[]
+  initialHasMore?: boolean
+  initialTotalCount?: number
+}
 
-export function DebtorsFeature() {
-  const [debtors, setDebtors] = React.useState<Debtor[]>(initialDebtors)
+const ITEMS_PER_PAGE = 12
+
+export function DebtorsFeature({
+  initialDebtors = [],
+  initialHasMore = false,
+  initialTotalCount = 0,
+}: DebtorsFeatureProps) {
+  const [debtors, setDebtors] = React.useState<DebtorItemFormatted[]>(initialDebtors)
   const [searchTerm, setSearchTerm] = React.useState("")
-  const [statusFilter, setStatusFilter] = React.useState<DebtorStatus | "all">("all")
+  const [page, setPage] = React.useState(1)
+  const [hasMore, setHasMore] = React.useState(initialHasMore)
+  const [totalCount, setTotalCount] = React.useState(initialTotalCount)
+  const [isLoadingMore, setIsLoadingMore] = React.useState(false)
+  const [isSearching, setIsSearching] = React.useState(false)
 
-  const handleAddDebtor = (newDebtor: Debtor) => {
-    setDebtors((prev) => [newDebtor, ...prev])
-  }
+  // Referência para o sentinela do infinite scroll
+  const observerTarget = React.useRef<HTMLDivElement | null>(null)
+  const isMountedRef = React.useRef(false)
 
-  const filteredDebtors = React.useMemo(() => {
-    return debtors.filter((d) => {
-      const matchSearch =
-        d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (d.nickname && d.nickname.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        d.phone.includes(searchTerm)
+  // Busca reativa com debounce
+  React.useEffect(() => {
+    if (!isMountedRef.current) {
+      isMountedRef.current = true
+      return
+    }
 
-      const matchStatus = statusFilter === "all" || d.status === statusFilter
+    const timer = setTimeout(async () => {
+      setIsSearching(true)
+      const res = await getDebtorsAction({
+        page: 1,
+        limit: ITEMS_PER_PAGE,
+        search: searchTerm,
+      })
 
-      return matchSearch && matchStatus
+      if (res.success && res.data) {
+        setDebtors(res.data.items)
+        setHasMore(res.data.hasMore)
+        setTotalCount(res.data.totalCount)
+        setPage(1)
+      }
+      setIsSearching(false)
+    }, 350)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  // Infinite Scroll: carregar próxima página ao atingir o final da tela
+  const loadMoreDebtors = React.useCallback(async () => {
+    if (isLoadingMore || !hasMore || isSearching) return
+
+    setIsLoadingMore(true)
+    const nextPage = page + 1
+
+    const res = await getDebtorsAction({
+      page: nextPage,
+      limit: ITEMS_PER_PAGE,
+      search: searchTerm,
     })
-  }, [debtors, searchTerm, statusFilter])
+
+    const data = res.data
+    if (res.success && data) {
+      setDebtors((prev) => [...prev, ...data.items])
+      setHasMore(data.hasMore)
+      setTotalCount(data.totalCount)
+      setPage(nextPage)
+    }
+
+    setIsLoadingMore(false)
+  }, [page, hasMore, isLoadingMore, isSearching, searchTerm])
+
+  // Observador de interseção do sentinela
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore && !isLoadingMore && !isSearching) {
+          loadMoreDebtors()
+        }
+      },
+      { threshold: 0.1, rootMargin: "100px" }
+    )
+
+    const currentTarget = observerTarget.current
+    if (currentTarget) {
+      observer.observe(currentTarget)
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget)
+      }
+    }
+  }, [loadMoreDebtors, hasMore, isLoadingMore, isSearching])
 
   return (
     <div className="flex-1 p-4 sm:p-6 space-y-6 w-full">
-      {/* Cabeçalho da Lista de Devedores */}
+      {/* Cabeçalho da Lista de Devedores (Solto, sem card, sem ícones no título h2) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="space-y-1">
           <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white">
-            Devedores &amp; Suspeitos
+            Devedores
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 font-mono">
-            Dossiê completo, contatos e histórico de quem pegou seu dinheiro.
+            Registro e rastreio de quem pegou seu dinheiro emprestado e jurou que pagava na sexta-feira.
           </p>
         </div>
 
-        <NewDebtorSheet onAddDebtor={handleAddDebtor} />
+        {/* Botão Cadastrar Devedor Padronizado (Branco) */}
+        <Link
+          href="/painel/devedores/novo"
+          className="inline-flex items-center justify-center h-9 px-4 text-xs font-mono font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl shadow-xs gap-2 transition-all shrink-0 cursor-pointer"
+        >
+          <FaUserPlus className="size-3.5" />
+          <span>Cadastrar Devedor</span>
+        </Link>
       </div>
 
-      {/* Barra de Filtros e Busca */}
+      {/* Barra de Busca (Sem Tabs obsoletas) */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Campo de Busca */}
         <div className="relative flex-1 max-w-md">
-          <FaMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-400" />
+          <FaMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-500" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por nome, apelido ou WhatsApp..."
+            placeholder="Buscar por nome, apelido, telefone ou CPF..."
             className="w-full bg-card border border-border rounded-xl pl-9 pr-4 py-2 text-xs font-mono text-white placeholder:text-zinc-500 focus:outline-hidden focus:border-zinc-700 shadow-xs"
           />
         </div>
 
-        {/* Filtros de Status */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          <button
-            onClick={() => setStatusFilter("all")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-colors ${
-              statusFilter === "all"
-                ? "bg-zinc-800 text-white border border-zinc-700"
-                : "text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            Todos ({debtors.length})
-          </button>
-          <button
-            onClick={() => setStatusFilter("em_dia")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-colors ${
-              statusFilter === "em_dia"
-                ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                : "text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            Em Dia
-          </button>
-          <button
-            onClick={() => setStatusFilter("atraso_leve")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-colors ${
-              statusFilter === "atraso_leve"
-                ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                : "text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            Atrasados
-          </button>
-          <button
-            onClick={() => setStatusFilter("critico")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-colors ${
-              statusFilter === "critico"
-                ? "bg-rose-500/15 text-rose-400 border border-rose-500/30"
-                : "text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            Sumidos
-          </button>
+        {/* Contador de Devedores */}
+        <div className="text-xs font-mono text-zinc-400 shrink-0">
+          <span>{totalCount} {totalCount === 1 ? "devedor cadastrado" : "devedores cadastrados"}</span>
         </div>
       </div>
 
-      {/* Grid de Cards de Devedores */}
-      {filteredDebtors.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredDebtors.map((debtor) => (
-            <DebtorCard key={debtor.id} debtor={debtor} />
+      {/* Estado de Carregamento da Busca com Skeletons */}
+      {isSearching ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <DebtorCardSkeleton key={`searching-skeleton-${idx}`} />
           ))}
         </div>
+      ) : debtors.length > 0 ? (
+        <>
+          {/* Grid Responsivo de Cards de Devedores */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {debtors.map((debtor) => (
+              <DebtorCard key={debtor.id} debtor={debtor} />
+            ))}
+
+            {/* Skeletons adicionais durante o Infinite Scroll */}
+            {isLoadingMore && (
+              <>
+                <DebtorCardSkeleton />
+                <DebtorCardSkeleton />
+                <DebtorCardSkeleton />
+              </>
+            )}
+          </div>
+
+          {/* Elemento Sentinela do Infinite Scroll */}
+          <div ref={observerTarget} className="h-6 w-full" />
+        </>
+      ) : searchTerm.trim() ? (
+        /* Fallback de Busca Vazia (Solto, sem card, centralizado) */
+        <div className="py-16 sm:py-24 text-center space-y-4 max-w-md mx-auto">
+          <div className="space-y-1.5">
+            <h3 className="font-heading text-base font-bold text-white">
+              Nenhum devedor encontrado para &ldquo;{searchTerm}&rdquo;
+            </h3>
+            <p className="text-xs sm:text-sm font-mono text-zinc-400">
+              O caloteiro conseguiu escapar da busca ou você digitou o nome errado?
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSearchTerm("")}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-zinc-800 bg-zinc-900 text-xs font-mono text-zinc-300 hover:text-white hover:bg-zinc-800 cursor-pointer transition-colors"
+          >
+            <FaRotateRight className="size-3" />
+            <span>Limpar Busca</span>
+          </button>
+        </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-border bg-card/40 p-12 text-center space-y-3">
-          <p className="text-sm font-mono text-zinc-400">
-            Nenhuma figurinha encontrada para os filtros atuais.
-          </p>
-          <p className="text-xs font-mono text-zinc-500">
-            Cadastre um novo devedor pelo botão acima ou limpe o termo de busca.
-          </p>
+        /* Empty State Principal do Tanque (Solto, sem card, centralizado) */
+        <div className="py-16 sm:py-24 text-center space-y-5 max-w-md mx-auto">
+          <div className="space-y-2">
+            <h3 className="font-heading text-lg font-bold text-white">
+              Nenhum caloteiro fichado no tanque
+            </h3>
+            <p className="text-xs sm:text-sm font-mono text-zinc-400 leading-relaxed">
+              Ou você é abençoado, ou finalmente aprendeu a dizer &ldquo;não&rdquo;. Se alguém te pediu um Pix emprestado hoje, cadastre agora antes que suma no mundo.
+            </p>
+          </div>
+
+          <div className="pt-2">
+            <Link
+              href="/painel/devedores/novo"
+              className="inline-flex items-center justify-center h-10 px-5 text-xs font-mono font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl shadow-xs gap-2 transition-all cursor-pointer"
+            >
+              <FaUserPlus className="size-3.5" />
+              <span>Cadastrar Primeiro Devedor</span>
+            </Link>
+          </div>
         </div>
       )}
     </div>

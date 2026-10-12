@@ -10,15 +10,25 @@ import {
   getPlanByIdSupabase,
   hasActiveSubscriptionHistorySupabase,
 } from "../repository/subscription.supabase";
-import { createPreApprovalSubscriptionApi } from "@/server/payment/service/payment.api";
+import {
+  createPreApprovalSubscriptionApi,
+  updatePreApprovalPlanOrPriceApi,
+  cancelPreApprovalApi,
+} from "@/server/payment/service/payment.api";
 import { ApiResponse } from "@/commons/lib/http/responses";
-import { setCookieSubscription } from "@/commons/lib/auth/subscription";
+import {
+  setCookieSubscription,
+  getCookieSubscriptionPayload,
+} from "@/commons/lib/auth/subscription";
+import { sendPlanChangeEmailApi } from "@/server/email/service/email.api";
 import type { ResponseProps } from "@/commons/models/api";
 import type {
   UserPermissions,
   CreateCheckoutSessionPayload,
   CheckoutSessionResult,
   CancelSubscriptionPayload,
+  ChangeSubscriptionPlanPayload,
+  PlanChangeResult,
 } from "@/commons/models/subscription";
 
 /**
@@ -29,6 +39,37 @@ export const getUserPermissionsApi = async (
 ): Promise<UserPermissions> => {
   return await getUserPermissionsByUserIdSupabase(userId);
 };
+
+/**
+ * Obtém permissões do cache seguro criptografado (HMAC-SHA256) ou do banco com regeneração de cookie
+ */
+export const getUserPermissionsOrCacheApi = async (
+  userId: string
+): Promise<UserPermissions> => {
+  const cookiePayload = await getCookieSubscriptionPayload(userId);
+  if (cookiePayload?.permissions) {
+    return cookiePayload.permissions;
+  }
+
+  const permissions = await getUserPermissionsByUserIdSupabase(userId);
+  const sub = await getSubscriptionByUserIdSupabase(userId);
+  if (sub) {
+    await setCookieSubscription(
+      {
+        subscriptionId: sub.id,
+        status: sub.mp_status,
+        currentPeriodEnd: sub.current_period_end,
+        userId,
+        planSlug: sub.plan?.slug || "tubarao-lixa",
+        planName: sub.plan?.name || "Tubarão Lixa",
+        permissions,
+      },
+      userId
+    );
+  }
+  return permissions;
+};
+
 
 /**
  * Retorna catálogo de planos ativos
@@ -220,6 +261,182 @@ export const createCheckoutSessionApi = async (
     data: {
       initPoint: mpResponse.data.initPoint,
       isFree: false,
+    },
+  });
+};
+
+/**
+ * Executa a mudança de plano (Upgrade ou Downgrade) com sincronização no Mercado Pago
+ * e envio de e-mail informativo (regra: cobrança do novo valor somente na próxima fatura).
+ */
+export const changeSubscriptionPlanApi = async (
+  payload: ChangeSubscriptionPlanPayload
+): Promise<ResponseProps<PlanChangeResult>> => {
+  const { userId, userEmail, targetPlanId } = payload;
+
+  const targetPlan = await getPlanByIdSupabase(targetPlanId);
+  if (!targetPlan) {
+    return ApiResponse.NotFound({
+      message: "Plano selecionado inválido ou indisponível.",
+    });
+  }
+
+  const currentSub = await getSubscriptionByUserIdSupabase(userId);
+  const currentPlan = currentSub?.plan;
+  const currentPrice = Number(currentSub?.base_value ?? currentPlan?.price ?? 0);
+  const newPrice = Number(targetPlan.price ?? 0);
+  const isUpgrade = newPrice > currentPrice;
+  const isFreePlan = targetPlan.slug === "tubarao-lixa" || newPrice === 0;
+
+  console.info(
+    `🦈 [SUBSCRIPTION:changePlan] ${isUpgrade ? "UPGRADE" : "DOWNGRADE"} | userId: ${userId} | de: ${
+      currentPlan?.name || "Sem plano"
+    } (${currentPrice}) -> para: ${targetPlan.name} (${newPrice})`
+  );
+
+  // Cenário 1: Mudança para plano gratuito (Downgrade para Tubarão Lixa)
+  if (isFreePlan) {
+    if (currentSub?.mp_subscription_id) {
+      await cancelPreApprovalApi(currentSub.mp_subscription_id);
+    }
+
+    if (currentSub) {
+      await updateSubscriptionByIdSupabase(currentSub.id, {
+        plan_id: targetPlan.id,
+        base_value: 0,
+        mp_status: "authorized",
+      });
+    } else {
+      await upsertSubscriptionSupabase({
+        user_id: userId,
+        plan_id: targetPlan.id,
+        base_value: 0,
+        mp_status: "authorized",
+        mp_payer_email: userEmail,
+      });
+    }
+
+    const newPermissions = await getUserPermissionsByUserIdSupabase(userId);
+    await setCookieSubscription(
+      {
+        subscriptionId: currentSub?.id,
+        status: "authorized",
+        currentPeriodEnd: null,
+        userId,
+        planSlug: targetPlan.slug,
+        planName: targetPlan.name,
+        permissions: newPermissions,
+      },
+      userId
+    );
+
+    // Dispara e-mail de alteração para plano gratuito
+    await sendPlanChangeEmailApi(userEmail, {
+      previousPlanName: currentPlan?.name || "Plano Anterior",
+      newPlanName: targetPlan.name,
+      isUpgrade: false,
+      newPrice: 0,
+      maxDebtors: targetPlan.config_plan?.max_debtors ?? 2,
+    });
+
+    return ApiResponse.Ok({
+      message: "Plano alterado para Tubarão Lixa com sucesso!",
+      data: {
+        isUpgrade: false,
+        previousPlanName: currentPlan?.name || "Plano Anterior",
+        newPlanName: targetPlan.name,
+        newPrice: 0,
+        effectiveNextBilling: false,
+        isFreePlan: true,
+        initPoint: null,
+      },
+    });
+  }
+
+  // Cenário 2: Mudança para plano pago
+  // 2.A: Já possui assinatura no Mercado Pago -> atualiza via PUT /preapproval/{id}
+  if (currentSub?.mp_subscription_id) {
+    const mpUpdateRes = await updatePreApprovalPlanOrPriceApi(
+      currentSub.mp_subscription_id,
+      newPrice,
+      targetPlan.name
+    );
+
+    if (mpUpdateRes.status !== 200) {
+      return ApiResponse.InternalError({
+        message: "Não foi possível atualizar o plano no Mercado Pago.",
+        error: mpUpdateRes.error,
+      });
+    }
+
+    await updateSubscriptionByIdSupabase(currentSub.id, {
+      plan_id: targetPlan.id,
+      base_value: newPrice,
+    });
+
+    const newPermissions = await getUserPermissionsByUserIdSupabase(userId);
+    await setCookieSubscription(
+      {
+        subscriptionId: currentSub.id,
+        status: currentSub.mp_status,
+        currentPeriodEnd: currentSub.current_period_end,
+        userId,
+        planSlug: targetPlan.slug,
+        planName: targetPlan.name,
+        permissions: newPermissions,
+      },
+      userId
+    );
+
+    // Dispara e-mail de alteração com aviso de cobrança na próxima fatura
+    await sendPlanChangeEmailApi(userEmail, {
+      previousPlanName: currentPlan?.name || "Plano Anterior",
+      newPlanName: targetPlan.name,
+      isUpgrade,
+      newPrice,
+      maxDebtors: targetPlan.config_plan?.max_debtors,
+    });
+
+    return ApiResponse.Ok({
+      message: isUpgrade
+        ? `Parabéns, Tubarão! Você subiu para o plano ${targetPlan.name}!`
+        : `Plano alterado para ${targetPlan.name}.`,
+      data: {
+        isUpgrade,
+        previousPlanName: currentPlan?.name || "Plano Anterior",
+        newPlanName: targetPlan.name,
+        newPrice,
+        effectiveNextBilling: true,
+        isFreePlan: false,
+        initPoint: null,
+      },
+    });
+  }
+
+  // 2.B: Não possuía assinatura ativa no MP -> precisa gerar novo checkout
+  const checkoutRes = await createCheckoutSessionApi({
+    userId,
+    userEmail,
+    planId: targetPlan.id,
+  });
+
+  if (checkoutRes.status !== 200 || !checkoutRes.data?.initPoint) {
+    return ApiResponse.InternalError({
+      message: "Falha ao iniciar checkout no Mercado Pago.",
+      error: checkoutRes.error,
+    });
+  }
+
+  return ApiResponse.Ok({
+    message: "Redirecionando para autorização no Mercado Pago...",
+    data: {
+      isUpgrade: true,
+      previousPlanName: currentPlan?.name || "Tubarão Lixa",
+      newPlanName: targetPlan.name,
+      newPrice,
+      effectiveNextBilling: false,
+      isFreePlan: false,
+      initPoint: checkoutRes.data.initPoint,
     },
   });
 };

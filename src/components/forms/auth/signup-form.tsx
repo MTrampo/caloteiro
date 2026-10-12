@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Field, FieldGroup, FieldLabel, FieldError } from "@/components/ui/field";
 import { signUpSchema } from "@/commons/validations/user";
 import type { UserSignUpFormInputs } from "@/commons/models/user";
 import { FaArrowRight, FaLock, FaEnvelope, FaUser, FaTag, FaEye, FaEyeSlash } from "react-icons/fa6";
@@ -43,12 +44,12 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {/* Grid Nome & Apelido */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <FieldGroup className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Campo Nome */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-mono uppercase tracking-wider text-zinc-300">
+        <Field>
+          <FieldLabel>
             Nome e Sobrenome
-          </label>
+          </FieldLabel>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
               <FaUser className="size-3.5" />
@@ -62,16 +63,14 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
               {...register("name")}
             />
           </div>
-          {errors.name && (
-            <p className="text-xs text-rose-400 font-mono mt-1">{errors.name.message}</p>
-          )}
-        </div>
+          <FieldError errors={errors.name ? [errors.name] : undefined} />
+        </Field>
 
         {/* Campo Apelido */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-mono uppercase tracking-wider text-zinc-300">
+        <Field>
+          <FieldLabel>
             Apelido / Vulgo
-          </label>
+          </FieldLabel>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
               <FaTag className="size-3.5" />
@@ -85,17 +84,15 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
               {...register("nickname")}
             />
           </div>
-          {errors.nickname && (
-            <p className="text-xs text-rose-400 font-mono mt-1">{errors.nickname.message}</p>
-          )}
-        </div>
-      </div>
+          <FieldError errors={errors.nickname ? [errors.nickname] : undefined} />
+        </Field>
+      </FieldGroup>
 
       {/* Campo E-mail */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-mono uppercase tracking-wider text-zinc-300">
+      <Field>
+        <FieldLabel>
           E-mail Principal
-        </label>
+        </FieldLabel>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
             <FaEnvelope className="size-3.5" />
@@ -109,16 +106,14 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
             {...register("email")}
           />
         </div>
-        {errors.email && (
-          <p className="text-xs text-rose-400 font-mono mt-1">{errors.email.message}</p>
-        )}
-      </div>
+        <FieldError errors={errors.email ? [errors.email] : undefined} />
+      </Field>
 
       {/* Campo Senha com Alternador de Visibilidade */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-mono uppercase tracking-wider text-zinc-300">
+      <Field>
+        <FieldLabel>
           Senha de Acesso
-        </label>
+        </FieldLabel>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
             <FaLock className="size-3.5" />
@@ -146,10 +141,8 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
             )}
           </button>
         </div>
-        {errors.password && (
-          <p className="text-xs text-rose-400 font-mono mt-1">{errors.password.message}</p>
-        )}
-      </div>
+        <FieldError errors={errors.password ? [errors.password] : undefined} />
+      </Field>
 
       {/* Checkbox de Aceite dos Termos e Políticas */}
       <div className="space-y-1 pt-1">

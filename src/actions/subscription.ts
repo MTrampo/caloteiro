@@ -4,13 +4,16 @@ import {
   getActivePlansApi,
   cancelSubscriptionApi,
   createCheckoutSessionApi,
+  changeSubscriptionPlanApi,
 } from "@/server/account/service/subscription.api";
 import { getUserLoggedApi } from "@/server/account/service/auth.api";
 import { HttpStatusEnum } from "@/commons/enums/http";
 import type {
   Plan,
   CheckoutSessionResult,
+  PlanChangeResult,
 } from "@/commons/models/subscription";
+
 
 export type ActionResponse<T> =
   | { success: true; data: T }
@@ -139,3 +142,57 @@ export async function cancelSubscriptionAction(
     };
   }
 }
+
+/**
+ * Altera o plano de assinatura do credor (Upgrade ou Downgrade)
+ */
+export async function changeSubscriptionPlanAction(
+  targetPlanId: string
+): Promise<ActionResponse<PlanChangeResult>> {
+  try {
+    const userResponse = await getUserLoggedApi();
+    if (
+      userResponse.status !== HttpStatusEnum.Ok ||
+      !userResponse.data?.user ||
+      !userResponse.data.user.email
+    ) {
+      return {
+        success: false,
+        error: "Acesso negado. Usuário não autenticado.",
+      };
+    }
+
+    const user = userResponse.data.user;
+    if (!user.email) {
+      return {
+        success: false,
+        error: "Acesso negado. Usuário sem e-mail cadastrado.",
+      };
+    }
+
+    const res = await changeSubscriptionPlanApi({
+      userId: user.id,
+      userEmail: user.email,
+      targetPlanId,
+    });
+
+    if (res.status !== HttpStatusEnum.Ok || !res.data) {
+      return {
+        success: false,
+        error: res.message || "Não foi possível alterar seu plano no momento.",
+      };
+    }
+
+    return {
+      success: true,
+      data: res.data,
+    };
+  } catch (err) {
+    console.error("[changeSubscriptionPlanAction] Erro inesperado:", err);
+    return {
+      success: false,
+      error: "Falha na comunicação ao alterar o plano.",
+    };
+  }
+}
+

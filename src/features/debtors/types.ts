@@ -1,20 +1,14 @@
-export type DebtorRiskLevel = "low" | "medium" | "high" | "extreme"
+export type {
+  DebtorItem,
+  DebtorItemFormatted,
+  CreateDebtorPayload,
+  UpdateDebtorPayload,
+  PaginatedDebtors,
+  PaginatedDebtorsFormatted,
+  CreateDebtorFormInputs,
+} from "@/commons/models/debtor";
 
-export type DebtorStatus = "em_dia" | "atraso_leve" | "critico"
-
-export type Debtor = {
-  id: string
-  name: string
-  phone: string // obrigatório (WhatsApp)
-  nickname?: string // ex: "Marcio da Oficina", "Cunhado"
-  riskLevel?: DebtorRiskLevel
-  relationship?: string // "Parente", "Amigo", "Colega", "Desconhecido"
-  cpf?: string
-  address?: string
-  pixKey?: string
-  status: DebtorStatus
-  activeDebtsCount: number
-  paidDebtsCount: number
-  classicExcuses?: string // anotação cômica sobre as desculpas
-}
-
+export {
+  DebtorRelationshipEnum,
+  DEBTOR_RELATIONSHIP_METADATA,
+} from "@/commons/models/debtor";

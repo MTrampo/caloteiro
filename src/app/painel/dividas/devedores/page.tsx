@@ -3,7 +3,7 @@ import { DebtorsFeature } from "@/features/debtors"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Devedores — Figurinhas & Suspeitos",
+  title: "Devedores — Caloteiro",
 }
 
 export default async function DevedoresPage() {

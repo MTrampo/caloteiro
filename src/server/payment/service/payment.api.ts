@@ -167,3 +167,65 @@ export const getAuthorizedPaymentApi = async (authorizedPaymentId: string) => {
     });
   }
 };
+
+/**
+ * Atualiza o valor e identificação da assinatura no Mercado Pago para faturas futuras
+ */
+export const updatePreApprovalPlanOrPriceApi = async (
+  preapprovalId: string,
+  newPrice: number,
+  planName: string
+) => {
+  try {
+    console.info(
+      `🌐 [PAYMENT:updatePreApproval] Atualizando valor da assinatura no MP | id: ${preapprovalId} | novoPreço: ${newPrice} | plano: ${planName}`
+    );
+    const response = await clientPreAproval.update({
+      id: preapprovalId,
+      body: {
+        auto_recurring: {
+          transaction_amount: newPrice,
+          currency_id: "BRL",
+        },
+        reason: planName,
+      },
+    });
+
+    return ApiResponse.Ok({
+      message: "Assinatura atualizada no Mercado Pago com sucesso",
+      data: response,
+    });
+  } catch (error) {
+    console.error("❌ [PAYMENT:updatePreApproval] Erro ao atualizar preapproval no MP:", error);
+    return ApiResponse.InternalError({
+      message: "Erro ao atualizar valor da assinatura no Mercado Pago",
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+/**
+ * Cancela a recorrência ativa de uma assinatura no Mercado Pago
+ */
+export const cancelPreApprovalApi = async (preapprovalId: string) => {
+  try {
+    console.info(`🌐 [PAYMENT:cancelPreApproval] Cancelando preapproval no MP | id: ${preapprovalId}`);
+    const response = await clientPreAproval.update({
+      id: preapprovalId,
+      body: {
+        status: "cancelled",
+      },
+    });
+
+    return ApiResponse.Ok({
+      message: "Assinatura cancelada no Mercado Pago com sucesso",
+      data: response,
+    });
+  } catch (error) {
+    console.error("❌ [PAYMENT:cancelPreApproval] Erro ao cancelar preapproval no MP:", error);
+    return ApiResponse.InternalError({
+      message: "Erro ao cancelar assinatura no Mercado Pago",
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};

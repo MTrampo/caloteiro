@@ -33,7 +33,7 @@ Traduzimos burocracia para a "linguagem do povo", dando personalidade e arrancan
 O assistente deve obrigatoriamente substituir termos genéricos e bancários pelos termos da nossa comunidade:
 
 *   **Usuário / Credor / Dono da Conta** ➔ Tubarão
-*   **Clientes / Devedores** ➔ Figurinhas / Devedores / Suspeitos / Presas
+*   **Clientes / Devedores** ➔ Devedores / Suspeitos / Presas / Caloteiros *(Proibido usar "figurinhas")*
 *   **Plataforma / Sistema** ➔ Central do Tubarão / O Tanque / O Cofre
 *   **Devedor em dia** ➔ Raro / Milagreiro
 *   **Devedor em atraso** ➔ Caloteiro em Treinamento / Sumido / Peixe Ensaboado
@@ -44,24 +44,27 @@ O assistente deve obrigatoriamente substituir termos genéricos e bancários pel
 
 ---
 
-## 4. Princípios de Redação de Interface
+## 4. Princípios de Redação e Layout de Interface
 
-### A. Feedbacks e Sucesso (Quando o dinheiro entra)
+### A. Botões de Ação Principais (CTAs) em Branco
+* Os botões de ação e cadastro devem ser invariavelmente padronizados na cor **branca** (`bg-white hover:bg-zinc-200 text-zinc-950 font-bold rounded-xl`).
+* As cores semânticas (verde, vermelho, amarelo) ficam reservadas exclusivamente para **feedbacks visuais e status** (confirmação/sucesso, perigo/apagar/excluir, alertas/atenção). Nunca use verde para botões comuns de ação.
+
+### B. Estados Vazios (Empty States) Limpos e Sem Pontilhado
+* **Proibição de Cards Pontilhados:** É estritamente proibido criar bordas pontilhadas (`border-dashed`) ou caixas de fundo mais claro (`bg-card/50`) para empty states.
+* O estado vazio deve ser solto diretamente no fluxo da página (`py-16 sm:py-24 text-center space-y-4 max-w-md mx-auto`), com o texto explicativo e o botão de ação centralizados de forma limpa e minimalista.
+
+### C. Feedbacks e Sucesso (Quando o dinheiro entra)
 Ao registrar um pagamento, o sistema celebra como uma vitória apoteótica do predador:
 *   *Exemplo de baixa de parcela:* "Milagre na praça! Caiu o Pix. Menos uma facada no seu peito."
 *   *Exemplo de quitação total:* "CANCELEM O VELÓRIO! Ele pagou tudo. Caso encerrado, o Tubarão venceu de novo!"
 
-### B. Alertas de Atraso e Estados Críticos
+### D. Alertas de Atraso e Estados Críticos
 O sistema não esconde o jogo; ele debocha da audácia do devedor e incentiva o Tubarão a agir:
 *   *Atraso leve (1 a 3 dias):* "Passou do prazo. O suspeito já fingiu demência ou você precisa mandar um 'bom dia, sumido'?"
 *   *Atraso grave (regra de quebra/judicial):* "ALERTA VERMELHO! Esse aqui já atingiu o limite da cara de pau. Hora de mostrar os dentes ou acionar o fórum."
 
-### C. Estados Vazios (Empty States)
-Se não há ninguém atrasado ou a lista está limpa, o tom é de surpresa desconfiada:
-*   *Exemplo de dashboard sem atrasos:* "Todo mundo pagou em dia? Estranho... confere o extrato pra ver se não foi ilusão."
-*   *Exemplo de lista sem devedores:* "Nenhum caloteiro fichado no tanque. Ou você é abençoado, ou finalmente aprendeu a dizer 'não'."
-
-### D. Onboarding e Boas-vindas
+### E. Onboarding e Boas-vindas
 *   *Texto base:* "Bem-vindo ao Caloteiro, Tubarão. O lugar onde a gente anota e rastreia cada centavo que prometeram devolver 'na próxima sexta'. Chega de bloco de notas: hora de colocar ordem nos seus devedores."
 
 ---

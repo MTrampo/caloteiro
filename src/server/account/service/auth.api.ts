@@ -25,6 +25,7 @@ import { HttpStatusEnum } from "@/commons/enums/http";
 import type { SubscriptionPayloadCookie } from "@/commons/models/subscription";
 import { clearCookieSubscription, setCookieSubscription } from "@/commons/lib/auth/subscription";
 import { isSubscriptionActive } from "@/commons/lib/http/security";
+import { formatProperName } from "@/commons/utils/format";
 
 export const signInUserApi = async (body: SignInRequestBody) => {
   const { data, error } = await signInWithEmail(body.email, body.password);
@@ -136,9 +137,9 @@ export const signUpUserApi = async (body: UserRequestBody) => {
 
   await createProfileSupabase({
     userId,
-    name: body.name,
+    name: formatProperName(body.name),
     email: body.email,
-    nickname: body.nickname,
+    nickname: body.nickname?.trim() ? formatProperName(body.nickname) : null,
   });
 
   return ApiResponse.Ok({
@@ -269,4 +270,34 @@ export const getUserLoggedApi = async () => {
     message: "Usuário obtido com sucesso.",
     data: data,
   });
+};
+
+/**
+ * Retorna os dados completos do usuário logado, incluindo perfil e assinatura/plano ativo
+ * para consumo limpo em componentes como NavUser e cabeçalhos.
+ */
+export const getCurrentUserSessionProfileApi = async () => {
+  const authResponse = await getUserLoggedApi();
+  const user = authResponse.data?.user;
+
+  if (!user) {
+    return {
+      user: null,
+      profile: null,
+      subscription: null,
+      planName: "Tubarão Lixa",
+    };
+  }
+
+  const [{ data: profile }, subscription] = await Promise.all([
+    getProfileByUserIdSupabase(user.id),
+    getSubscriptionByUserIdSupabase(user.id),
+  ]);
+
+  return {
+    user,
+    profile: profile || null,
+    subscription: subscription || null,
+    planName: subscription?.plan?.name || "Tubarão Lixa",
+  };
 };

@@ -9,6 +9,8 @@ import { getUserLoggedApi } from "@/server/account/service/auth.api"
 import { getProfileByUserIdSupabase } from "@/server/account/repository/auth.supabase"
 import type { Metadata } from "next"
 
+import { formatProperName } from "@/commons/utils/format"
+
 export const metadata: Metadata = {
   title: "Painel — Central de Comando",
 }
@@ -20,7 +22,8 @@ export default async function PainelPage() {
   let userName = "Tubarão"
   if (user) {
     const { data: profile } = await getProfileByUserIdSupabase(user.id)
-    userName = profile?.name || profile?.nickname || (user.user_metadata?.name as string | undefined) || "Tubarão"
+    const rawName = profile?.nickname || profile?.name || (user.user_metadata?.name as string | undefined) || "Tubarão"
+    userName = formatProperName(rawName) || "Tubarão"
   }
 
   // Gerado uma única vez no servidor para paridade absoluta entre SSR e Client

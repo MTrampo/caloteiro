@@ -18,7 +18,7 @@ export const SUMMARY_CARD_CONFIGS: Record<string, SummaryCardConfig> = {
     title: "Em Aberto",
     accent: "neutral",
     icon: FaUsers,
-    helpText: "Total de figurinhas com promessas e pendências na pista.",
+    helpText: "Total de devedores com promessas e pendências na pista.",
   },
   EM_DIA: {
     key: "em_dia",

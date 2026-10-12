@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cancelSubscriptionAction } from "@/actions/subscription";
 import type { Profile } from "@/commons/models/user";
-import type { Subscription } from "@/commons/models/subscription";
+import type { Subscription, Plan } from "@/commons/models/subscription";
+import { PlanChangeManager } from "@/features/subscription/components/plan-change-manager";
 import {
   FaUser,
   FaBolt,
@@ -19,12 +20,14 @@ import { Loader2 } from "lucide-react";
 interface AccountFeatureProps {
   profile: Profile | null;
   subscription: Subscription | null;
+  plans?: Plan[];
 }
 
-export function AccountFeature({ profile, subscription }: AccountFeatureProps) {
+export function AccountFeature({ profile, subscription, plans = [] }: AccountFeatureProps) {
   const [isCanceling, setIsCanceling] = React.useState(false);
   const [cancelModalOpen, setCancelModalOpen] = React.useState(false);
   const [cancelReason, setCancelReason] = React.useState("");
+  const [showPlanManager, setShowPlanManager] = React.useState(false);
 
   const planName = subscription?.plan?.name || "Nenhum plano ativo";
   const planPrice = subscription?.base_value ? Number(subscription.base_value).toFixed(2).replace(".", ",") : "0,00";
@@ -221,15 +224,38 @@ export function AccountFeature({ profile, subscription }: AccountFeatureProps) {
               </span>
             )}
 
-            <Link href="/assinatura?trocar=true">
-              <Button className="bg-emerald-600 hover:bg-emerald-500 text-white font-heading font-bold rounded-xl text-xs px-5 py-2.5 flex items-center gap-2 cursor-pointer shadow-sm">
-                <span>Mudar Arsenal de Cobrança</span>
-                <FaArrowRight className="size-3" />
-              </Button>
-            </Link>
+            <Button
+              type="button"
+              onClick={() => setShowPlanManager((prev) => !prev)}
+              className="bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl text-xs px-5 py-2.5 flex items-center gap-2 cursor-pointer shadow-xs transition-all"
+            >
+              <span>{showPlanManager ? "Ocultar Planos" : "Mudar Arsenal de Cobrança"}</span>
+              <FaArrowRight className="size-3" />
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* Seção de Planos Comerciais (Upgrade & Downgrade com Modal Comparativo de Impacto) */}
+      {(showPlanManager || plans.length > 0) && (
+        <div className="space-y-4 pt-4 border-t border-zinc-800">
+          <div className="space-y-1">
+            <h3 className="font-heading text-lg font-bold text-white">
+              Planos de Assinatura
+            </h3>
+            <p className="text-xs font-mono text-zinc-400">
+              Faça upgrade para caçar mais caloteiros ou ajuste sua mensalidade conforme a necessidade.
+            </p>
+          </div>
+
+          <PlanChangeManager
+            plans={plans}
+            currentPlanSlug={subscription?.plan?.slug || "tubarao-lixa"}
+            currentBaseValue={Number(subscription?.base_value || 0)}
+          />
+        </div>
+      )}
+
 
       {/* Modal de Cancelamento */}
       {cancelModalOpen && (

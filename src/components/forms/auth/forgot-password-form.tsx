@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { sendEmailSchema } from "@/commons/validations/user";
 import type {
   SendEmailFormInputs,
@@ -51,10 +52,10 @@ export function ForgotPasswordForm({
         </p>
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-xs font-mono uppercase tracking-wider text-zinc-300">
+      <Field>
+        <FieldLabel>
           E-mail Cadastrado
-        </label>
+        </FieldLabel>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
             <FaEnvelope className="size-3.5" />
@@ -68,10 +69,8 @@ export function ForgotPasswordForm({
             {...register("email")}
           />
         </div>
-        {errors.email && (
-          <p className="text-xs text-rose-400 font-mono mt-1">{errors.email.message}</p>
-        )}
-      </div>
+        <FieldError errors={errors.email ? [errors.email] : undefined} />
+      </Field>
 
       <Button
         type="submit"

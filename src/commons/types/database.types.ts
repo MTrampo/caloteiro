@@ -363,6 +363,65 @@ export type Database = {
           },
         ];
       };
+      debtors: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          nickname: string | null;
+          relationship: number;
+          document: string | null;
+          address: string | null;
+          phone: string;
+          pix_key: string | null;
+          pix_key_type: string | null;
+          notes: string | null;
+          is_archived: boolean;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          nickname?: string | null;
+          relationship?: number;
+          document?: string | null;
+          address?: string | null;
+          phone: string;
+          pix_key?: string | null;
+          pix_key_type?: string | null;
+          notes?: string | null;
+          is_archived?: boolean;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          nickname?: string | null;
+          relationship?: number;
+          document?: string | null;
+          address?: string | null;
+          phone?: string;
+          pix_key?: string | null;
+          pix_key_type?: string | null;
+          notes?: string | null;
+          is_archived?: boolean;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "debtors_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
