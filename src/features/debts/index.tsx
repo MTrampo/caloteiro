@@ -9,7 +9,10 @@ import { PriorityDebtorCard } from "./components/priority-debtor-card"
 import { PortfolioDistribution } from "./components/portfolio-distribution"
 import { DebtsEfficiency } from "./components/debts-efficiency"
 
+import { useRouter } from "next/navigation"
+
 export function DebtsFeature() {
+  const router = useRouter()
   const [period, setPeriod] = useState<FinancialPeriod>("month")
   const currentData = FINANCIAL_DATA_BY_PERIOD[period]
 
@@ -19,9 +22,7 @@ export function DebtsFeature() {
       <DebtsHeader
         period={period}
         onPeriodChange={setPeriod}
-        onNewDebtClick={() => {
-          alert("Em breve: modal de criação de nova dívida com parcelamento automático!")
-        }}
+        onNewDebtClick={() => router.push("/painel/dividas/nova")}
       />
 
       {/* 2. Grid dos 4 Cards Financeiros em R$ (A Receber, Já no Bolso, Travado, Prejuízo) */}

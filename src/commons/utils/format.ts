@@ -74,12 +74,47 @@ export function formatCurrency(valueInCents: number): string {
 
 export const formatCurrencyBRL = formatCurrency;
 
+/**
+ * Formata um valor numérico em reais (ex: 1200.50 -> R$ 1.200,50)
+ */
+export function formatBRL(amount: number): string {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(amount);
+}
+
+/**
+ * Formata datas garantindo que strings ISO YYYY-MM-DD não sofram desvio de fuso horário
+ */
 export function formatDate(dateString?: string | null): string {
   if (!dateString) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  }
   try {
     return new Intl.DateTimeFormat("pt-BR").format(new Date(dateString));
   } catch {
     return dateString;
+  }
+}
+
+/**
+ * Formata data e hora para extratos e histórico de auditoria
+ */
+export function formatDateTime(dateTimeString?: string | null): string {
+  if (!dateTimeString) return "";
+  try {
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(dateTimeString));
+  } catch {
+    return dateTimeString;
   }
 }
 

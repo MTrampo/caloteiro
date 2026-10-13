@@ -13,6 +13,8 @@ create table if not exists public.creditor_settings (
   template_friendly text,                -- Nível 1: Amigável
   template_acid text,                    -- Nível 2: Sarcástico
   template_critical text,                -- Nível 3: Quebra / Ação
+  default_interest_rate numeric(10,2) default 0,
+  default_interest_type text default 'none',
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

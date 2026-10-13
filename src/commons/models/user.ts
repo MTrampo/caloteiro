@@ -24,7 +24,7 @@ export interface Profile {
   email?: string | null;
   avatar_url?: string | null;
   phone?: string | null;
-  accepted_terms?: boolean;
+  accepted_terms?: boolean | null;
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -54,6 +54,8 @@ export interface CreditorSettings {
   template_friendly?: string | null;
   template_acid?: string | null;
   template_critical?: string | null;
+  default_interest_rate?: number | null;
+  default_interest_type?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
 }

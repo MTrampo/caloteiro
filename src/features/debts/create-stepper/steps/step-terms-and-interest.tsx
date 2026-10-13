@@ -1,0 +1,418 @@
+"use client";
+
+import * as React from "react";
+import { formatBRL } from "@/commons/utils/format";
+import {
+  DEBT_CATEGORY_LABELS,
+  INTEREST_TYPE_LABELS,
+  type DebtCategory,
+  type InterestType,
+} from "@/commons/models/debt";
+import type { UserPermissions } from "@/commons/models/subscription";
+import { calculateDebtTotals } from "../utils/debt-calculator";
+import {
+  FaArrowLeft,
+  FaArrowRight,
+  FaCalendarDays,
+  FaCoins,
+  FaPercent,
+  FaTriangleExclamation,
+  FaBolt,
+  FaTag,
+} from "react-icons/fa6";
+
+export interface DebtTermsFormData {
+  title: string;
+  category: DebtCategory;
+  original_amount: number;
+  interest_type: InterestType;
+  interest_rate: number;
+  installments_count: number;
+  loan_date: string;
+  first_due_date: string;
+  payment_method: string;
+  notes: string;
+}
+
+interface StepTermsAndInterestProps {
+  formData: DebtTermsFormData;
+  permissions: UserPermissions;
+  onChange: (updated: Partial<DebtTermsFormData>) => void;
+  onPrev: () => void;
+  onNext: () => void;
+}
+
+const QUICK_TITLES = [
+  "Empréstimo Pessoal",
+  "Ajuda Familiar",
+  "Conserto do Carro",
+  "Divisão de Conta",
+  "Fiado do Mês",
+  "Socorro Emergencial",
+];
+
+export function StepTermsAndInterest({
+  formData,
+  permissions,
+  onChange,
+  onPrev,
+  onNext,
+}: StepTermsAndInterestProps) {
+  // Limites de parcelas do plano
+  const maxInstallmentsAllowed = permissions.isFreePlan
+    ? 12
+    : permissions.maxDebtors !== null && permissions.maxDebtors <= 10
+    ? 36
+    : 120;
+
+  // Cálculo reativo em tempo real
+  const calculation = calculateDebtTotals({
+    principalAmount: formData.original_amount,
+    interestType: formData.interest_type,
+    interestRate: formData.interest_rate,
+    installmentsCount: formData.installments_count,
+  });
+
+  const availableInstallmentChips = React.useMemo(() => {
+    const list = [1, 2, 3, 6, 10, 12];
+    if (maxInstallmentsAllowed >= 24) list.push(24);
+    if (maxInstallmentsAllowed >= 36) list.push(36);
+    return list.filter((n) => n <= maxInstallmentsAllowed);
+  }, [maxInstallmentsAllowed]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.original_amount <= 0) return;
+    if (formData.installments_count <= 0) return;
+    if (!formData.first_due_date) return;
+    onNext();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Bloco 1: Título & Categoria */}
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 space-y-4 shadow-xs">
+        <div className="border-b border-border/50 pb-2">
+          <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <FaTag className="size-3.5 text-zinc-400" />
+            <span>Motivo e Categoria da Dívida</span>
+          </h3>
+          <p className="text-xs font-mono text-zinc-400">
+            Dê um nome claro para o acordo e classifique a natureza do débito.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono text-zinc-300 block">
+              Título do Acordo <span className="text-rose-400">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.title}
+              onChange={(e) => onChange({ title: e.target.value })}
+              placeholder="Ex: Empréstimo para reforma, Conserto da roda..."
+              className="w-full bg-background border border-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-mono text-white placeholder:text-zinc-600 focus:outline-hidden focus:border-zinc-700 shadow-xs"
+            />
+          </div>
+
+          {/* Sugestões Rápidas de Título */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[10px] font-mono text-zinc-500">Sugestões:</span>
+            {QUICK_TITLES.map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => onChange({ title: chip })}
+                className="text-[11px] font-mono px-2 py-0.5 rounded-lg bg-zinc-800/60 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-border/40 transition-colors cursor-pointer"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-1.5 pt-1">
+            <label className="text-xs font-mono text-zinc-300 block">
+              Categoria <span className="text-rose-400">*</span>
+            </label>
+            <select
+              value={formData.category}
+              onChange={(e) => onChange({ category: e.target.value as DebtCategory })}
+              className="w-full bg-background border border-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-mono text-white focus:outline-hidden focus:border-zinc-700 shadow-xs cursor-pointer"
+            >
+              {Object.entries(DEBT_CATEGORY_LABELS).map(([value, label]) => (
+                <option key={value} value={value} className="bg-zinc-900 text-white">
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Bloco 2: Valores & Juros/Acréscimo */}
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 space-y-5 shadow-xs">
+        <div className="border-b border-border/50 pb-2">
+          <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <FaCoins className="size-3.5 text-emerald-400" />
+            <span>Capital Emprestado e Juros / Acréscimo</span>
+          </h3>
+          <p className="text-xs font-mono text-zinc-400">
+            Defina o montante entregue e se haverá taxa de retorno do Tubarão.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Capital Principal (R$) */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono text-zinc-300 block">
+              Capital Emprestado (R$) <span className="text-rose-400">*</span>
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              required
+              value={formData.original_amount || ""}
+              onChange={(e) =>
+                onChange({ original_amount: parseFloat(e.target.value) || 0 })
+              }
+              placeholder="Ex: 1200.00"
+              className="w-full bg-background border border-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-mono text-white placeholder:text-zinc-600 focus:outline-hidden focus:border-zinc-700 shadow-xs"
+            />
+          </div>
+
+          {/* Modalidade de Juros */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono text-zinc-300 block">
+              Tipo de Juros / Acréscimo
+            </label>
+            <select
+              value={formData.interest_type}
+              onChange={(e) =>
+                onChange({ interest_type: e.target.value as InterestType })
+              }
+              className="w-full bg-background border border-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-mono text-white focus:outline-hidden focus:border-zinc-700 shadow-xs cursor-pointer"
+            >
+              <option value="none" className="bg-zinc-900 text-white">
+                {INTEREST_TYPE_LABELS.none}
+              </option>
+              <option value="total_percentage" className="bg-zinc-900 text-white">
+                {INTEREST_TYPE_LABELS.total_percentage}
+              </option>
+
+              {/* Disponível a partir do Tubarão Branco */}
+              {!permissions.isFreePlan && (
+                <option value="fixed" className="bg-zinc-900 text-white">
+                  {INTEREST_TYPE_LABELS.fixed}
+                </option>
+              )}
+
+              {/* Exclusivo Tubarão Cabeça Chato (Pro) */}
+              {permissions.maxDebtors === null && (
+                <option value="monthly_percentage" className="bg-zinc-900 text-white">
+                  {INTEREST_TYPE_LABELS.monthly_percentage} (Exclusivo Pro)
+                </option>
+              )}
+            </select>
+          </div>
+        </div>
+
+        {/* Input da Taxa de Juros (caso diferente de 'none') */}
+        {formData.interest_type !== "none" && (
+          <div className="p-3.5 bg-zinc-950/60 border border-zinc-800 rounded-xl space-y-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <label className="text-xs font-mono text-zinc-300 flex items-center gap-1.5">
+                <FaPercent className="size-3 text-amber-400" />
+                <span>
+                  {formData.interest_type === "fixed"
+                    ? "Valor da Taxa Fixa em Reais (R$):"
+                    : formData.interest_type === "monthly_percentage"
+                    ? "Taxa Mensal (% ao mês):"
+                    : "Taxa Percentual sobre o Total (%):"}
+                </span>
+              </label>
+
+              <div className="max-w-xs w-full">
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.interest_rate || ""}
+                  onChange={(e) =>
+                    onChange({ interest_rate: parseFloat(e.target.value) || 0 })
+                  }
+                  placeholder={
+                    formData.interest_type === "fixed" ? "Ex: 200.00" : "Ex: 5.0"
+                  }
+                  className="w-full bg-background border border-border rounded-xl px-3 py-1.5 text-xs font-mono text-white placeholder:text-zinc-600 focus:outline-hidden focus:border-zinc-700"
+                />
+              </div>
+            </div>
+
+            <p className="text-[11px] font-mono text-zinc-400">
+              {formData.interest_type === "fixed" &&
+                `Acréscimo fixo de ${formatBRL(formData.interest_rate)} adicionado diretamente ao montante contratado.`}
+              {formData.interest_type === "total_percentage" &&
+                `Acréscimo de ${formData.interest_rate}% sobre o capital (${formatBRL(calculation.interestAmount)}).`}
+              {formData.interest_type === "monthly_percentage" &&
+                `Taxa de ${formData.interest_rate}% a.m. aplicada sobre as ${formData.installments_count} parcelas (${formatBRL(calculation.interestAmount)} de acréscimo total).`}
+            </p>
+          </div>
+        )}
+
+        {/* Card de Simulação Reativa em Tempo Real */}
+        {formData.original_amount > 0 && (
+          <div className="p-4 rounded-xl bg-background/80 border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+            <div className="space-y-1">
+              <span className="text-zinc-400 block text-[11px]">Resumo do Montante:</span>
+              <div className="flex items-center gap-2">
+                <span className="text-zinc-300">
+                  Capital: {formatBRL(formData.original_amount)}
+                </span>
+                {calculation.interestAmount > 0 && (
+                  <span className="text-amber-400 font-medium">
+                    + Juros: {formatBRL(calculation.interestAmount)}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="sm:text-right">
+              <span className="text-zinc-400 block text-[11px]">Total a Receber:</span>
+              <span className="font-heading font-bold text-base sm:text-lg text-emerald-400">
+                {formatBRL(calculation.totalAmount)}
+              </span>
+              <span className="text-[10px] text-zinc-400 block">
+                {formData.installments_count}x de aprox. {formatBRL(calculation.baseInstallmentNominal)}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bloco 3: Parcelamento & Calendário */}
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 space-y-4 shadow-xs">
+        <div className="border-b border-border/50 pb-2">
+          <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <FaCalendarDays className="size-3.5 text-zinc-400" />
+            <span>Cronograma de Pagamento</span>
+          </h3>
+          <p className="text-xs font-mono text-zinc-400">
+            Defina em quantas vezes combinaram de pagar e a data do 1º vencimento.
+          </p>
+        </div>
+
+        {/* Quantidade de Parcelas */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-mono text-zinc-300 block">
+              Número de Parcelas <span className="text-rose-400">*</span>
+            </label>
+            <span className="text-[11px] font-mono text-zinc-500">
+              Máximo do seu plano: <strong>{maxInstallmentsAllowed}x</strong>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <input
+              type="number"
+              min="1"
+              max={maxInstallmentsAllowed}
+              required
+              value={formData.installments_count || ""}
+              onChange={(e) =>
+                onChange({
+                  installments_count: Math.min(
+                    maxInstallmentsAllowed,
+                    Math.max(1, parseInt(e.target.value) || 1)
+                  ),
+                })
+              }
+              className="w-28 bg-background border border-border rounded-xl px-3.5 py-2 text-xs sm:text-sm font-mono text-white focus:outline-hidden focus:border-zinc-700 shadow-xs"
+            />
+
+            {/* Chips Rápidos de Parcelamento */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {availableInstallmentChips.map((chip) => (
+                <button
+                  key={chip}
+                  type="button"
+                  onClick={() => onChange({ installments_count: chip })}
+                  className={`text-xs font-mono px-2.5 py-1 rounded-lg border transition-colors cursor-pointer ${
+                    formData.installments_count === chip
+                      ? "bg-white text-zinc-950 font-bold border-white"
+                      : "bg-zinc-800/60 hover:bg-zinc-800 text-zinc-300 border-border/40"
+                  }`}
+                >
+                  {chip}x
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Datas: Empréstimo e 1º Vencimento */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+          {/* Data do Empréstimo */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono text-zinc-300 block">
+              Data em que a grana saiu da mão:
+            </label>
+            <input
+              type="date"
+              required
+              value={formData.loan_date}
+              onChange={(e) => onChange({ loan_date: e.target.value })}
+              className="w-full bg-background border border-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-mono text-white focus:outline-hidden focus:border-zinc-700 shadow-xs"
+            />
+          </div>
+
+          {/* Primeiro Vencimento (Âncora do Calendário) */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono text-zinc-300 block">
+              Data do 1º Vencimento <span className="text-rose-400">*</span>
+            </label>
+            <input
+              type="date"
+              required
+              value={formData.first_due_date}
+              onChange={(e) => onChange({ first_due_date: e.target.value })}
+              className="w-full bg-background border border-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-mono text-white focus:outline-hidden focus:border-zinc-700 shadow-xs"
+            />
+          </div>
+        </div>
+
+        {/* AVISO EXPLÍCITO DO CALENDÁRIO RECORRENTE (Solicitado pelo usuário) */}
+        <div className="p-3 bg-zinc-950/60 border border-zinc-800/80 rounded-xl flex items-start gap-2.5 text-xs font-mono text-zinc-400">
+          <FaBolt className="size-3.5 text-amber-400 shrink-0 mt-0.5" />
+          <p className="text-[11px] leading-relaxed">
+            <strong className="text-zinc-200">Aviso do Tanque:</strong> Os demais vencimentos seguirão rigorosamente o mesmo dia do mês subsequente (ex: se escolher dia 15, as próximas parcelas vencerão dia 15 de cada mês).
+          </p>
+        </div>
+      </div>
+
+      {/* Botões de Ação Inferiores (Voltar e Avançar) */}
+      <div className="flex items-center justify-between pt-4 border-t border-border">
+        <button
+          type="button"
+          onClick={onPrev}
+          className="inline-flex items-center justify-center h-11 px-5 text-xs font-mono font-semibold rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 transition-all gap-2 cursor-pointer"
+        >
+          <FaArrowLeft className="size-3" />
+          <span>Voltar para O Alvo</span>
+        </button>
+
+        <button
+          type="submit"
+          className="inline-flex items-center justify-center h-11 px-6 text-xs font-mono font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl shadow-xs gap-2 transition-all cursor-pointer"
+        >
+          <span>Avançar para o Resumo</span>
+          <FaArrowRight className="size-3" />
+        </button>
+      </div>
+    </form>
+  );
+}
+

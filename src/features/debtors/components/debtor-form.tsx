@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
@@ -53,6 +53,8 @@ const PIX_KEY_TYPES = [
 
 export function DebtorForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const returnTo = searchParams.get("returnTo")
   const [isPending, startTransition] = React.useTransition()
 
   const {
@@ -79,9 +81,13 @@ export function DebtorForm() {
     startTransition(async () => {
       try {
         const res = await createDebtorAction(data)
-        if (res.success) {
+        if (res.success && res.data) {
           toast.success("Devedor cadastrado com sucesso!")
-          router.push("/painel/devedores")
+          if (returnTo) {
+            router.push(`${returnTo}?debtorId=${res.data.id}`)
+          } else {
+            router.push("/painel/devedores")
+          }
           router.refresh()
         } else if (res.code === "LIMIT_REACHED" || res.isLimitReached) {
           toast.warning(res.error || "Limite de devedores no radar atingido!", {
@@ -383,11 +389,17 @@ export function DebtorForm() {
           type="button"
           variant="outline"
           disabled={isPending}
-          onClick={() => router.push("/painel/devedores")}
+          onClick={() => {
+            if (returnTo) {
+              router.push(returnTo)
+            } else {
+              router.push("/painel/devedores")
+            }
+          }}
           className="w-full sm:w-auto h-11 px-5 border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white font-mono text-xs sm:text-sm rounded-xl cursor-pointer"
         >
           <FaArrowLeft className="size-3 mr-2" />
-          <span>Voltar para Devedores</span>
+          <span>{returnTo ? "Voltar ao Fluxo" : "Voltar para Devedores"}</span>
         </Button>
 
         <Button

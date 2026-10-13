@@ -90,8 +90,23 @@ export function SubscriptionFlow({
         ))}
       </div>
 
+      {/* Rodapé de Transparência & Documentação de Planos */}
+      <div className="text-center pt-6 space-y-2 border-t border-border/40">
+        <p className="text-xs font-mono text-zinc-400">
+          Ficou com alguma dúvida sobre as regras, taxas e limites de cada espécie de tubarão?
+        </p>
+        <div>
+          <Link
+            href="/documentos/planos"
+            className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-white hover:text-emerald-400 transition-colors underline underline-offset-4 cursor-pointer"
+          >
+            <span>Conferir comparativo detalhado e regras dos planos ➔</span>
+          </Link>
+        </div>
+      </div>
+
       {/* Nota de Segurança Mercado Pago */}
-      <div className="text-center pt-4 text-xs font-mono text-zinc-500 space-y-1">
+      <div className="text-center pt-2 text-xs font-mono text-zinc-500 space-y-1">
         <p>Pagamento processado com segurança via Mercado Pago.</p>
         <p>Sem fidelidade ou multa rescisória. Cancele quando o último caloteiro pagar.</p>
       </div>

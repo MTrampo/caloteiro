@@ -2,26 +2,47 @@ import { FaCheck } from "react-icons/fa6";
 import type { PlanFeaturesListProps } from "../types";
 
 export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
-  const maxDebtorsLabel =
-    config?.max_debtors === null || config?.max_debtors === undefined
-      ? "Devedores Ilimitados"
-      : `Até ${config.max_debtors} devedores simultâneos`;
+  const isFree = config?.is_default || config?.max_debtors === 2;
+  const isIntermediary = config?.max_debtors === 10;
+  const isPro = config?.max_debtors === null || config?.max_debtors === undefined;
+
+  const maxDebtorsLabel = isPro
+    ? "Devedores e dívidas ilimitados"
+    : `Até ${config?.max_debtors} devedores e dívidas ativas`;
+
+  const installmentLabel = isFree
+    ? "Parcelamento em até 12x"
+    : isIntermediary
+    ? "Parcelamento estendido até 36x"
+    : "Parcelamento flexível até 120x";
+
+  const interestLabel = isFree
+    ? "2 opções de juros (sem juros e % total)"
+    : isIntermediary
+    ? "3 opções de juros (+ taxa fixa R$)"
+    : "4 modalidades de juros (+ % a.m. exclusivo)";
 
   return (
     <div className="space-y-2.5 pt-1 text-xs font-mono">
-      {/* 1. Limite de devedores simultâneos */}
+      {/* 1. Limite de devedores e dívidas */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck className="size-3 text-emerald-400 shrink-0" />
-        <span>{maxDebtorsLabel}</span>
+        <span className={isPro ? "font-bold text-white" : ""}>{maxDebtorsLabel}</span>
       </div>
 
-      {/* 2. Acompanhamento individual de devedor */}
+      {/* 2. Parcelamento */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck className="size-3 text-emerald-400 shrink-0" />
-        <span>Acompanhamento individual de devedor</span>
+        <span>{installmentLabel}</span>
       </div>
 
-      {/* 3. Templates de WhatsApp */}
+      {/* 3. Modalidades de Juros */}
+      <div className="flex items-center gap-2 text-zinc-300">
+        <FaCheck className="size-3 text-emerald-400 shrink-0" />
+        <span className={isPro ? "font-bold text-emerald-400" : ""}>{interestLabel}</span>
+      </div>
+
+      {/* 4. Templates de WhatsApp */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck className="size-3 text-emerald-400 shrink-0" />
         <span>
@@ -29,12 +50,6 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
             ? "Templates de WhatsApp 100% editáveis"
             : "Templates padrão de cobrança"}
         </span>
-      </div>
-
-      {/* 4. Alerta de calote em tempo real */}
-      <div className="flex items-center gap-2 text-zinc-300">
-        <FaCheck className="size-3 text-emerald-400 shrink-0" />
-        <span>Alerta de calote em tempo real</span>
       </div>
 
       {/* 5. Painel Financeiro Consolidado */}
@@ -69,11 +84,11 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
               : "text-zinc-500 line-through"
           }
         >
-          Link de acompanhamento do devedor
+          Portal de acompanhamento do devedor
         </span>
       </div>
 
-      {/* 7. Nível de Cara de Pau (Score de Risco) */}
+      {/* 7. Nível de Cara de Pau (Score de Risco) - Exclusivo Pro */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck
           className={`size-3 shrink-0 ${
@@ -83,7 +98,7 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
         <span
           className={
             config?.can_risk_score
-              ? "text-zinc-300"
+              ? "text-white font-bold"
               : "text-zinc-500 line-through"
           }
         >
@@ -91,7 +106,7 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
         </span>
       </div>
 
-      {/* 8. Arquivo de Provas (Anexo de Recibos) */}
+      {/* 8. Arquivo de Provas (Anexo de Recibos) - Exclusivo Pro */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck
           className={`size-3 shrink-0 ${
@@ -101,7 +116,7 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
         <span
           className={
             config?.can_attach_receipts
-              ? "text-zinc-300"
+              ? "text-white font-bold"
               : "text-zinc-500 line-through"
           }
         >
@@ -111,4 +126,3 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
     </div>
   );
 }
-
