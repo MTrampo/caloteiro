@@ -1,7 +1,7 @@
 import Header from "@/components/header/dashboard"
 import { DebtsFeature } from "@/features/debts"
 import { getUserLogged } from "@/server/account/repository/auth.supabase"
-import { getUserPermissionsByUserIdSupabase } from "@/server/account/repository/subscription.supabase"
+import { getUserPermissionsOrCacheApi } from "@/server/account/service/subscription.api"
 import { redirect } from "next/navigation"
 import type { Metadata } from "next"
 
@@ -15,10 +15,12 @@ export default async function DividasPage() {
   } = await getUserLogged()
 
   if (user) {
-    const permissions = await getUserPermissionsByUserIdSupabase(user.id)
+    const permissions = await getUserPermissionsOrCacheApi(user.id)
     if (!permissions.canAccessFinancial) {
-      redirect("/painel/dividas/devedores")
+      redirect("/painel/dividas/acompanhamento")
     }
+  } else {
+    redirect("/entrar")
   }
 
   return (

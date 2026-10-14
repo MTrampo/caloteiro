@@ -12,6 +12,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function SignInPage() {
-  return <SignInFlow />;
+interface SignInPageProps {
+  searchParams: Promise<{
+    email?: string;
+  }>;
+}
+
+export default async function SignInPage({ searchParams }: SignInPageProps) {
+  const resolvedParams = await searchParams;
+  return <SignInFlow initialEmail={resolvedParams?.email} />;
 }

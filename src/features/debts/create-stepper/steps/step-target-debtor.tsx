@@ -13,6 +13,8 @@ import {
   FaPhone,
   FaKey,
 } from "react-icons/fa6";
+import { Button } from "@/components/ui/button";
+import { NewButton } from "@/components/buttons/new-button";
 
 interface StepTargetDebtorProps {
   debtors: DebtorItemFormatted[];
@@ -102,7 +104,7 @@ export function StepTargetDebtor({
                       </h4>
                       {debtor.formattedNickname ? (
                         <p className="text-xs font-mono text-zinc-400 truncate">
-                          "{debtor.formattedNickname}"
+                          {debtor.formattedNickname}
                         </p>
                       ) : (
                         <p className="text-xs font-mono text-zinc-500 truncate">
@@ -155,35 +157,35 @@ export function StepTargetDebtor({
               Antes de firmar um acordo, você precisa cadastrar quem pegou o seu dinheiro.
             </p>
           </div>
-          <Link
+          <NewButton
             href="/painel/devedores/novo?returnTo=/painel/dividas/nova"
-            className="inline-flex items-center justify-center h-10 px-5 text-xs font-mono font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl shadow-xs gap-2 transition-all cursor-pointer"
-          >
-            <FaUserPlus className="size-3.5" />
-            <span>Cadastrar Meu Primeiro Devedor</span>
-          </Link>
+            label="Cadastrar Meu Primeiro Devedor"
+            icon="user-plus"
+          />
         </div>
       ) : (
         /* Busca Sem Resultados */
         <div className="py-12 text-center space-y-2 max-w-md mx-auto">
           <p className="text-xs font-mono text-zinc-400">
-            Nenhum devedor encontrado para o termo "{searchTerm}".
+            Nenhum devedor encontrado para o termo &quot;{searchTerm}&quot;.
           </p>
-          <button
+          <Button
             type="button"
+            variant="link"
+            size="sm"
             onClick={() => setSearchTerm("")}
-            className="text-xs font-mono text-emerald-400 hover:underline cursor-pointer"
+            className="text-emerald-400"
           >
             Limpar busca
-          </button>
+          </Button>
         </div>
       )}
 
       {/* Barra de Ação Inferior (Avançar para Etapa 2) */}
-      <div className="flex items-center justify-between pt-4 border-t border-border">
-        <div className="text-xs font-mono text-zinc-400">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border">
+        <div className="text-xs font-mono text-zinc-400 w-full sm:w-auto text-center sm:text-left">
           {selectedDebtor ? (
-            <span className="text-emerald-400 flex items-center gap-1.5 font-medium">
+            <span className="text-emerald-400 flex items-center justify-center sm:justify-start gap-1.5 font-medium">
               <FaCheck className="size-3" />
               Alvo selecionado: <strong>{selectedDebtor.formattedName}</strong>
             </span>
@@ -192,15 +194,17 @@ export function StepTargetDebtor({
           )}
         </div>
 
-        <button
+        <Button
           type="button"
+          variant="default"
+          size="lg"
           disabled={!selectedDebtor}
           onClick={onNext}
-          className="inline-flex items-center justify-center h-11 px-6 text-xs font-mono font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl shadow-xs gap-2 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto"
         >
           <span>Avançar para o Acordo</span>
           <FaArrowRight className="size-3" />
-        </button>
+        </Button>
       </div>
     </div>
   );

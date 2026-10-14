@@ -33,11 +33,17 @@ import {
   FaIdCard,
   FaLocationDot,
   FaKey,
-  FaNoteSticky,
   FaArrowLeft,
   FaCheck,
 } from "react-icons/fa6"
 import { Loader2 } from "lucide-react"
+import {
+  maskPhone,
+  maskCpf,
+  maskPixKey,
+  unmaskDigits,
+} from "@/commons/utils/masks"
+import { formatProperName } from "@/commons/utils/format"
 
 import { z } from "zod"
 
@@ -61,6 +67,8 @@ export function DebtorForm() {
     register,
     control,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<DebtorFormInputs>({
     resolver: zodResolver(createDebtorSchema),
@@ -77,10 +85,20 @@ export function DebtorForm() {
     },
   })
 
+  const currentPixKeyType = watch("pix_key_type")
+
   const onSubmit = (data: DebtorFormInputs) => {
     startTransition(async () => {
       try {
-        const res = await createDebtorAction(data)
+        const payload: DebtorFormInputs = {
+          ...data,
+          name: formatProperName(data.name),
+          nickname: data.nickname ? formatProperName(data.nickname) : data.nickname,
+          phone: unmaskDigits(data.phone),
+          document: data.document ? unmaskDigits(data.document) : data.document,
+        }
+
+        const res = await createDebtorAction(payload)
         if (res.success && res.data) {
           toast.success("Devedor cadastrado com sucesso!")
           if (returnTo) {
@@ -120,9 +138,9 @@ export function DebtorForm() {
       <div className="rounded-2xl border border-border bg-card p-6 shadow-xs space-y-6">
         {/* Bloco 1: Identificação Básica */}
         <div className="space-y-4">
-          <div className="border-b border-zinc-800 pb-2">
+          <div className="space-y-1">
             <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider">
-              Identificação do Devedor
+              Identificação
             </h3>
             <p className="text-xs font-mono text-zinc-400">
               Nome de registro e apelido que o devedor atende na rua.
@@ -144,7 +162,13 @@ export function DebtorForm() {
                   placeholder="Ex: Marcio Ramos"
                   disabled={isPending}
                   className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
-                  {...register("name")}
+                  {...register("name", {
+                    onBlur: (e) => {
+                      if (e.target.value) {
+                        setValue("name", formatProperName(e.target.value))
+                      }
+                    },
+                  })}
                 />
               </div>
               <FieldError errors={errors.name ? [errors.name] : undefined} />
@@ -160,7 +184,13 @@ export function DebtorForm() {
                 placeholder="Ex: Marcio da Oficina, Cunhado"
                 disabled={isPending}
                 className="bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
-                {...register("nickname")}
+                {...register("nickname", {
+                  onBlur: (e) => {
+                    if (e.target.value) {
+                      setValue("nickname", formatProperName(e.target.value))
+                    }
+                  },
+                })}
               />
               <FieldError errors={errors.nickname ? [errors.nickname] : undefined} />
             </Field>
@@ -177,12 +207,19 @@ export function DebtorForm() {
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                   <FaPhone className="size-3.5" />
                 </div>
-                <Input
-                  type="text"
-                  placeholder="Ex: 11987654321"
-                  disabled={isPending}
-                  className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
-                  {...register("phone")}
+                <Controller
+                  name="phone"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      type="text"
+                      placeholder="Ex: (11) 98765-4321"
+                      disabled={isPending}
+                      value={field.value}
+                      onChange={(e) => field.onChange(maskPhone(e.target.value))}
+                      className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
+                    />
+                  )}
                 />
               </div>
               <FieldError errors={errors.phone ? [errors.phone] : undefined} />
@@ -238,8 +275,8 @@ export function DebtorForm() {
         </div>
 
         {/* Bloco 2: Localização & Rastreio */}
-        <div className="space-y-4 pt-2 border-t border-zinc-800/80">
-          <div className="border-b border-zinc-800 pb-2">
+        <div className="space-y-4">
+          <div className="space-y-1">
             <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider">
               Localização &amp; Rastreio (Opcionais)
             </h3>
@@ -258,12 +295,19 @@ export function DebtorForm() {
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                   <FaIdCard className="size-3.5" />
                 </div>
-                <Input
-                  type="text"
-                  placeholder="Apenas dígitos (Ex: 12345678900)"
-                  disabled={isPending}
-                  className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
-                  {...register("document")}
+                <Controller
+                  name="document"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      type="text"
+                      placeholder="Ex: 123.456.789-00"
+                      disabled={isPending}
+                      value={field.value}
+                      onChange={(e) => field.onChange(maskCpf(e.target.value))}
+                      className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
+                    />
+                  )}
                 />
               </div>
               <FieldError errors={errors.document ? [errors.document] : undefined} />
@@ -292,10 +336,10 @@ export function DebtorForm() {
         </div>
 
         {/* Bloco 3: Dados de Pagamento & Pix */}
-        <div className="space-y-4 pt-2 border-t border-zinc-800/80">
-          <div className="border-b border-zinc-800 pb-2">
+        <div className="space-y-4">
+          <div className="space-y-1">
             <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider">
-              Chave Pix do Devedor (Opcional)
+              Chave Pix (Opcional)
             </h3>
             <p className="text-xs font-mono text-zinc-400">
               Caso você precise conferir ou devolver troco/pagamento.
@@ -351,12 +395,21 @@ export function DebtorForm() {
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                   <FaKey className="size-3.5" />
                 </div>
-                <Input
-                  type="text"
-                  placeholder="Insira a chave Pix do devedor"
-                  disabled={isPending}
-                  className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
-                  {...register("pix_key")}
+                <Controller
+                  name="pix_key"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      type="text"
+                      placeholder="Insira a chave Pix do devedor"
+                      disabled={isPending}
+                      value={field.value}
+                      onChange={(e) =>
+                        field.onChange(maskPixKey(e.target.value, currentPixKeyType))
+                      }
+                      className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
+                    />
+                  )}
                 />
               </div>
               <FieldError errors={errors.pix_key ? [errors.pix_key] : undefined} />
@@ -365,11 +418,10 @@ export function DebtorForm() {
         </div>
 
         {/* Bloco 4: Observações Gerais */}
-        <div className="pt-2 border-t border-zinc-800/80">
+        <div className="space-y-4">
           <Field>
             <FieldLabel className="flex items-center gap-1.5">
-              <FaNoteSticky className="size-3 text-emerald-400" />
-              <span>Observações &amp; Notas do Tubarão</span>
+              <span>Observações &amp; Notas do Devedor</span>
             </FieldLabel>
             <Textarea
               placeholder="Ex: Prometeu pagar quando vender a moto velha dele. Disse que o salário cai dia 10."
@@ -388,6 +440,7 @@ export function DebtorForm() {
         <Button
           type="button"
           variant="outline"
+          size="lg"
           disabled={isPending}
           onClick={() => {
             if (returnTo) {
@@ -396,7 +449,7 @@ export function DebtorForm() {
               router.push("/painel/devedores")
             }
           }}
-          className="w-full sm:w-auto h-11 px-5 border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white font-mono text-xs sm:text-sm rounded-xl cursor-pointer"
+          className="w-full sm:w-auto"
         >
           <FaArrowLeft className="size-3 mr-2" />
           <span>{returnTo ? "Voltar ao Fluxo" : "Voltar para Devedores"}</span>
@@ -404,8 +457,10 @@ export function DebtorForm() {
 
         <Button
           type="submit"
+          variant="success"
+          size="lg"
           disabled={isPending}
-          className="w-full sm:w-auto h-11 px-6 bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold tracking-wide rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2 text-xs sm:text-sm"
+          className="w-full sm:w-auto"
         >
           {isPending ? (
             <>

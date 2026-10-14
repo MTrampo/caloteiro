@@ -27,6 +27,7 @@ import {
   FaBolt,
 } from "react-icons/fa6";
 import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface StepReviewAndConfirmProps {
   debtor: DebtorItemFormatted;
@@ -210,47 +211,52 @@ export function StepReviewAndConfirm({
         </div>
 
         <div className="flex items-center gap-2 pt-1">
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={handleCopyWhatsapp}
-            className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-mono font-semibold rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 transition-colors cursor-pointer"
           >
             {copiedWhatsapp ? <FaCheck className="size-3 text-emerald-400" /> : <FaCopy className="size-3" />}
             <span>Copiar Mensagem</span>
-          </button>
+          </Button>
 
           {whatsAppUrl && (
-            <a
-              href={whatsAppUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-mono font-semibold rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-colors cursor-pointer"
+            <Button
+              variant="outline"
+              size="sm"
+              render={<a href={whatsAppUrl} target="_blank" rel="noopener noreferrer" />}
+              className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/20"
             >
               <FaWhatsapp className="size-3.5" />
               <span>Abrir no WhatsApp</span>
-            </a>
+            </Button>
           )}
         </div>
       </div>
 
       {/* 4. Rodapé de Ações: Voltar e Confirmação de Sucesso (Verde) */}
-      <div className="flex items-center justify-between pt-4 border-t border-border">
-        <button
+      <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border">
+        <Button
           type="button"
+          variant="outline"
+          size="lg"
           disabled={isSubmitting}
           onClick={onPrev}
-          className="inline-flex items-center justify-center h-11 px-5 text-xs font-mono font-semibold rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 transition-all gap-2 cursor-pointer disabled:opacity-50"
+          className="w-full sm:w-auto"
         >
           <FaArrowLeft className="size-3" />
           <span>Voltar ao Acordo</span>
-        </button>
+        </Button>
 
-        {/* BOTÃO VERDE DE SUCESSO (Conforme instrução expressa do usuário) */}
-        <button
+        {/* BOTÃO DE SUCESSO NATIVO */}
+        <Button
           type="button"
+          variant="success"
+          size="lg"
           disabled={isSubmitting}
           onClick={() => onConfirm(calculation.totalAmount)}
-          className="inline-flex items-center justify-center h-11 px-6 text-xs font-mono font-bold bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl shadow-md gap-2 transition-all cursor-pointer disabled:opacity-50"
+          className="w-full sm:w-auto"
         >
           {isSubmitting ? (
             <>
@@ -263,7 +269,7 @@ export function StepReviewAndConfirm({
               <span>Firmar Acordo e Ativar Cobrança</span>
             </>
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -3,6 +3,8 @@
 import * as React from "react"
 import Link from "next/link"
 import { FaMagnifyingGlass, FaUserPlus, FaRotateRight } from "react-icons/fa6"
+import { Button } from "@/components/ui/button"
+import { NewButton } from "@/components/buttons/new-button"
 import { DebtorCard } from "./components/debtor-card"
 import { DebtorCardSkeleton } from "./components/debtor-card-skeleton"
 import { getDebtorsAction } from "@/actions/debtors"
@@ -120,14 +122,12 @@ export function DebtorsFeature({
           </p>
         </div>
 
-        {/* Botão Cadastrar Devedor Padronizado (Branco) */}
-        <Link
+        {/* Botão Cadastrar Devedor Padronizado (NewButton) */}
+        <NewButton
           href="/painel/devedores/novo"
-          className="inline-flex items-center justify-center h-9 px-4 text-xs font-mono font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl shadow-xs gap-2 transition-all shrink-0 cursor-pointer"
-        >
-          <FaUserPlus className="size-3.5" />
-          <span>Cadastrar Devedor</span>
-        </Link>
+          label="Cadastrar Devedor"
+          icon="user-plus"
+        />
       </div>
 
       {/* Barra de Busca (Sem Tabs obsoletas) */}
@@ -188,14 +188,15 @@ export function DebtorsFeature({
               O caloteiro conseguiu escapar da busca ou você digitou o nome errado?
             </p>
           </div>
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setSearchTerm("")}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-zinc-800 bg-zinc-900 text-xs font-mono text-zinc-300 hover:text-white hover:bg-zinc-800 cursor-pointer transition-colors"
           >
             <FaRotateRight className="size-3" />
             <span>Limpar Busca</span>
-          </button>
+          </Button>
         </div>
       ) : (
         /* Empty State Principal do Tanque (Solto, sem card, centralizado) */
@@ -210,13 +211,11 @@ export function DebtorsFeature({
           </div>
 
           <div className="pt-2">
-            <Link
+            <NewButton
               href="/painel/devedores/novo"
-              className="inline-flex items-center justify-center h-10 px-5 text-xs font-mono font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl shadow-xs gap-2 transition-all cursor-pointer"
-            >
-              <FaUserPlus className="size-3.5" />
-              <span>Cadastrar Primeiro Devedor</span>
-            </Link>
+              label="Cadastrar Primeiro Devedor"
+              icon="user-plus"
+            />
           </div>
         </div>
       )}

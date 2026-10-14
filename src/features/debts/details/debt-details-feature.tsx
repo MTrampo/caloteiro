@@ -11,6 +11,7 @@ import { PaymentsHistory } from "./payments-history";
 import { PaymentModal } from "./payment-modal";
 import { ExcuseModal } from "./excuse-modal";
 import { FaArrowLeft, FaHandHoldingDollar } from "react-icons/fa6";
+import { Button } from "@/components/ui/button";
 
 interface DebtDetailsFeatureProps {
   initialDebt: DebtDetailsFormatted;
@@ -87,16 +88,17 @@ export function DebtDetailsFeature({ initialDebt }: DebtDetailsFeatureProps) {
           </p>
         </div>
 
-        {/* Botão de Ação CTA Principal (Branco) */}
+        {/* Botão de Ação CTA Principal (Shadcn Button) */}
         {!debt.isFullySettled && (
-          <button
+          <Button
             type="button"
+            variant="default"
+            size="lg"
             onClick={handleOpenGeneralPayment}
-            className="inline-flex items-center justify-center h-9 px-4 text-xs font-mono font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl shadow-xs gap-2 transition-all shrink-0 cursor-pointer"
           >
             <FaHandHoldingDollar className="size-3.5" />
             <span>Pingou o Pix!</span>
-          </button>
+          </Button>
         )}
       </div>
 

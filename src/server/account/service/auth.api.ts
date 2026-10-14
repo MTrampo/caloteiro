@@ -18,11 +18,15 @@ import {
   resendOtpCode,
   getProfileByUserIdSupabase,
 } from "../repository/auth.supabase";
-import { getSubscriptionByUserIdSupabase } from "../repository/subscription.supabase";
+import {
+  getSubscriptionByUserIdSupabase,
+  getUserPermissionsByUserIdSupabase,
+} from "../repository/subscription.supabase";
+import { getUserPermissionsOrCacheApi } from "./subscription.api";
 import { resolveAuthError } from "@/commons/errors/auth";
 import { ApiResponse } from "@/commons/lib/http/responses";
 import { HttpStatusEnum } from "@/commons/enums/http";
-import type { SubscriptionPayloadCookie } from "@/commons/models/subscription";
+import type { SubscriptionPayloadCookie, UserPermissions } from "@/commons/models/subscription";
 import { clearCookieSubscription, setCookieSubscription } from "@/commons/lib/auth/subscription";
 import { isSubscriptionActive } from "@/commons/lib/http/security";
 import { formatProperName } from "@/commons/utils/format";
@@ -86,12 +90,16 @@ export const signInUserApi = async (body: SignInRequestBody) => {
   let subscriptionPayload: SubscriptionPayloadCookie | null = null;
 
   if (subscription) {
+    const permissions = await getUserPermissionsByUserIdSupabase(userId);
+
     subscriptionPayload = {
       subscriptionId: subscription.id,
       status: subscription.mp_status,
       currentPeriodEnd: subscription.current_period_end,
       userId: data.user.id,
       planSlug: subscription.plan?.slug || null,
+      planName: subscription.plan?.name || "Tubarão Lixa",
+      permissions,
     };
 
     // Se estiver ativo ou no ciclo pago, manda para a central de comando
@@ -100,7 +108,7 @@ export const signInUserApi = async (body: SignInRequestBody) => {
     }
 
     // Grava cookie seguro de assinatura para o proxy.ts
-    await setCookieSubscription(subscriptionPayload);
+    await setCookieSubscription(subscriptionPayload, data.user.id);
   }
 
   return ApiResponse.Ok({
@@ -280,18 +288,33 @@ export const getCurrentUserSessionProfileApi = async () => {
   const authResponse = await getUserLoggedApi();
   const user = authResponse.data?.user;
 
+  const fallbackPermissions: UserPermissions = {
+    maxDebtors: 2,
+    canCustomTemplates: false,
+    canExportReports: false,
+    canAccessFinancial: false,
+    canDebtorPortal: false,
+    canRiskScore: false,
+    canAttachReceipts: false,
+    isFreePlan: true,
+    isSubscriptionActive: false,
+  };
+
   if (!user) {
     return {
       user: null,
       profile: null,
       subscription: null,
       planName: "Tubarão Lixa",
+      permissions: fallbackPermissions,
     };
   }
 
-  const [{ data: profile }, subscription] = await Promise.all([
+  // Busca permissões prioritariamente do cookie assinado HMAC-SHA256 (0 queries de permissão)
+  const [{ data: profile }, subscription, permissions] = await Promise.all([
     getProfileByUserIdSupabase(user.id),
     getSubscriptionByUserIdSupabase(user.id),
+    getUserPermissionsOrCacheApi(user.id),
   ]);
 
   return {
@@ -299,5 +322,6 @@ export const getCurrentUserSessionProfileApi = async () => {
     profile: profile || null,
     subscription: subscription || null,
     planName: subscription?.plan?.name || "Tubarão Lixa",
+    permissions: permissions || fallbackPermissions,
   };
 };

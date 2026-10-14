@@ -16,22 +16,34 @@ interface SignInFormProps {
   signInUser: (data: UserSignInFormInputs) => Promise<void>;
   sendEmailUser?: (data: SendEmailFormInputs) => Promise<void>;
   onForgotPasswordClick?: () => void;
+  defaultEmail?: string;
 }
 
-export function SignInForm({ signInUser, onForgotPasswordClick }: SignInFormProps) {
+export function SignInForm({
+  signInUser,
+  onForgotPasswordClick,
+  defaultEmail = "",
+}: SignInFormProps) {
   const [isPending, startTransition] = React.useTransition();
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<UserSignInFormInputs>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      email: "",
+      email: defaultEmail,
       password: "",
     },
   });
+
+  React.useEffect(() => {
+    if (defaultEmail) {
+      setValue("email", defaultEmail);
+    }
+  }, [defaultEmail, setValue]);
 
   const onSubmit = (data: UserSignInFormInputs) => {
     startTransition(async () => {
@@ -40,7 +52,15 @@ export function SignInForm({ signInUser, onForgotPasswordClick }: SignInFormProp
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form
+      method="post"
+      noValidate
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit(onSubmit)(e);
+      }}
+      className="space-y-4"
+    >
       {/* Campo E-mail */}
       <Field>
         <FieldLabel>
@@ -98,11 +118,11 @@ export function SignInForm({ signInUser, onForgotPasswordClick }: SignInFormProp
       <Button
         type="submit"
         disabled={isPending}
-        className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-heading font-bold tracking-wide transition-all duration-200 shadow-lg shadow-emerald-950/50 cursor-pointer flex items-center justify-center gap-2 text-sm"
+        className="w-full h-11 bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl transition-all duration-200 shadow-lg shadow-white/5 cursor-pointer flex items-center justify-center gap-2 text-sm"
       >
         {isPending ? (
           <>
-            <Loader2 className="size-4 animate-spin" />
+            <Loader2 className="size-4 animate-spin text-zinc-950" />
             <span>Consultando Cofre...</span>
           </>
         ) : (

@@ -67,7 +67,15 @@ export function ResetPasswordForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form
+      method="post"
+      noValidate
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit(onSubmit)(e);
+      }}
+      className="space-y-4"
+    >
       {/* Campo Código OTP 8 dígitos */}
       <div className="space-y-2 flex flex-col items-center">
         <label className="text-xs font-mono uppercase tracking-wider text-zinc-300 self-start">
@@ -147,11 +155,11 @@ export function ResetPasswordForm({
       <Button
         type="submit"
         disabled={isPending}
-        className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-heading font-bold tracking-wide transition-all duration-200 shadow-lg shadow-emerald-950/50 cursor-pointer flex items-center justify-center gap-2 text-sm"
+        className="w-full h-11 bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl transition-all duration-200 shadow-lg shadow-white/5 cursor-pointer flex items-center justify-center gap-2 text-sm"
       >
         {isPending ? (
           <>
-            <Loader2 className="size-4 animate-spin" />
+            <Loader2 className="size-4 animate-spin text-zinc-950" />
             <span>Atualizando Senha...</span>
           </>
         ) : (

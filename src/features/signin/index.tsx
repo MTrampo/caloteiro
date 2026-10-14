@@ -25,11 +25,29 @@ import type {
 
 type SignInStep = "login" | "forgot-password" | "verify" | "reset-password";
 
-export function SignInFlow() {
+interface SignInFlowProps {
+  initialEmail?: string;
+}
+
+export function SignInFlow({ initialEmail = "" }: SignInFlowProps) {
   const router = useRouter();
   const [step, setStep] = React.useState<SignInStep>("login");
-  const [email, setEmail] = React.useState("");
+  const [email, setEmail] = React.useState(initialEmail);
   const [verificationReason, setVerificationReason] = React.useState<"signup" | "forgot-password">("signup");
+
+  // Limpa parâmetros sensíveis da URL (como ?password=) após carregamento
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && window.location.search) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
+  // Sincroniza initialEmail se mudar
+  React.useEffect(() => {
+    if (initialEmail && !email) {
+      setEmail(initialEmail);
+    }
+  }, [initialEmail, email]);
 
   // Fluxo 1: Login de Usuário
   const handleSignIn = async (data: UserSignInFormInputs) => {
@@ -37,7 +55,12 @@ export function SignInFlow() {
       const response = await signInUserAction(data);
       if (response.status === HttpStatusEnum.Ok) {
         toast.success(response.message || "Acesso autorizado ao cofre!");
-        router.push(response.data?.redirectPath || "/painel");
+        const target = response.data?.redirectPath || "/painel";
+        if (typeof window !== "undefined") {
+          window.location.href = target;
+        } else {
+          router.push(target);
+        }
         return;
       }
 
@@ -83,7 +106,11 @@ export function SignInFlow() {
           setStep("reset-password");
         } else {
           toast.success("Conta confirmada com sucesso! Bem-vindo à Central de Investigação.");
-          router.push("/painel");
+          if (typeof window !== "undefined") {
+            window.location.href = "/painel";
+          } else {
+            router.push("/painel");
+          }
         }
         return;
       }
@@ -160,6 +187,7 @@ export function SignInFlow() {
           {/* Renderização de Etapas */}
           {step === "login" && (
             <SignInForm
+              defaultEmail={email}
               signInUser={handleSignIn}
               onForgotPasswordClick={() => setStep("forgot-password")}
             />

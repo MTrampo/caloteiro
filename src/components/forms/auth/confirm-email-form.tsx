@@ -59,7 +59,7 @@ export function ConfirmEmailForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form method="post" noValidate onSubmit={handleSubmit} className="space-y-6">
       <div className="text-center space-y-1">
         <p className="text-xs font-mono text-zinc-400">
           Código de 8 dígitos enviado para:
@@ -100,11 +100,11 @@ export function ConfirmEmailForm({
       <Button
         type="submit"
         disabled={isPending || code.length !== 8}
-        className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-heading font-bold tracking-wide transition-all duration-200 shadow-lg shadow-emerald-950/50 cursor-pointer flex items-center justify-center gap-2 text-sm"
+        className="w-full h-11 bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl transition-all duration-200 shadow-lg shadow-white/5 cursor-pointer flex items-center justify-center gap-2 text-sm disabled:opacity-50"
       >
         {isPending ? (
           <>
-            <Loader2 className="size-4 animate-spin" />
+            <Loader2 className="size-4 animate-spin text-zinc-950" />
             <span>Validando Código...</span>
           </>
         ) : (

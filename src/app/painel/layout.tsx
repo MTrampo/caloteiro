@@ -23,7 +23,7 @@ export default async function PainelLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user, profile, planName } = await getCurrentUserSessionProfileApi()
+  const { user, profile, planName, permissions } = await getCurrentUserSessionProfileApi()
 
   const sidebarUserData = user
     ? {
@@ -46,7 +46,7 @@ export default async function PainelLayout({
             } as React.CSSProperties
           }
         >
-          <AppSidebar user={sidebarUserData} />
+          <AppSidebar user={sidebarUserData} permissions={permissions} />
           <SidebarInset className="min-h-screen flex flex-col bg-background">
             {children}
           </SidebarInset>

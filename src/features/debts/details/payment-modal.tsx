@@ -10,6 +10,10 @@ import {
   FaCheck,
 } from "react-icons/fa6";
 import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { maskCurrency, parseCurrencyToNumber } from "@/commons/utils/masks";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -29,14 +33,14 @@ export function PaymentModal({
   onSuccess,
 }: PaymentModalProps) {
   const [amountInput, setAmountInput] = React.useState<string>(
-    defaultAmount ? String(defaultAmount) : ""
+    defaultAmount ? maskCurrency(defaultAmount) : ""
   );
   const [notes, setNotes] = React.useState<string>("");
   const [isPending, startTransition] = React.useTransition();
 
   React.useEffect(() => {
     if (defaultAmount) {
-      setAmountInput(String(defaultAmount));
+      setAmountInput(maskCurrency(defaultAmount));
     }
   }, [defaultAmount]);
 
@@ -45,7 +49,7 @@ export function PaymentModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const numericAmount = parseFloat(amountInput.replace(",", "."));
+    const numericAmount = parseCurrencyToNumber(amountInput);
     if (isNaN(numericAmount) || numericAmount <= 0) {
       toast.error("Informe um valor de Pix válido e maior que zero.");
       return;
@@ -72,7 +76,7 @@ export function PaymentModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-50">
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95">
         {/* Cabeçalho do Modal */}
-        <div className="flex items-start justify-between gap-3 border-b border-zinc-800 pb-3">
+        <div className="flex items-start justify-between gap-3">
           <div className="space-y-1">
             <h3 className="font-heading text-lg font-bold text-white flex items-center gap-2">
               <FaHandHoldingDollar className="size-4 text-emerald-400 shrink-0" />
@@ -84,49 +88,56 @@ export function PaymentModal({
             </p>
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={onClose}
             disabled={isPending}
-            className="text-zinc-500 hover:text-white transition-colors p-1 rounded-lg hover:bg-zinc-800 cursor-pointer"
+            className="text-zinc-500 hover:text-white"
           >
             <FaXmark className="size-4" />
-          </button>
+          </Button>
         </div>
 
         {/* Formulário de Baixa */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-mono text-zinc-300 block">
-              Quanto pingou na conta? (R$) *
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              min="0.01"
-              required
-              value={amountInput}
-              onChange={(e) => setAmountInput(e.target.value)}
-              placeholder="Ex: 350.00"
-              className="w-full bg-card border border-border rounded-xl px-3.5 py-2.5 text-sm font-mono text-white placeholder:text-zinc-500 focus:outline-hidden focus:border-zinc-700 shadow-xs"
-            />
-          </div>
+          <Field>
+            <FieldLabel>
+              Quanto pingou na conta? <span className="text-rose-400">*</span>
+            </FieldLabel>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500 font-mono text-xs">
+                R$
+              </span>
+              <Input
+                type="text"
+                required
+                value={amountInput}
+                onChange={(e) => setAmountInput(maskCurrency(e.target.value))}
+                placeholder="0,00"
+                disabled={isPending}
+                className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
+              />
+            </div>
+          </Field>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-mono text-zinc-300 block">
+          <Field>
+            <FieldLabel>
               Observação / Comentário (Opcional)
-            </label>
-            <input
+            </FieldLabel>
+            <Input
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Ex: Pagou adiantado / Pix pelo Nubank"
-              className="w-full bg-card border border-border rounded-xl px-3.5 py-2.5 text-sm font-mono text-white placeholder:text-zinc-500 focus:outline-hidden focus:border-zinc-700 shadow-xs"
+              disabled={isPending}
+              className="bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
             />
-          </div>
+          </Field>
 
           {/* Dica da Amortização em Cascata */}
-          <div className="p-3 bg-zinc-800/50 rounded-xl border border-zinc-800 text-xs font-mono text-zinc-400 space-y-1">
+          <div className="p-3 bg-zinc-800/40 rounded-xl border border-zinc-800/80 text-xs font-mono text-zinc-400 space-y-1">
             <div className="flex items-center gap-1.5 text-zinc-200 font-semibold">
               <FaBolt className="size-3 text-amber-400 shrink-0" />
               <span>Amortização em Cascata</span>
@@ -137,20 +148,24 @@ export function PaymentModal({
           </div>
 
           {/* Botões do Rodapé */}
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <button
+          <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 pt-2">
+            <Button
               type="button"
+              variant="outline"
+              size="lg"
               onClick={onClose}
               disabled={isPending}
-              className="h-10 px-4 text-xs font-mono font-semibold rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-all cursor-pointer"
+              className="w-full sm:w-auto"
             >
               Cancelar
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="submit"
+              variant="success"
+              size="lg"
               disabled={isPending}
-              className="inline-flex items-center justify-center h-10 px-5 text-xs font-mono font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl shadow-xs gap-2 transition-all cursor-pointer disabled:opacity-50"
+              className="w-full sm:w-auto"
             >
               {isPending ? (
                 <>
@@ -163,7 +178,7 @@ export function PaymentModal({
                   <span>Confirmar Recebimento</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

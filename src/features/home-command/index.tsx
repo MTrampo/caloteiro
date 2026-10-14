@@ -75,6 +75,7 @@ export interface HomeCommandFeatureProps {
     author: string
     subtext: string
   }
+  canCopyPix?: boolean
 }
 
 export function HomeCommandFeature({
@@ -82,6 +83,7 @@ export function HomeCommandFeature({
   initialPunchline,
   initialTimeGreeting,
   initialWisdom,
+  canCopyPix = true,
 }: HomeCommandFeatureProps = {}) {
   const [data] = React.useState<CommandCenterData>(() => ({
     ...defaultCommandData,
@@ -107,7 +109,7 @@ export function HomeCommandFeature({
       <TriageKPIsGrid kpis={data.kpis} />
 
       {/* 3. Feed de Ocorrências / Linha do Tempo com Ações Imediatas */}
-      <DailyFeed feed={data.feed} />
+      <DailyFeed feed={data.feed} canCopyPix={canCopyPix} />
 
       {/* 4. Pílula de Humor & Sabedoria Ácida do Tubarão */}
       <CreditorWisdom initialWisdom={wisdom} />

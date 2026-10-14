@@ -1,8 +1,6 @@
 import { SummaryCardsGrid } from "./components/summary-cards-grid"
 import { PromisesList } from "./components/promises-list"
-import { FaCirclePlus } from "react-icons/fa6"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { NewButton } from "@/components/buttons/new-button"
 
 export function DashboardFeature() {
   return (
@@ -19,14 +17,11 @@ export function DashboardFeature() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            render={<Link href="/painel/dividas" />}
-            size="sm"
-            className="bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-bold shadow-xs shadow-white/10 h-9 px-3.5"
-          >
-            <FaCirclePlus className="size-3.5 mr-1.5" />
-            Nova Dívida
-          </Button>
+          <NewButton
+            href="/painel/dividas/nova"
+            label="Nova Dívida"
+            icon="plus"
+          />
         </div>
       </div>
 

@@ -17,13 +17,19 @@ import Link from "next/link"
 type DailyFeedProps = {
   feed: FeedOccurrence[]
   pixKeyDefault?: string
+  canCopyPix?: boolean
 }
 
-export function DailyFeed({ feed, pixKeyDefault = "11999998888" }: DailyFeedProps) {
+export function DailyFeed({
+  feed,
+  pixKeyDefault = "11999998888",
+  canCopyPix = false,
+}: DailyFeedProps) {
   const [copiedId, setCopiedId] = React.useState<string | null>(null)
   const [paidIds, setPaidIds] = React.useState<string[]>([])
 
   const handleCopyPix = (id: string, key?: string) => {
+    if (!canCopyPix) return
     const keyToCopy = key || pixKeyDefault
     navigator.clipboard.writeText(keyToCopy)
     setCopiedId(id)
@@ -38,12 +44,16 @@ export function DailyFeed({ feed, pixKeyDefault = "11999998888" }: DailyFeedProp
     const phone = item.debtorPhone.replace(/\D/g, "")
     let text = ""
 
+    const pixSuffix = canCopyPix
+      ? ` Segue a chave Pix: ${item.pixKey || pixKeyDefault}.`
+      : ""
+
     if (item.type === "urgent_overdue") {
-      text = `E aí, ${item.debtorName}! Passando pra avisar que aquela nossa pendência (${item.installmentText}) venceu há alguns dias e o Pix ainda não caiu. Segue a chave Pix: ${item.pixKey || pixKeyDefault}. Valeu!`
+      text = `E aí, ${item.debtorName}! Passando pra avisar que aquela nossa pendência (${item.installmentText}) venceu há alguns dias e o Pix ainda não caiu.${pixSuffix} Valeu!`
     } else if (item.type === "due_today") {
-      text = `Fala ${item.debtorName}, bom dia! Só lembrando que aquela nossa parcela (${item.installmentText}) vence hoje. Segue a chave Pix pra facilitar: ${item.pixKey || pixKeyDefault}. Valeu!`
+      text = `Fala ${item.debtorName}, bom dia! Só lembrando que aquela nossa parcela (${item.installmentText}) vence hoje.${pixSuffix} Valeu!`
     } else {
-      text = `Opa ${item.debtorName}, tudo bem? Passando pra lembrar da nossa promessa (${item.installmentText}) que vence em breve. Chave Pix: ${item.pixKey || pixKeyDefault}.`
+      text = `Opa ${item.debtorName}, tudo bem? Passando pra lembrar da nossa promessa (${item.installmentText}) que vence em breve.${pixSuffix}`
     }
 
     return `https://wa.me/55${phone}?text=${encodeURIComponent(text)}`
@@ -162,25 +172,27 @@ export function DailyFeed({ feed, pixKeyDefault = "11999998888" }: DailyFeedProp
                   </span>
                 ) : (
                   <>
-                    {/* Botão Copiar Pix */}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleCopyPix(item.id, item.pixKey)}
-                      className="h-8.5 text-xs font-mono font-bold bg-zinc-900 hover:bg-zinc-800 border-zinc-700/80 text-zinc-200"
-                    >
-                      {copiedId === item.id ? (
-                        <>
-                          <FaCheck className="size-3 text-emerald-400 mr-1" />
-                          <span>Copiado!</span>
-                        </>
-                      ) : (
-                        <>
-                          <FaCopy className="size-3 mr-1 text-zinc-400" />
-                          <span>Copiar Pix</span>
-                        </>
-                      )}
-                    </Button>
+                    {/* Botão Copiar Pix (Disponível apenas para planos com automação de armas/templates) */}
+                    {canCopyPix && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleCopyPix(item.id, item.pixKey)}
+                        className="h-8.5 text-xs font-mono font-bold bg-zinc-900 hover:bg-zinc-800 border-zinc-700/80 text-zinc-200"
+                      >
+                        {copiedId === item.id ? (
+                          <>
+                            <FaCheck className="size-3 text-emerald-400 mr-1" />
+                            <span>Copiado!</span>
+                          </>
+                        ) : (
+                          <>
+                            <FaCopy className="size-3 mr-1 text-zinc-400" />
+                            <span>Copiar Pix</span>
+                          </>
+                        )}
+                      </Button>
+                    )}
 
                     {/* Botão WhatsApp */}
                     <Button

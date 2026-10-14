@@ -5,9 +5,6 @@ import { PromiseFilterTab, PromiseItem } from "./types"
 import { DEFAULT_PROMISES } from "@/commons/utils/promise-status-map"
 import { PromiseFilters } from "./promise-filters"
 import { PromiseCardItem } from "./promise-card-item"
-import { FaPlus } from "react-icons/fa6"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
 
 export function PromisesList({ initialData = DEFAULT_PROMISES }: { initialData?: PromiseItem[] }) {
   const [activeTab, setActiveTab] = useState<PromiseFilterTab>("EM_ABERTO")
@@ -54,26 +51,13 @@ export function PromisesList({ initialData = DEFAULT_PROMISES }: { initialData?:
   return (
     <div className="space-y-4 pt-1">
       {/* Cabeçalho da Seção sem ícones soltos */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="space-y-0.5">
-          <h3 className="font-heading text-lg sm:text-xl font-bold text-white tracking-tight">
-            Promessas
-          </h3>
-          <p className="text-xs sm:text-[13px] text-zinc-400 font-mono">
-            Quem tá pagando e quem tá ensaiando o golpe.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            render={<Link href="/painel/dividas" />}
-            size="sm"
-            className="bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-bold shadow-xs shadow-white/10 text-xs sm:text-[13px] h-8.5 px-3.5"
-          >
-            <FaPlus className="size-3 mr-1" />
-            Nova Dívida
-          </Button>
-        </div>
+      <div className="space-y-0.5">
+        <h3 className="font-heading text-lg sm:text-xl font-bold text-white tracking-tight">
+          Promessas
+        </h3>
+        <p className="text-xs sm:text-[13px] text-zinc-400 font-mono">
+          Quem tá pagando e quem tá ensaiando o golpe.
+        </p>
       </div>
 
       {/* Barra de Filtros e Busca */}

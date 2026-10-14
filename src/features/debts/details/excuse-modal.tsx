@@ -11,6 +11,7 @@ import {
   FaCalendarDays,
 } from "react-icons/fa6";
 import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ExcuseModalProps {
   isOpen: boolean;
@@ -79,14 +80,16 @@ export function ExcuseModal({
             </p>
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={onClose}
             disabled={isPending}
-            className="text-zinc-500 hover:text-white transition-colors p-1 rounded-lg hover:bg-zinc-800 cursor-pointer"
+            className="text-zinc-500 hover:text-white"
           >
             <FaXmark className="size-4" />
-          </button>
+          </Button>
         </div>
 
         {/* Formulário */}
@@ -120,20 +123,24 @@ export function ExcuseModal({
           </div>
 
           {/* Botões */}
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <button
+          <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 pt-2">
+            <Button
               type="button"
+              variant="outline"
+              size="lg"
               onClick={onClose}
               disabled={isPending}
-              className="h-10 px-4 text-xs font-mono font-semibold rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-all cursor-pointer"
+              className="w-full sm:w-auto"
             >
               Cancelar
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="submit"
+              variant="default"
+              size="lg"
               disabled={isPending}
-              className="inline-flex items-center justify-center h-10 px-5 text-xs font-mono font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl shadow-xs gap-2 transition-all cursor-pointer disabled:opacity-50"
+              className="w-full sm:w-auto"
             >
               {isPending ? (
                 <>
@@ -146,7 +153,7 @@ export function ExcuseModal({
                   <span>Registrar no Dossiê</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

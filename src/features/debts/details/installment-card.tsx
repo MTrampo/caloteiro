@@ -10,6 +10,7 @@ import {
   FaCommentDots,
   FaCalendarDays,
 } from "react-icons/fa6";
+import { Button } from "@/components/ui/button";
 
 interface InstallmentCardProps {
   installment: InstallmentFormatted;
@@ -79,23 +80,25 @@ export function InstallmentCard({
         {/* Botões de Ação da Parcela */}
         {!isPaid && (
           <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               onClick={() => onAddExcuse(installment)}
-              className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-mono font-semibold rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 transition-all cursor-pointer"
             >
               <FaCommentDots className="size-3 text-amber-400" />
               <span>Anotar Caô</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
+              variant="default"
+              size="sm"
               onClick={() => onPayInstallment(installment)}
-              className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-mono font-bold rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 shadow-xs transition-all cursor-pointer"
             >
               <FaHandHoldingDollar className="size-3" />
               <span>Baixar Parcela</span>
-            </button>
+            </Button>
           </div>
         )}
       </div>

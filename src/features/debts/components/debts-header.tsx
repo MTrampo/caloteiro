@@ -1,7 +1,6 @@
 "use client"
 
-import { FaCirclePlus } from "react-icons/fa6"
-import { Button } from "@/components/ui/button"
+import { NewButton } from "@/components/buttons/new-button"
 import { FinancialPeriod } from "../types"
 import { cn } from "@/commons/lib/utils"
 
@@ -55,14 +54,12 @@ export function DebtsHeader({ period, onPeriodChange, onNewDebtClick }: DebtsHea
         </div>
 
         {/* Botão Nova Dívida */}
-        <Button
-          size="sm"
+        <NewButton
+          href="/painel/dividas/nova"
+          label="Nova Dívida"
+          icon="plus"
           onClick={onNewDebtClick}
-          className="bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-bold shadow-xs shadow-white/10 h-9 px-3.5"
-        >
-          <FaCirclePlus className="size-3.5 mr-1.5" />
-          Nova Dívida
-        </Button>
+        />
       </div>
     </div>
   )

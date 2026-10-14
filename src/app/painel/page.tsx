@@ -5,8 +5,7 @@ import {
   getRandomWisdomQuote,
   getTimeGreeting,
 } from "@/features/home-command/utils/greeting-helper"
-import { getUserLoggedApi } from "@/server/account/service/auth.api"
-import { getProfileByUserIdSupabase } from "@/server/account/repository/auth.supabase"
+import { getCurrentUserSessionProfileApi } from "@/server/account/service/auth.api"
 import type { Metadata } from "next"
 
 import { formatProperName } from "@/commons/utils/format"
@@ -16,12 +15,10 @@ export const metadata: Metadata = {
 }
 
 export default async function PainelPage() {
-  const authResponse = await getUserLoggedApi()
-  const user = authResponse.data?.user
+  const { user, profile, permissions } = await getCurrentUserSessionProfileApi()
 
   let userName = "Tubarão"
   if (user) {
-    const { data: profile } = await getProfileByUserIdSupabase(user.id)
     const rawName = profile?.nickname || profile?.name || (user.user_metadata?.name as string | undefined) || "Tubarão"
     userName = formatProperName(rawName) || "Tubarão"
   }
@@ -44,6 +41,7 @@ export default async function PainelPage() {
         initialPunchline={initialPunchline}
         initialTimeGreeting={initialTimeGreeting}
         initialWisdom={initialWisdom}
+        canCopyPix={permissions?.canCustomTemplates ?? false}
       />
     </>
   )

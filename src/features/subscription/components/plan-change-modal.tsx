@@ -200,22 +200,21 @@ export function PlanChangeModal({
           <Button
             type="button"
             variant="outline"
+            size="lg"
             disabled={isPending}
             onClick={onClose}
-            className="w-full sm:w-auto border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer font-mono text-xs"
+            className="w-full sm:w-auto"
           >
             Cancelar
           </Button>
 
           <Button
             type="button"
+            variant={isUpgrade ? "success" : "default"}
+            size="lg"
             disabled={isPending}
             onClick={handleConfirmChange}
-            className={`w-full sm:w-auto h-10 px-5 font-heading font-bold text-xs rounded-xl cursor-pointer transition-all ${
-              isUpgrade
-                ? "bg-white hover:bg-zinc-200 text-zinc-950"
-                : "bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700"
-            }`}
+            className="w-full sm:w-auto"
           >
             {isPending ? (
               <div className="flex items-center gap-2">

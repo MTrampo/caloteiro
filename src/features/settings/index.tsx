@@ -73,6 +73,10 @@ import { saveCreditorSettingsAction } from "@/actions/settings"
 import type { CreditorSettings, CreditorSettingsFormInputs } from "@/commons/models/user"
 import type { UserPermissions } from "@/commons/models/subscription"
 import { FaLock } from "react-icons/fa6"
+import { Input } from "@/components/ui/input"
+import { Field, FieldLabel } from "@/components/ui/field"
+import { maskPixKey } from "@/commons/utils/masks"
+import { formatProperName } from "@/commons/utils/format"
 
 interface SettingsFeatureProps {
   initialSettings?: CreditorSettings | null
@@ -183,7 +187,7 @@ export function SettingsFeature({
       <form onSubmit={handleSave} className="space-y-6 w-full">
         {/* Card 1: Meus Dados de Recebimento (Chave Pix) */}
         <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-5 w-full">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-zinc-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2.5">
               <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
                 <FaKey className="size-3.5" />
@@ -204,14 +208,17 @@ export function SettingsFeature({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-mono font-bold text-zinc-300">
+            <Field>
+              <FieldLabel>
                 Tipo de Chave
-              </label>
+              </FieldLabel>
               <select
                 value={pixType}
-                onChange={(e) => setPixType(e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono text-zinc-200 focus:outline-hidden focus:border-emerald-500 transition-colors"
+                onChange={(e) => {
+                  setPixType(e.target.value)
+                  setPixKey(maskPixKey(pixKey, e.target.value))
+                }}
+                className="w-full bg-zinc-950/60 border border-zinc-800 rounded-xl px-3 py-2 text-xs sm:text-sm font-mono text-zinc-200 focus:outline-hidden focus:border-emerald-500 transition-colors h-11 cursor-pointer"
               >
                 <option value="cpf">CPF</option>
                 <option value="cnpj">CNPJ</option>
@@ -219,46 +226,49 @@ export function SettingsFeature({
                 <option value="email">E-mail</option>
                 <option value="aleatoria">Chave Aleatória</option>
               </select>
-            </div>
+            </Field>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-mono font-bold text-zinc-300">
+            <Field>
+              <FieldLabel>
                 Chave Pix
-              </label>
-              <input
+              </FieldLabel>
+              <Input
                 type="text"
                 value={pixKey}
-                onChange={(e) => setPixKey(e.target.value)}
+                onChange={(e) => setPixKey(maskPixKey(e.target.value, pixType))}
                 placeholder="Insira sua chave Pix"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono text-zinc-200 focus:outline-hidden focus:border-emerald-500 transition-colors"
+                className="bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
               />
-            </div>
+            </Field>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-mono font-bold text-zinc-300">
+            <Field>
+              <FieldLabel>
                 Titular da Conta
-              </label>
-              <input
+              </FieldLabel>
+              <Input
                 type="text"
                 value={accountOwner}
                 onChange={(e) => setAccountOwner(e.target.value)}
-                placeholder="Ex: Vinicius"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono text-zinc-200 focus:outline-hidden focus:border-emerald-500 transition-colors"
+                onBlur={(e) => {
+                  if (e.target.value) setAccountOwner(formatProperName(e.target.value))
+                }}
+                placeholder="Ex: Vinicius Ramos"
+                className="bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
               />
-            </div>
+            </Field>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-mono font-bold text-zinc-300">
+            <Field>
+              <FieldLabel>
                 Banco / Instituição
-              </label>
-              <input
+              </FieldLabel>
+              <Input
                 type="text"
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
                 placeholder="Ex: Nubank, Itaú"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono text-zinc-200 focus:outline-hidden focus:border-emerald-500 transition-colors"
+                className="bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
               />
-            </div>
+            </Field>
           </div>
 
           {/* Prévia de Exibição */}
@@ -267,7 +277,7 @@ export function SettingsFeature({
               Prévia formatada para o devedor:
             </span>
             <span className="text-emerald-400 font-bold bg-zinc-900 px-2.5 py-1 rounded-md border border-zinc-800">
-              Chave: {pixKey} ({accountOwner} - {bankName})
+              Chave: {pixKey || "Não configurada"} ({accountOwner || "Titular"} - {bankName || "Banco"})
             </span>
           </div>
         </div>
@@ -538,8 +548,10 @@ export function SettingsFeature({
         <div className="flex justify-end gap-3 pt-2">
           <Button
             type="submit"
+            variant="success"
+            size="lg"
             disabled={isSaving}
-            className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-6 py-2.5 rounded-xl shadow-xs cursor-pointer flex items-center gap-2"
+            className="w-full sm:w-auto"
           >
             {isSaving ? "Gravando no Cofre..." : "Salvar Configurações"}
           </Button>

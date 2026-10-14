@@ -2,6 +2,8 @@ import Header from "@/components/header/dashboard"
 import { SettingsFeature } from "@/features/settings"
 import { getUserLogged } from "@/server/account/repository/auth.supabase"
 import { getCreditorSettingsApi } from "@/server/account/service/creditor-settings.api"
+import { getUserPermissionsOrCacheApi } from "@/server/account/service/subscription.api"
+import { redirect } from "next/navigation"
 import type { UserPermissions } from "@/commons/models/subscription"
 import type { Metadata } from "next"
 
@@ -14,25 +16,20 @@ export default async function ConfiguracoesPage() {
     data: { user },
   } = await getUserLogged()
 
-  let initialSettings = null
-  let permissions: UserPermissions = {
-    maxDebtors: 2,
-    canCustomTemplates: false,
-    canExportReports: false,
-    canAccessFinancial: false,
-    canDebtorPortal: false,
-    canRiskScore: false,
-    canAttachReceipts: false,
-    isFreePlan: true,
-    isSubscriptionActive: false,
+  if (!user) {
+    redirect("/entrar")
   }
 
-  if (user) {
-    const res = await getCreditorSettingsApi(user.id)
-    if (res.data) {
-      initialSettings = res.data.settings
-      permissions = res.data.permissions
-    }
+  // Validação rápida via cache em cookie HMAC-SHA256
+  const permissions: UserPermissions = await getUserPermissionsOrCacheApi(user.id)
+  if (!permissions.canCustomTemplates) {
+    redirect("/painel")
+  }
+
+  let initialSettings = null
+  const res = await getCreditorSettingsApi(user.id)
+  if (res.data) {
+    initialSettings = res.data.settings
   }
 
   return (
