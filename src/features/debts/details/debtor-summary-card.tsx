@@ -1,7 +1,4 @@
-"use client";
-
 import * as React from "react";
-import Link from "next/link";
 import { toast } from "sonner";
 import type { DebtorItemFormatted } from "@/commons/models/debtor";
 import { getNameInitials } from "@/commons/utils/format";
@@ -9,12 +6,13 @@ import {
   FaWhatsapp,
   FaCopy,
   FaCheck,
-  FaUser,
+  FaEye,
   FaPhone,
   FaIdCard,
   FaLocationDot,
-  FaArrowUpRightFromSquare,
 } from "react-icons/fa6";
+import { Button } from "@/components/ui/button";
+import { DebtorDetailsDialog } from "@/features/debtors/components/debtor-details-dialog";
 
 interface DebtorSummaryCardProps {
   debtor: DebtorItemFormatted;
@@ -22,6 +20,7 @@ interface DebtorSummaryCardProps {
 
 export function DebtorSummaryCard({ debtor }: DebtorSummaryCardProps) {
   const [copiedPix, setCopiedPix] = React.useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
 
   const handleCopyPix = () => {
     if (!debtor.pix_key) return;
@@ -58,7 +57,7 @@ export function DebtorSummaryCard({ debtor }: DebtorSummaryCardProps) {
           </div>
         </div>
 
-        {/* Ações Rápidas (WhatsApp e Ficha) */}
+        {/* Ações Rápidas (WhatsApp e Detalhes do Devedor) */}
         <div className="flex items-center gap-2 shrink-0">
           {debtor.cleanPhone && (
             <a
@@ -72,14 +71,16 @@ export function DebtorSummaryCard({ debtor }: DebtorSummaryCardProps) {
             </a>
           )}
 
-          <Link
-            href={`/painel/devedores`}
-            className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-mono font-semibold rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 transition-all cursor-pointer"
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsDetailsOpen(true)}
+            className="h-8 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all cursor-pointer"
           >
-            <FaUser className="size-3" />
-            <span>Ver Ficha</span>
-            <FaArrowUpRightFromSquare className="size-2.5 text-zinc-500" />
-          </Link>
+            <FaEye className="size-3 text-zinc-400" />
+            <span>Verificar Devedor</span>
+          </Button>
         </div>
       </div>
 
@@ -128,6 +129,13 @@ export function DebtorSummaryCard({ debtor }: DebtorSummaryCardProps) {
           <span className="truncate">Endereço do Alvo: {debtor.address}</span>
         </div>
       )}
+
+      {/* Modal de Detalhes do Devedor */}
+      <DebtorDetailsDialog
+        debtor={debtor}
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
+      />
     </div>
   );
 }

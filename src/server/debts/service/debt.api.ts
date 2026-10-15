@@ -191,7 +191,7 @@ export const createDebtApi = async (
 };
 
 /**
- * Consulta detalhada da dívida, montando o dossiê completo para visualização
+ * Consulta detalhada da dívida, montando o resumo completo para visualização
  */
 export const getDebtDetailsApi = async (
   debtId: string,
@@ -347,7 +347,7 @@ export const getDebtDetailsApi = async (
 
   return ApiResponse.Ok({
     data: formattedData,
-    message: "Dossiê da dívida carregado.",
+    message: "Detalhes da dívida carregados.",
   });
 };
 
@@ -473,6 +473,6 @@ export const registerDebtExcuseApi = async (
 
   return ApiResponse.Created({
     data: { excuseId: data.id },
-    message: "Caô devidamente registrado no dossiê! A contagem da nova promessa começou.",
+    message: "Caô devidamente registrado! A contagem da nova promessa começou.",
   });
 };

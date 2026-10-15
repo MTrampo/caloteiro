@@ -250,3 +250,23 @@ export const hasActiveSubscriptionHistorySupabase = async (userId: string): Prom
 
   return Boolean(invoices && invoices.length > 0);
 };
+
+/**
+ * Busca histórico de faturas e pagamentos da assinatura do usuário
+ */
+export const getInvoicesByUserIdSupabase = async (userId: string) => {
+  const supabase = await serverSupabase();
+
+  const { data, error } = await supabase
+    .from("invoices")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error || !data) {
+    console.error("[getInvoicesByUserIdSupabase] Erro ao buscar faturas:", error);
+    return [];
+  }
+
+  return data;
+};

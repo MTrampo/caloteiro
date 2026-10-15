@@ -15,7 +15,7 @@ import {
 import type { DebtDetailsFormatted } from '@/commons/models/debt';
 
 /**
- * Consulta o dossiê detalhado de uma dívida
+ * Consulta os detalhes completos de uma dívida
  */
 export async function getDebtDetailsAction(
   debtId: string

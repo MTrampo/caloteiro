@@ -37,10 +37,17 @@ export function PromiseCardItem({ promise }: { promise: PromiseItem }) {
           <div className="size-11 sm:size-12 rounded-xl bg-zinc-800 border border-zinc-700/80 flex items-center justify-center font-mono text-sm font-bold text-zinc-100 shrink-0 shadow-sm shadow-black/40">
             {initials}
           </div>
-          <div className="min-w-0 space-y-1">
-            <h4 className="font-heading text-base sm:text-lg font-bold text-white truncate group-hover:text-zinc-100 transition-colors">
-              {promise.debtorName}
-            </h4>
+          <div className="min-w-0 space-y-0.5">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <h4 className="font-heading text-base sm:text-lg font-bold text-white truncate group-hover:text-zinc-100 transition-colors">
+                {promise.debtorName}
+              </h4>
+              {promise.debtorNickname && (
+                <span className="text-[11px] font-mono text-zinc-400 shrink-0 hidden sm:inline">
+                  "{promise.debtorNickname}"
+                </span>
+              )}
+            </div>
             <p className="text-xs sm:text-[13px] text-zinc-400 font-mono truncate font-medium">
               {promise.debtTitle}
             </p>

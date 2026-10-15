@@ -206,3 +206,30 @@ export function presentProfile(
     planSlug,
   };
 }
+
+/**
+ * Calcula a diferença em dias entre a data de vencimento e hoje
+ */
+export function calculateDaysDifference(dueDateStr: string): {
+  isLate: boolean;
+  lateDays: number;
+  diffDays: number;
+} {
+  const [yearStr, monthStr, dayStr] = dueDateStr.split("-");
+  const dueDate = new Date(
+    parseInt(yearStr, 10),
+    parseInt(monthStr, 10) - 1,
+    parseInt(dayStr, 10)
+  );
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const diffTime = today.getTime() - dueDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays > 0) {
+    return { isLate: true, lateDays: diffDays, diffDays: -diffDays };
+  }
+  return { isLate: false, lateDays: 0, diffDays: Math.abs(diffDays) };
+}

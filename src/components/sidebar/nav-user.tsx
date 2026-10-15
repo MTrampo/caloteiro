@@ -126,7 +126,7 @@ export function NavUser({
                 <span>Minha Conta</span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                render={<Link href="/painel/conta" />}
+                render={<Link href="/painel/conta/assinatura" />}
                 className="flex items-center gap-2 cursor-pointer text-zinc-300 hover:text-white"
               >
                 <FaCreditCard className="size-3.5 text-zinc-400" />

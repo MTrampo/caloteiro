@@ -1,10 +1,22 @@
 import { SummaryCardsGrid } from "./components/summary-cards-grid"
 import { PromisesList } from "./components/promises-list"
 import { NewButton } from "@/components/buttons/new-button"
+import type {
+  AcompanhamentoSummaryData,
+  PaginatedPromisesResult,
+} from "@/commons/models/acompanhamento"
 
-export function DashboardFeature() {
+interface DashboardFeatureProps {
+  initialSummary?: AcompanhamentoSummaryData
+  initialPaginated?: PaginatedPromisesResult
+}
+
+export function DashboardFeature({
+  initialSummary,
+  initialPaginated,
+}: DashboardFeatureProps) {
   return (
-    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full">
+    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full min-w-0 overflow-x-hidden">
       {/* Topo do Acompanhamento */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="space-y-1">
@@ -25,11 +37,15 @@ export function DashboardFeature() {
         </div>
       </div>
 
-      {/* Grade com os 4 Summary Cards */}
-      <SummaryCardsGrid />
+      {/* Grade com os 4 Summary Cards Reais */}
+      <SummaryCardsGrid data={initialSummary} />
 
-      {/* Seção Central: Promessas */}
-      <PromisesList />
+      {/* Seção Central: Promessas com Infinite Scroll e Ordenação */}
+      <PromisesList
+        initialData={initialPaginated?.items}
+        initialHasMore={initialPaginated?.hasMore}
+        initialCounts={initialPaginated?.counts}
+      />
     </div>
   )
 }

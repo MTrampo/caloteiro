@@ -1,60 +1,36 @@
 "use client"
 
 import { SummaryCard } from "@/components/cards/summary-card"
-import { PercentageBadge } from "@/components/badges/percentage-badge"
-import { formatTrendStatus, SUMMARY_CARD_CONFIGS } from "@/commons/utils/status-map"
+import { SUMMARY_CARD_CONFIGS } from "@/commons/utils/status-map"
+import type { AcompanhamentoSummaryData } from "@/commons/models/acompanhamento"
+import { cn } from "@/commons/lib/utils"
 
-export type DashboardSummaryData = {
-  emAberto: {
-    amount: string
-    description: string
-    last: string
-    changePercent: number
-  }
-  emDia: {
-    amount: string
-    description: string
-    last: string
-    changePercent: number
-  }
-  emAtraso: {
-    amount: string
-    description: string
-    last: string
-    changePercent: number
-  }
-  caloteiros: {
-    amount: string
-    description: string
-    last: string
-    changePercent: number
-  }
-}
+export type DashboardSummaryData = AcompanhamentoSummaryData
 
 const defaultSummaryData: DashboardSummaryData = {
   emAberto: {
     amount: "16 suspeitos",
     description: "Promessas e pendências na praça",
     last: "Dívidas ativas no radar",
-    changePercent: 12,
+    changePercent: 100,
   },
   emDia: {
     amount: "8 milagreiros",
     description: "Pagando sem drama nem desculpa",
     last: "Raros e pontuais",
-    changePercent: 5,
+    changePercent: 50,
   },
   emAtraso: {
     amount: "5 sumidos",
     description: "Passou do prazo combinado",
     last: "Hora do 'bom dia, sumido'",
-    changePercent: -8,
+    changePercent: 31,
   },
   caloteiros: {
     amount: "3 lendas",
     description: "Deram o perdido no mês",
     last: "Alerta vermelho de golpe",
-    changePercent: 15,
+    changePercent: 19,
   },
 }
 
@@ -69,13 +45,53 @@ export function SummaryCardsGrid({ data = defaultSummaryData }: { data?: Dashboa
   const EmAtrasoIcon = emAtrasoConfig.icon
   const CaloteirosIcon = caloteirosConfig.icon
 
-  const emAbertoTrend = formatTrendStatus(data.emAberto.changePercent, false)
-  const emDiaTrend = formatTrendStatus(data.emDia.changePercent, false)
-  const emAtrasoTrend = formatTrendStatus(data.emAtraso.changePercent, true)
-  const caloteirosTrend = formatTrendStatus(data.caloteiros.changePercent, true)
+  const emAbertoBadge = (
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[11px] font-bold text-zinc-300 bg-zinc-800/80 border border-zinc-700/60">
+      {data.emAberto.changePercent}% no radar
+    </span>
+  )
+
+  const emDiaBadge = (
+    <span
+      className={cn(
+        "inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[11px] font-bold border",
+        data.emDia.changePercent > 0
+          ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+          : "text-zinc-400 bg-zinc-800/80 border-zinc-700/60"
+      )}
+    >
+      {data.emDia.changePercent}% em dia
+    </span>
+  )
+
+  const emAtrasoBadge = (
+    <span
+      className={cn(
+        "inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[11px] font-bold border",
+        data.emAtraso.changePercent > 0
+          ? "text-amber-400 bg-amber-500/10 border-amber-500/20"
+          : "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+      )}
+    >
+      {data.emAtraso.changePercent}% em atraso
+    </span>
+  )
+
+  const caloteirosBadge = (
+    <span
+      className={cn(
+        "inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[11px] font-bold border",
+        data.caloteiros.changePercent > 0
+          ? "text-rose-400 bg-rose-500/10 border-rose-500/20"
+          : "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+      )}
+    >
+      {data.caloteiros.changePercent}% crítico
+    </span>
+  )
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
       {/* 1º Em Aberto */}
       <SummaryCard
         title={emAbertoConfig.title}
@@ -85,13 +101,7 @@ export function SummaryCardsGrid({ data = defaultSummaryData }: { data?: Dashboa
         helpText={emAbertoConfig.helpText}
         description={data.emAberto.description}
         last={data.emAberto.last}
-        percentage={
-          <PercentageBadge
-            status={emAbertoTrend.status}
-            negative={emAbertoTrend.negative}
-            statusText={emAbertoTrend.statusText}
-          />
-        }
+        percentage={emAbertoBadge}
       />
 
       {/* 2º Em Dia */}
@@ -103,13 +113,7 @@ export function SummaryCardsGrid({ data = defaultSummaryData }: { data?: Dashboa
         helpText={emDiaConfig.helpText}
         description={data.emDia.description}
         last={data.emDia.last}
-        percentage={
-          <PercentageBadge
-            status={emDiaTrend.status}
-            negative={emDiaTrend.negative}
-            statusText={emDiaTrend.statusText}
-          />
-        }
+        percentage={emDiaBadge}
       />
 
       {/* 3º Em Atraso */}
@@ -121,13 +125,7 @@ export function SummaryCardsGrid({ data = defaultSummaryData }: { data?: Dashboa
         helpText={emAtrasoConfig.helpText}
         description={data.emAtraso.description}
         last={data.emAtraso.last}
-        percentage={
-          <PercentageBadge
-            status={emAtrasoTrend.status}
-            negative={emAtrasoTrend.negative}
-            statusText={emAtrasoTrend.statusText}
-          />
-        }
+        percentage={emAtrasoBadge}
       />
 
       {/* 4º Caloteiros */}
@@ -139,13 +137,7 @@ export function SummaryCardsGrid({ data = defaultSummaryData }: { data?: Dashboa
         helpText={caloteirosConfig.helpText}
         description={data.caloteiros.description}
         last={data.caloteiros.last}
-        percentage={
-          <PercentageBadge
-            status={caloteirosTrend.status}
-            negative={caloteirosTrend.negative}
-            statusText={caloteirosTrend.statusText}
-          />
-        }
+        percentage={caloteirosBadge}
       />
     </div>
   )

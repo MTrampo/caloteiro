@@ -27,7 +27,7 @@ const STEP_ITEMS = [
   {
     id: "review" as const,
     stepNumber: 3,
-    title: "Dossiê & Resumo",
+    title: "Resumo & Confirmação",
     subtitle: "Conferir & Ativar",
     icon: FaCircleCheck,
   },

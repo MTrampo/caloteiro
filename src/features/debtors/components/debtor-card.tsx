@@ -10,8 +10,10 @@ import {
   FaLocationDot,
   FaIdCard,
   FaNoteSticky,
+  FaEye,
 } from "react-icons/fa6"
 import type { DebtorItemFormatted } from "../types"
+import { DebtorDetailsDialog } from "./debtor-details-dialog"
 
 type DebtorCardProps = {
   debtor: DebtorItemFormatted
@@ -19,6 +21,7 @@ type DebtorCardProps = {
 
 export function DebtorCard({ debtor }: DebtorCardProps) {
   const [copied, setCopied] = React.useState(false)
+  const [isDetailsOpen, setIsDetailsOpen] = React.useState(false)
 
   const handleCopyPix = () => {
     if (debtor.pix_key) {
@@ -94,6 +97,19 @@ export function DebtorCard({ debtor }: DebtorCardProps) {
       {/* Ações Rápidas no Rodapé */}
       <div className="flex items-center justify-between gap-2 pt-2 border-t border-zinc-800/60">
         <div className="flex items-center gap-2">
+          {/* Botão Olhinho Detalhes do Devedor */}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setIsDetailsOpen(true)}
+            className="h-8 px-2.5 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer"
+            title="Verificar Detalhes do Devedor"
+          >
+            <FaEye className="size-3 text-zinc-400" />
+            <span className="hidden sm:inline">Detalhes</span>
+          </Button>
+
           <Button
             size="sm"
             className="h-8 text-xs font-mono font-bold bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-xs cursor-pointer"
@@ -130,6 +146,13 @@ export function DebtorCard({ debtor }: DebtorCardProps) {
           <FaArrowRight className="size-2.5" />
         </Link>
       </div>
+
+      {/* Modal de Detalhes do Devedor */}
+      <DebtorDetailsDialog
+        debtor={debtor}
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
+      />
     </div>
   )
 }

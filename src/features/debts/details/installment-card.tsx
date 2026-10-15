@@ -135,12 +135,12 @@ export function InstallmentCard({
         </div>
       </div>
 
-      {/* Dossiê de Caôs / Desculpas Anotadas nesta Parcela */}
+      {/* Histórico de Caôs / Desculpas Anotadas nesta Parcela */}
       {installment.excuses && installment.excuses.length > 0 && (
         <div className="space-y-2 pt-2 border-t border-border/40">
           <div className="text-[11px] font-mono text-zinc-400 font-semibold flex items-center gap-1.5">
             <FaCommentDots className="size-3 text-amber-400" />
-            <span>Dossiê de Caôs Registrados ({installment.excuses.length}):</span>
+            <span>Histórico de Promessas e Caôs ({installment.excuses.length}):</span>
           </div>
 
           <div className="space-y-2">

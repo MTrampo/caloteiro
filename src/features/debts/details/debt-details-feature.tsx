@@ -4,20 +4,36 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { DebtDetailsFormatted, InstallmentFormatted } from "@/commons/models/debt";
+import type { UserPermissions } from "@/commons/models/subscription";
 import { DebtKpis } from "./debt-kpis";
 import { DebtorSummaryCard } from "./debtor-summary-card";
 import { InstallmentsList } from "./installments-list";
 import { PaymentsHistory } from "./payments-history";
 import { PaymentModal } from "./payment-modal";
 import { ExcuseModal } from "./excuse-modal";
-import { FaArrowLeft, FaHandHoldingDollar } from "react-icons/fa6";
+import { FaArrowLeft, FaHandHoldingDollar, FaCalendarDays, FaReceipt } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface DebtDetailsFeatureProps {
   initialDebt: DebtDetailsFormatted;
+  permissions?: UserPermissions;
 }
 
-export function DebtDetailsFeature({ initialDebt }: DebtDetailsFeatureProps) {
+export function DebtDetailsFeature({
+  initialDebt,
+  permissions = {
+    maxDebtors: 2,
+    canCustomTemplates: false,
+    canExportReports: false,
+    canAccessFinancial: false,
+    canDebtorPortal: false,
+    canRiskScore: false,
+    canAttachReceipts: false,
+    isFreePlan: true,
+    isSubscriptionActive: false,
+  },
+}: DebtDetailsFeatureProps) {
   const router = useRouter();
 
   const [debt, setDebt] = React.useState<DebtDetailsFormatted>(initialDebt);
@@ -108,15 +124,48 @@ export function DebtDetailsFeature({ initialDebt }: DebtDetailsFeatureProps) {
       {/* Ficha Resumida do Devedor */}
       <DebtorSummaryCard debtor={debt.debtor} />
 
-      {/* Cronograma Individual de Parcelas em Cards (Sem tabelas) */}
-      <InstallmentsList
-        installments={debt.installments}
-        onPayInstallment={handleOpenInstallmentPayment}
-        onAddExcuse={handleOpenExcuseModal}
-      />
+      {/* Seção Principal: Cronograma de Parcelas e Extrato de Pix */}
+      {permissions.canAccessFinancial ? (
+        <Tabs defaultValue="installments" className="w-full space-y-4">
+          <TabsList>
+            <TabsTrigger value="installments">
+              <FaCalendarDays className="size-3.5" />
+              <span>Cronograma de Parcelas</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
+                {debt.installments.length}
+              </span>
+            </TabsTrigger>
 
-      {/* Extrato de Pagamentos e Pix Recebidos */}
-      <PaymentsHistory payments={debt.payments} />
+            <TabsTrigger value="payments">
+              <FaReceipt className="size-3.5" />
+              <span>Extrato de Pix</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
+                {debt.payments.length}
+              </span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="installments">
+            <InstallmentsList
+              installments={debt.installments}
+              onPayInstallment={handleOpenInstallmentPayment}
+              onAddExcuse={handleOpenExcuseModal}
+            />
+          </TabsContent>
+
+          <TabsContent value="payments">
+            <PaymentsHistory payments={debt.payments} />
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <div className="space-y-4">
+          <InstallmentsList
+            installments={debt.installments}
+            onPayInstallment={handleOpenInstallmentPayment}
+            onAddExcuse={handleOpenExcuseModal}
+          />
+        </div>
+      )}
 
       {/* Modal: Pingou o Pix! */}
       <PaymentModal

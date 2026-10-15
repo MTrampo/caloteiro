@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { DatePicker } from "@/components/ui/date-picker";
 import { maskCurrency, parseCurrencyToNumber } from "@/commons/utils/masks";
 
 export interface DebtTermsFormData {
@@ -360,12 +361,10 @@ export function StepTermsAndInterest({
             <FieldLabel>
               Data em que a grana saiu da mão:
             </FieldLabel>
-            <Input
-              type="date"
-              required
+            <DatePicker
               value={formData.loan_date}
-              onChange={(e) => onChange({ loan_date: e.target.value })}
-              className="bg-zinc-950/60 border-zinc-800 text-white font-mono text-xs sm:text-sm h-11"
+              onChange={(val) => onChange({ loan_date: val })}
+              placeholder="Selecione a data do empréstimo"
             />
           </Field>
 
@@ -374,12 +373,10 @@ export function StepTermsAndInterest({
             <FieldLabel>
               Data do 1º Vencimento <span className="text-rose-400">*</span>
             </FieldLabel>
-            <Input
-              type="date"
-              required
+            <DatePicker
               value={formData.first_due_date}
-              onChange={(e) => onChange({ first_due_date: e.target.value })}
-              className="bg-zinc-950/60 border-zinc-800 text-white font-mono text-xs sm:text-sm h-11"
+              onChange={(val) => onChange({ first_due_date: val })}
+              placeholder="Selecione a data de vencimento"
             />
           </Field>
         </div>

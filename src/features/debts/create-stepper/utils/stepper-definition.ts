@@ -13,7 +13,7 @@ export const { useStepper, steps } = defineStepper([
   },
   {
     id: "review",
-    title: "3. Dossiê & Resumo",
+    title: "3. Resumo & Confirmação",
     description: "Conferência das parcelas e ativação",
   },
 ]);

@@ -166,7 +166,7 @@ create policy "Tubarão remove seus próprios pagamentos"
   on public.debt_payments for delete using (auth.uid() = user_id);
 
 
--- 5. Tabela debt_excuses: O Dossiê dos Caôs (desculpas/promessas)
+-- 5. Tabela debt_excuses: Histórico dos Caôs (desculpas/promessas)
 create table if not exists public.debt_excuses (
   id uuid primary key default gen_random_uuid(),
   installment_id uuid references public.installments(id) on delete cascade not null,

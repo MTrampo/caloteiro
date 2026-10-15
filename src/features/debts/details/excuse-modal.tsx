@@ -8,10 +8,12 @@ import {
   FaCommentDots,
   FaXmark,
   FaCheck,
-  FaCalendarDays,
 } from "react-icons/fa6";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Textarea } from "@/components/ui/textarea";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface ExcuseModalProps {
   isOpen: boolean;
@@ -57,7 +59,7 @@ export function ExcuseModal({
         return;
       }
 
-      toast.success(res.message || "Caô devidamente registrado no dossiê!");
+      toast.success(res.message || "Caô devidamente registrado!");
       setExcuseText("");
       setPromisedDate("");
       onSuccess();
@@ -94,33 +96,30 @@ export function ExcuseModal({
 
         {/* Formulário */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-mono text-zinc-300 block">
-              Qual foi o caô da vez? *
-            </label>
-            <textarea
+          <Field>
+            <FieldLabel>
+              Qual foi o caô da vez? <span className="text-rose-400">*</span>
+            </FieldLabel>
+            <Textarea
               required
               rows={3}
               value={excuseText}
               onChange={(e) => setExcuseText(e.target.value)}
               placeholder="Ex: 'O banco bloqueou meu Pix por segurança', 'Recebo meu vale na sexta-feira sem falta'..."
-              className="w-full bg-card border border-border rounded-xl px-3.5 py-2.5 text-xs font-mono text-white placeholder:text-zinc-500 focus:outline-hidden focus:border-zinc-700 shadow-xs resize-none"
+              className="bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm resize-none"
             />
-          </div>
+          </Field>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-mono text-zinc-300 block flex items-center gap-1.5">
-              <FaCalendarDays className="size-3 text-zinc-400" />
-              <span>Para quando ele prometeu que paga? *</span>
-            </label>
-            <input
-              type="date"
-              required
+          <Field>
+            <FieldLabel>
+              Para quando ele prometeu que paga? <span className="text-rose-400">*</span>
+            </FieldLabel>
+            <DatePicker
               value={promisedDate}
-              onChange={(e) => setPromisedDate(e.target.value)}
-              className="w-full bg-card border border-border rounded-xl px-3.5 py-2.5 text-xs font-mono text-white focus:outline-hidden focus:border-zinc-700 shadow-xs"
+              onChange={setPromisedDate}
+              placeholder="Selecione a nova data prometida"
             />
-          </div>
+          </Field>
 
           {/* Botões */}
           <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 pt-2">
@@ -150,7 +149,7 @@ export function ExcuseModal({
               ) : (
                 <>
                   <FaCheck className="size-3" />
-                  <span>Registrar no Dossiê</span>
+                  <span>Anotar Promessa</span>
                 </>
               )}
             </Button>

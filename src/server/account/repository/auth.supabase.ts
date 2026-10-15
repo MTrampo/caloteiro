@@ -161,3 +161,53 @@ export const getProfileByUserIdSupabase = async (userId: string) => {
 
   return { data, error };
 };
+
+export const updateProfileByUserIdSupabase = async (
+  userId: string,
+  payload: { name: string; nickname?: string | null; phone?: string | null }
+) => {
+  const supabase = await serverSupabase();
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({
+      name: payload.name,
+      nickname: payload.nickname ?? null,
+      phone: payload.phone ?? null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", userId)
+    .select()
+    .single();
+
+  return { data, error };
+};
+
+export const updateUserEmailSupabase = async (newEmail: string) => {
+  const supabase = await serverSupabase();
+  const { data, error } = await supabase.auth.updateUser({
+    email: newEmail,
+  });
+
+  return { data, error };
+};
+
+export const verifyEmailChangeCodeSupabase = async (newEmail: string, token: string) => {
+  const supabase = await serverSupabase();
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: newEmail,
+    token,
+    type: "email_change",
+  });
+
+  return { data, error };
+};
+
+export const updateProfileEmailByUserIdSupabase = async (userId: string, email: string) => {
+  const supabase = await serverSupabase();
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ email, updated_at: new Date().toISOString() })
+    .eq("id", userId);
+
+  return { data, error };
+};
