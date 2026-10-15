@@ -102,3 +102,12 @@ O fluxo de execução deve respeitar uma hierarquia rigorosa: **UI -> Action -> 
   * Repositories e dependências externas (ex: chamadas de rede do Supabase, Mercado Pago, Resend) devem ser mockados nos testes de Service para garantir execução ultrarrápida, determinística e sem efeitos colaterais.
 * **Blindagem do `server-only` em Testes:**
   * O setup global dos testes deve mockar o pacote `server-only` para que os arquivos da camada `src/server` possam ser executados pelo test runner em ambiente Node/Vitest sem erros de runtime.
+
+## 10. Padronização de Idioma no Código (Codebase in English)
+* **Nomes de Arquivos Fora de `src/app` Estritamente em Inglês:** Todos os arquivos de Services, Repositories, Models, Validations, Actions, Testes, Utils, Hooks e Components devem ser nomeados exclusivamente em **inglês** (ex: `tracking.api.ts`, `tracking.supabase.ts`, `tracking.ts`, `debt.api.ts`).
+  * A única exceção de arquivos em português são as rotas de páginas do App Router dentro de `src/app/**` (ex: `src/app/painel/dividas/acompanhamento/page.tsx`).
+* **Identificadores de Código (Variáveis, Funções e Tipos em Inglês):** Todo nome de variável, função, método, classe, interface, DTO, type alias e enum deve ser escrito estritamente em **inglês** (ex: `TrackingSummaryData`, `getTrackingDataApi`, `installments`, `overdueCount`, `open`, `overdue`).
+* **Exceções Legítimas para o Português:**
+  * Rotas de URL de páginas em `src/app/**`.
+  * Descrições textuais de testes em `describe` e `it` no Vitest.
+  * Textos de interface voltados ao usuário (cópias de tela, rótulos de botões, títulos, mensagens de toast, templates de e-mail e glossário do Tubarão).

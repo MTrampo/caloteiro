@@ -1,43 +1,39 @@
-"use client"
+"use client";
 
-import { PromiseFilterTab, PromiseSortBy } from "./types"
-import { FaMagnifyingGlass, FaArrowDownWideShort } from "react-icons/fa6"
-import { cn } from "@/commons/lib/utils"
+import { PromiseFilterTab, PromiseSortBy } from "./types";
+import type { TrackingCounts } from "@/commons/models/tracking";
+import { FaMagnifyingGlass, FaArrowDownWideShort } from "react-icons/fa6";
+import { cn } from "@/commons/lib/utils";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
 const PROMISE_SORT_OPTIONS: { value: PromiseSortBy; label: string }[] = [
   { value: "late_first", label: "Atrasados no topo" },
   { value: "due_date_asc", label: "Vencimento próximo" },
   { value: "created_at_desc", label: "Mais recentes" },
   { value: "debtor_name_asc", label: "Nome (A-Z)" },
-]
+];
 
 const PROMISE_SORT_LABELS: Record<PromiseSortBy, string> = {
   late_first: "Atrasados no topo",
   due_date_asc: "Vencimento próximo",
   created_at_desc: "Mais recentes",
   debtor_name_asc: "Nome (A-Z)",
-}
+};
 
-type PromiseFiltersProps = {
-  activeTab: PromiseFilterTab
-  onTabChange: (tab: PromiseFilterTab) => void
-  searchQuery: string
-  onSearchChange: (query: string) => void
-  sortBy: PromiseSortBy
-  onSortChange: (sortBy: PromiseSortBy) => void
-  counts: {
-    emAberto: number
-    emDia: number
-    emAtraso: number
-    caloteiros: number
-  }
+interface PromiseFiltersProps {
+  activeTab: PromiseFilterTab;
+  onTabChange: (tab: PromiseFilterTab) => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  sortBy: PromiseSortBy;
+  onSortChange: (sortBy: PromiseSortBy) => void;
+  counts: TrackingCounts;
 }
 
 export function PromiseFilters({
@@ -50,18 +46,18 @@ export function PromiseFilters({
   counts,
 }: PromiseFiltersProps) {
   const tabs: { key: PromiseFilterTab; label: string; count: number; accent?: string }[] = [
-    { key: "EM_ABERTO", label: "Em Aberto", count: counts.emAberto, accent: "text-zinc-300" },
-    { key: "EM_DIA", label: "Em Dia", count: counts.emDia, accent: "text-emerald-400" },
-    { key: "EM_ATRASO", label: "Em Atraso", count: counts.emAtraso, accent: "text-amber-400" },
-    { key: "CALOTEIROS", label: "Caloteiros", count: counts.caloteiros, accent: "text-rose-400" },
-  ]
+    { key: "OPEN", label: "Em Aberto", count: counts.open, accent: "text-zinc-300" },
+    { key: "ON_TIME", label: "Em Dia", count: counts.onTime, accent: "text-emerald-400" },
+    { key: "OVERDUE", label: "Em Atraso", count: counts.overdue, accent: "text-amber-400" },
+    { key: "DEFAULTED", label: "Caloteiros", count: counts.defaulted, accent: "text-rose-400" },
+  ];
 
   return (
     <div className="space-y-3 w-full">
       {/* Linha 1: Abas de Gravidade livres e confortáveis */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none w-full">
         {tabs.map((tab) => {
-          const isActive = activeTab === tab.key
+          const isActive = activeTab === tab.key;
           return (
             <button
               key={tab.key}
@@ -85,51 +81,44 @@ export function PromiseFilters({
                 {tab.count}
               </span>
             </button>
-          )
+          );
         })}
       </div>
 
       {/* Linha 2: Busca Ampla e Seletor de Ordenação sem overflow */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full">
-        {/* Campo de Busca Rápida (flex-1 para ocupar todo o espaço restante) */}
+        {/* Campo de Busca Rápida */}
         <div className="relative flex-1 min-w-0">
           <FaMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-500 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Buscar por devedor, vulgo ou dívida..."
-            className="w-full h-10 bg-zinc-900 border border-border text-zinc-100 placeholder:text-zinc-500 text-xs sm:text-[13px] rounded-xl pl-9.5 pr-3 outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500/30 transition-all font-mono shadow-xs"
+            placeholder="Buscar por devedor, vulgo ou título..."
+            className="w-full h-10 pl-9 pr-3.5 bg-zinc-950/60 border border-zinc-800 text-zinc-100 placeholder:text-zinc-500 text-xs sm:text-sm rounded-xl outline-none focus:border-zinc-500 transition-colors font-mono"
           />
         </div>
 
-        {/* Seletor de Ordenação Shadcn UI com largura fixa para não empurrar a tela */}
-        <div className="w-full sm:w-52 shrink-0">
+        {/* Seletor de Ordenação com Shadcn Select */}
+        <div className="w-full sm:w-[220px] shrink-0 min-w-0">
           <Select
             value={sortBy}
-            onValueChange={(val) => {
-              if (val) onSortChange(val as PromiseSortBy)
-            }}
+            onValueChange={(val) => onSortChange(val as PromiseSortBy)}
           >
-            <SelectTrigger
-              size="default"
-              className="h-10 w-full bg-zinc-900 border-border text-xs font-mono text-zinc-300 hover:text-white hover:bg-zinc-850 transition-colors cursor-pointer rounded-xl"
-            >
-              <div className="flex items-center gap-2 truncate">
+            <SelectTrigger className="w-full h-10 bg-zinc-950/60 border border-zinc-800 text-zinc-200 text-xs font-mono rounded-xl px-3 focus:ring-0 focus:border-zinc-500">
+              <div className="flex items-center gap-2 min-w-0">
                 <FaArrowDownWideShort className="size-3.5 text-zinc-400 shrink-0" />
-                <SelectValue placeholder="Ordenar promessas">
-                  {(val) =>
-                    val ? PROMISE_SORT_LABELS[val as PromiseSortBy] || val : "Ordenar promessas"
-                  }
+                <SelectValue placeholder="Ordenar por">
+                  {PROMISE_SORT_LABELS[sortBy] || "Ordenar por"}
                 </SelectValue>
               </div>
             </SelectTrigger>
-            <SelectContent className="bg-zinc-900 border border-zinc-800 text-zinc-200">
+            <SelectContent className="bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs font-mono rounded-xl shadow-xl min-w-[200px]">
               {PROMISE_SORT_OPTIONS.map((opt) => (
                 <SelectItem
                   key={opt.value}
                   value={opt.value}
-                  className="text-xs font-mono py-2 cursor-pointer hover:bg-zinc-800 focus:bg-zinc-800 text-zinc-300 focus:text-white"
+                  className="focus:bg-zinc-800 focus:text-white cursor-pointer py-2 px-3 rounded-lg"
                 >
                   {opt.label}
                 </SelectItem>
@@ -139,5 +128,5 @@ export function PromiseFilters({
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,10 +1,10 @@
 export type PromiseGravity =
-  | "EM_DIA"
-  | "ATRASO_LEVE"
-  | "DESGULPA_PADRAO"
-  | "ACORDO_ROMPIDO";
+  | "ON_TIME"
+  | "LIGHT_DELAY"
+  | "STANDARD_EXCUSE"
+  | "BROKEN_AGREEMENT";
 
-export type PromiseFilterTab = "EM_ABERTO" | "EM_DIA" | "EM_ATRASO" | "CALOTEIROS";
+export type PromiseFilterTab = "OPEN" | "ON_TIME" | "OVERDUE" | "DEFAULTED";
 
 export type PromiseSortBy =
   | "late_first"
@@ -27,25 +27,25 @@ export interface PromiseItemFormatted {
   createdAt?: string;
 }
 
-export interface AcompanhamentoSummaryCardData {
+export interface TrackingSummaryCardData {
   amount: string;
   description: string;
   last: string;
   changePercent: number;
 }
 
-export interface AcompanhamentoSummaryData {
-  emAberto: AcompanhamentoSummaryCardData;
-  emDia: AcompanhamentoSummaryCardData;
-  emAtraso: AcompanhamentoSummaryCardData;
-  caloteiros: AcompanhamentoSummaryCardData;
+export interface TrackingSummaryData {
+  open: TrackingSummaryCardData;
+  onTime: TrackingSummaryCardData;
+  overdue: TrackingSummaryCardData;
+  defaulted: TrackingSummaryCardData;
 }
 
-export interface AcompanhamentoCounts {
-  emAberto: number;
-  emDia: number;
-  emAtraso: number;
-  caloteiros: number;
+export interface TrackingCounts {
+  open: number;
+  onTime: number;
+  overdue: number;
+  defaulted: number;
 }
 
 export interface PaginatedPromisesResult {
@@ -54,14 +54,14 @@ export interface PaginatedPromisesResult {
   page: number;
   limit: number;
   hasMore: boolean;
-  counts: AcompanhamentoCounts;
+  counts: TrackingCounts;
 }
 
 export interface GetPromisesQueryPayload {
-  userId: string;
+  tab?: PromiseFilterTab;
   page?: number;
   limit?: number;
-  tab?: PromiseFilterTab;
   search?: string;
   sortBy?: PromiseSortBy;
 }
+

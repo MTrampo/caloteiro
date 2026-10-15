@@ -3,6 +3,7 @@ export type {
   PromiseFilterTab,
   PromiseSortBy,
   PromiseItemFormatted as PromiseItem,
-  AcompanhamentoCounts,
+  TrackingCounts as AcompanhamentoCounts,
+  TrackingCounts,
   PaginatedPromisesResult,
-} from "@/commons/models/acompanhamento";
+} from "@/commons/models/tracking";

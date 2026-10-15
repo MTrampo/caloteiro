@@ -9,12 +9,17 @@ import {
   getUserPermissionsOrCacheApi,
   cancelSubscriptionApi,
   createCheckoutSessionApi,
+  getPlanLimitsApi,
 } from "../service/subscription.api";
 import * as subscriptionSupabase from "../repository/subscription.supabase";
+import * as debtorSupabase from "@/server/debtors/repository/debtor.supabase";
+import * as debtSupabase from "@/server/debts/repository/debt.supabase";
 import * as paymentService from "@/server/payment/service/payment.api";
 import * as subscriptionCookie from "@/commons/lib/auth/subscription";
 
 vi.mock("../repository/subscription.supabase");
+vi.mock("@/server/debtors/repository/debtor.supabase");
+vi.mock("@/server/debts/repository/debt.supabase");
 vi.mock("@/server/payment/service/payment.api");
 vi.mock("@/commons/lib/auth/subscription");
 
@@ -247,6 +252,97 @@ describe("Serviço de Assinaturas (subscription.api.ts)", () => {
       expect(response.status).toBe(HttpStatusEnum.Ok);
       expect(response.data?.isFree).toBe(false);
       expect(response.data?.initPoint).toBe("https://mercadopago.com/checkout/123");
+    });
+  });
+
+  describe("getPlanLimitsApi (Limites de Plano e Travas)", () => {
+    it("deve acusar limite atingido de devedores e dívidas no plano grátis com 2 cadastros", async () => {
+      const freePermissions: UserPermissions = {
+        maxDebtors: 2,
+        canCustomTemplates: false,
+        canExportReports: false,
+        canAccessFinancial: false,
+        canDebtorPortal: false,
+        canRiskScore: false,
+        canAttachReceipts: false,
+        isFreePlan: true,
+        isSubscriptionActive: false,
+      };
+
+      vi.mocked(subscriptionCookie.getCookieSubscriptionPayload).mockResolvedValue({
+        permissions: freePermissions,
+      });
+      vi.mocked(debtorSupabase.countDebtorsByUserIdSupabase).mockResolvedValue(2);
+      vi.mocked(debtSupabase.countActiveDebtsByUserIdSupabase).mockResolvedValue(2);
+      vi.mocked(subscriptionSupabase.getSubscriptionByUserIdSupabase).mockResolvedValue(null);
+
+      const limits = await getPlanLimitsApi(userId);
+
+      expect(limits.maxDebtors).toBe(2);
+      expect(limits.currentDebtorsCount).toBe(2);
+      expect(limits.currentActiveDebtsCount).toBe(2);
+      expect(limits.isDebtorLimitReached).toBe(true);
+      expect(limits.isDebtLimitReached).toBe(true);
+      expect(limits.canCreateDebtor).toBe(false);
+      expect(limits.canCreateDebt).toBe(false);
+      expect(limits.isFreePlan).toBe(true);
+    });
+
+    it("deve permitir novos cadastros quando usuário estiver abaixo do limite", async () => {
+      const freePermissions: UserPermissions = {
+        maxDebtors: 2,
+        canCustomTemplates: false,
+        canExportReports: false,
+        canAccessFinancial: false,
+        canDebtorPortal: false,
+        canRiskScore: false,
+        canAttachReceipts: false,
+        isFreePlan: true,
+        isSubscriptionActive: false,
+      };
+
+      vi.mocked(subscriptionCookie.getCookieSubscriptionPayload).mockResolvedValue({
+        permissions: freePermissions,
+      });
+      vi.mocked(debtorSupabase.countDebtorsByUserIdSupabase).mockResolvedValue(1);
+      vi.mocked(debtSupabase.countActiveDebtsByUserIdSupabase).mockResolvedValue(0);
+      vi.mocked(subscriptionSupabase.getSubscriptionByUserIdSupabase).mockResolvedValue(null);
+
+      const limits = await getPlanLimitsApi(userId);
+
+      expect(limits.isDebtorLimitReached).toBe(false);
+      expect(limits.isDebtLimitReached).toBe(false);
+      expect(limits.canCreateDebtor).toBe(true);
+      expect(limits.canCreateDebt).toBe(true);
+    });
+
+    it("deve liberar ilimitado quando maxDebtors for null em planos avançados", async () => {
+      const proPermissions: UserPermissions = {
+        maxDebtors: null,
+        canCustomTemplates: true,
+        canExportReports: true,
+        canAccessFinancial: true,
+        canDebtorPortal: true,
+        canRiskScore: true,
+        canAttachReceipts: true,
+        isFreePlan: false,
+        isSubscriptionActive: true,
+      };
+
+      vi.mocked(subscriptionCookie.getCookieSubscriptionPayload).mockResolvedValue({
+        permissions: proPermissions,
+      });
+      vi.mocked(debtorSupabase.countDebtorsByUserIdSupabase).mockResolvedValue(50);
+      vi.mocked(debtSupabase.countActiveDebtsByUserIdSupabase).mockResolvedValue(50);
+      vi.mocked(subscriptionSupabase.getSubscriptionByUserIdSupabase).mockResolvedValue(null);
+
+      const limits = await getPlanLimitsApi(userId);
+
+      expect(limits.maxDebtors).toBeNull();
+      expect(limits.isDebtorLimitReached).toBe(false);
+      expect(limits.isDebtLimitReached).toBe(false);
+      expect(limits.canCreateDebtor).toBe(true);
+      expect(limits.canCreateDebt).toBe(true);
     });
   });
 });

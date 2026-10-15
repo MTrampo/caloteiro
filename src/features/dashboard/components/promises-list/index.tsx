@@ -5,40 +5,40 @@ import type {
   PromiseFilterTab,
   PromiseItem,
   PromiseSortBy,
-  AcompanhamentoCounts,
+  TrackingCounts,
 } from "./types"
 import { PromiseFilters } from "./promise-filters"
 import { PromiseCardItem } from "./promise-card-item"
-import { getAcompanhamentoDataAction } from "@/actions/acompanhamento"
+import { getTrackingDataAction } from "@/actions/tracking"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface PromisesListProps {
   initialData?: PromiseItem[]
   initialHasMore?: boolean
-  initialCounts?: AcompanhamentoCounts
+  initialCounts?: TrackingCounts
 }
 
 export function PromisesList({
   initialData = [],
   initialHasMore = false,
   initialCounts = {
-    emAberto: initialData.length,
-    emDia: initialData.filter((p) => p.gravity === "EM_DIA").length,
-    emAtraso: initialData.filter(
-      (p) => p.gravity === "ATRASO_LEVE" || p.gravity === "DESGULPA_PADRAO"
+    open: initialData.length,
+    onTime: initialData.filter((p) => p.gravity === "ON_TIME").length,
+    overdue: initialData.filter(
+      (p) => p.gravity === "LIGHT_DELAY" || p.gravity === "STANDARD_EXCUSE"
     ).length,
-    caloteiros: initialData.filter((p) => p.gravity === "ACORDO_ROMPIDO").length,
+    defaulted: initialData.filter((p) => p.gravity === "BROKEN_AGREEMENT").length,
   },
 }: PromisesListProps) {
   const [items, setItems] = React.useState<PromiseItem[]>(initialData)
-  const [activeTab, setActiveTab] = React.useState<PromiseFilterTab>("EM_ABERTO")
+  const [activeTab, setActiveTab] = React.useState<PromiseFilterTab>("OPEN")
   const [searchQuery, setSearchQuery] = React.useState("")
   const [debouncedSearch, setDebouncedSearch] = React.useState("")
   const [sortBy, setSortBy] = React.useState<PromiseSortBy>("late_first")
   const [page, setPage] = React.useState(1)
   const [hasMore, setHasMore] = React.useState(initialHasMore)
-  const [counts, setCounts] = React.useState<AcompanhamentoCounts>(initialCounts)
+  const [counts, setCounts] = React.useState<TrackingCounts>(initialCounts)
   const [isLoadingMore, setIsLoadingMore] = React.useState(false)
   const [isFiltering, setIsFiltering] = React.useState(false)
 
@@ -59,7 +59,7 @@ export function PromisesList({
     async (tab: PromiseFilterTab, search: string, sort: PromiseSortBy) => {
       setIsFiltering(true)
       try {
-        const res = await getAcompanhamentoDataAction({
+        const res = await getTrackingDataAction({
           page: 1,
           limit: 12,
           tab,
@@ -100,7 +100,7 @@ export function PromisesList({
     const nextPage = page + 1
 
     try {
-      const res = await getAcompanhamentoDataAction({
+      const res = await getTrackingDataAction({
         page: nextPage,
         limit: 12,
         tab: activeTab,
@@ -207,18 +207,18 @@ export function PromisesList({
           <p className="text-base font-bold text-white font-heading">
             {debouncedSearch
               ? "Nenhuma promessa encontrada para essa busca."
-              : activeTab === "CALOTEIROS"
+              : activeTab === "DEFAULTED"
               ? "Nenhum caloteiro nessa categoria."
-              : activeTab === "EM_ATRASO"
+              : activeTab === "OVERDUE"
               ? "Nenhum atraso registrado no momento."
               : "Nenhuma promessa ativa no momento."}
           </p>
           <p className="text-xs sm:text-sm text-zinc-400 font-mono leading-relaxed">
             {debouncedSearch
               ? "Confira se digitou o nome certo ou se o devedor já sumiu do mapa."
-              : activeTab === "CALOTEIROS"
+              : activeTab === "DEFAULTED"
               ? "Ou seus devedores viraram santos ou o milagre finalmente aconteceu."
-              : activeTab === "EM_ATRASO"
+              : activeTab === "OVERDUE"
               ? "Todo mundo em dia? Estranho... confere o extrato pra ver se não foi ilusão."
               : "Você pode registrar um novo acordo a qualquer momento pelo botão acima."}
           </p>

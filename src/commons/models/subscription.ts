@@ -71,6 +71,19 @@ export interface UserPermissions {
   isSubscriptionActive: boolean;
 }
 
+export interface UserPlanLimits {
+  maxDebtors: number | null;
+  currentDebtorsCount: number;
+  currentActiveDebtsCount: number;
+  canCreateDebtor: boolean;
+  canCreateDebt: boolean;
+  isDebtorLimitReached: boolean;
+  isDebtLimitReached: boolean;
+  planSlug: string;
+  planName: string;
+  isFreePlan: boolean;
+}
+
 /**
  * Payload para solicitação de troca de plano (Upgrade ou Downgrade)
  */

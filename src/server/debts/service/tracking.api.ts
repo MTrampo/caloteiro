@@ -4,14 +4,16 @@ import {
   getActiveDebtsWithRelationsSupabase,
   getInstallmentIdsWithExcusesSupabase,
   type DebtWithRelationsRow,
-} from "../repository/acompanhamento.supabase";
+} from "../repository/tracking.supabase";
 import type {
   PromiseItemFormatted,
   PromiseGravity,
-  AcompanhamentoSummaryData,
+  PromiseFilterTab,
+  TrackingSummaryData,
+  TrackingCounts,
   PaginatedPromisesResult,
   GetPromisesQueryPayload,
-} from "@/commons/models/acompanhamento";
+} from "@/commons/models/tracking";
 import { getNameInitials, calculateDaysDifference } from "@/commons/utils/format";
 
 interface ProcessedPromiseDebt {
@@ -86,7 +88,7 @@ function processDebtGravityAndStatus(
   // 1. Dívida quitada
   if (paidCount >= totalCount || debt.status === "settled") {
     return {
-      gravity: "EM_DIA",
+      gravity: "ON_TIME",
       dueStatusText: "Totalmente quitada",
       paidCount: totalCount,
       totalCount,
@@ -102,7 +104,7 @@ function processDebtGravityAndStatus(
         ? `${overdueCount} parcelas acumuladas`
         : `Venceu há ${maxLateDays} dias`;
     return {
-      gravity: "ACORDO_ROMPIDO",
+      gravity: "BROKEN_AGREEMENT",
       dueStatusText: text,
       paidCount,
       totalCount,
@@ -114,7 +116,7 @@ function processDebtGravityAndStatus(
   // 3. Desculpa Padrão (tem caô anotado em parcela atrasada)
   if (hasExcuseOnOverdue) {
     return {
-      gravity: "DESGULPA_PADRAO",
+      gravity: "STANDARD_EXCUSE",
       dueStatusText: `Venceu há ${maxLateDays} dias (com caô)`,
       paidCount,
       totalCount,
@@ -126,7 +128,7 @@ function processDebtGravityAndStatus(
   // 4. Atraso Leve (1 a 15 dias de atraso, 1 parcela)
   if (overdueCount > 0) {
     return {
-      gravity: "ATRASO_LEVE",
+      gravity: "LIGHT_DELAY",
       dueStatusText:
         maxLateDays === 1 ? "Venceu ontem" : `Venceu há ${maxLateDays} dias`,
       paidCount,
@@ -149,7 +151,7 @@ function processDebtGravityAndStatus(
   }
 
   return {
-    gravity: "EM_DIA",
+    gravity: "ON_TIME",
     dueStatusText: statusText,
     paidCount,
     totalCount,
@@ -163,68 +165,79 @@ function processDebtGravityAndStatus(
  */
 export function buildSummaryCards(
   processed: ProcessedPromiseDebt[]
-): AcompanhamentoSummaryData {
+): TrackingSummaryData {
   const total = processed.length;
-  const emDia = processed.filter((p) => p.promise.gravity === "EM_DIA").length;
-  const emAtraso = processed.filter(
+  const onTime = processed.filter((p) => p.promise.gravity === "ON_TIME").length;
+  const overdue = processed.filter(
     (p) =>
-      p.promise.gravity === "ATRASO_LEVE" ||
-      p.promise.gravity === "DESGULPA_PADRAO"
+      p.promise.gravity === "LIGHT_DELAY" ||
+      p.promise.gravity === "STANDARD_EXCUSE"
   ).length;
-  const caloteiros = processed.filter(
-    (p) => p.promise.gravity === "ACORDO_ROMPIDO"
+  const defaulted = processed.filter(
+    (p) => p.promise.gravity === "BROKEN_AGREEMENT"
   ).length;
 
-  const emDiaPercent = total > 0 ? Math.round((emDia / total) * 100) : 0;
-  const emAtrasoPercent = total > 0 ? Math.round((emAtraso / total) * 100) : 0;
-  const caloteirosPercent = total > 0 ? Math.round((caloteiros / total) * 100) : 0;
+  const onTimePercent = total > 0 ? Math.round((onTime / total) * 100) : 0;
+  const overduePercent = total > 0 ? Math.round((overdue / total) * 100) : 0;
+  const defaultedPercent = total > 0 ? Math.round((defaulted / total) * 100) : 0;
 
   return {
-    emAberto: {
+    open: {
       amount: total === 1 ? "1 suspeito" : `${total} suspeitos`,
       description: "Promessas e pendências na praça",
       last: "Dívidas ativas no radar",
       changePercent: total > 0 ? 100 : 0,
     },
-    emDia: {
-      amount: emDia === 1 ? "1 milagreiro" : `${emDia} milagreiros`,
+    onTime: {
+      amount: onTime === 1 ? "1 milagreiro" : `${onTime} milagreiros`,
       description: "Pagando sem drama nem desculpa",
       last: "Raros e pontuais",
-      changePercent: emDiaPercent,
+      changePercent: onTimePercent,
     },
-    emAtraso: {
-      amount: emAtraso === 1 ? "1 sumido" : `${emAtraso} sumidos`,
+    overdue: {
+      amount: overdue === 1 ? "1 sumido" : `${overdue} sumidos`,
       description: "Passou do prazo combinado",
       last: "Hora do 'bom dia, sumido'",
-      changePercent: emAtrasoPercent,
+      changePercent: overduePercent,
     },
-    caloteiros: {
-      amount: caloteiros === 1 ? "1 lenda" : `${caloteiros} lendas`,
+    defaulted: {
+      amount: defaulted === 1 ? "1 lenda" : `${defaulted} lendas`,
       description: "Deram o perdido no mês",
       last: "Alerta vermelho de golpe",
-      changePercent: caloteirosPercent,
+      changePercent: defaultedPercent,
     },
   };
 }
 
 /**
+ * Normaliza o valor de tab para o padrão inglês
+ */
+function normalizeTab(rawTab?: string): PromiseFilterTab {
+  if (rawTab === "EM_DIA" || rawTab === "ON_TIME") return "ON_TIME";
+  if (rawTab === "EM_ATRASO" || rawTab === "OVERDUE") return "OVERDUE";
+  if (rawTab === "CALOTEIROS" || rawTab === "DEFAULTED") return "DEFAULTED";
+  return "OPEN";
+}
+
+/**
  * Consulta de promessas com filtros, ordenação e paginação (Infinite Scroll)
  */
-export const getAcompanhamentoDataApi = async (
-  payload: GetPromisesQueryPayload
+export const getTrackingDataApi = async (
+  payload: GetPromisesQueryPayload & { userId: string }
 ): Promise<{
-  summary: AcompanhamentoSummaryData;
+  summary: TrackingSummaryData;
   paginated: PaginatedPromisesResult;
 }> => {
   const {
     userId,
     page = 1,
     limit = 12,
-    tab = "EM_ABERTO",
+    tab: rawTab,
     search = "",
     sortBy = "late_first",
   } = payload;
 
+  const tab = normalizeTab(rawTab);
   const debtsRaw = await getActiveDebtsWithRelationsSupabase(userId);
 
   // Coleta IDs de parcelas para buscar desculpas registradas
@@ -275,16 +288,16 @@ export const getAcompanhamentoDataApi = async (
   }
 
   // 1. Contagens reais para os badges das abas
-  const counts = {
-    emAberto: processed.length,
-    emDia: processed.filter((p) => p.promise.gravity === "EM_DIA").length,
-    emAtraso: processed.filter(
+  const counts: TrackingCounts = {
+    open: processed.length,
+    onTime: processed.filter((p) => p.promise.gravity === "ON_TIME").length,
+    overdue: processed.filter(
       (p) =>
-        p.promise.gravity === "ATRASO_LEVE" ||
-        p.promise.gravity === "DESGULPA_PADRAO"
+        p.promise.gravity === "LIGHT_DELAY" ||
+        p.promise.gravity === "STANDARD_EXCUSE"
     ).length,
-    caloteiros: processed.filter(
-      (p) => p.promise.gravity === "ACORDO_ROMPIDO"
+    defaulted: processed.filter(
+      (p) => p.promise.gravity === "BROKEN_AGREEMENT"
     ).length,
   };
 
@@ -293,15 +306,15 @@ export const getAcompanhamentoDataApi = async (
 
   // 3. Filtragem por Aba
   let filtered = processed.filter(({ promise }) => {
-    if (tab === "EM_DIA") return promise.gravity === "EM_DIA";
-    if (tab === "EM_ATRASO") {
+    if (tab === "ON_TIME") return promise.gravity === "ON_TIME";
+    if (tab === "OVERDUE") {
       return (
-        promise.gravity === "ATRASO_LEVE" ||
-        promise.gravity === "DESGULPA_PADRAO"
+        promise.gravity === "LIGHT_DELAY" ||
+        promise.gravity === "STANDARD_EXCUSE"
       );
     }
-    if (tab === "CALOTEIROS") return promise.gravity === "ACORDO_ROMPIDO";
-    return true; // EM_ABERTO
+    if (tab === "DEFAULTED") return promise.gravity === "BROKEN_AGREEMENT";
+    return true; // OPEN
   });
 
   // 4. Filtragem por Busca
@@ -319,12 +332,11 @@ export const getAcompanhamentoDataApi = async (
   // 5. Ordenação Flexível
   filtered.sort((a, b) => {
     if (sortBy === "late_first") {
-      // Prioridade: ACORDO_ROMPIDO (3) > DESGULPA_PADRAO (2) > ATRASO_LEVE (1) > EM_DIA (0)
       const gravityScore: Record<PromiseGravity, number> = {
-        ACORDO_ROMPIDO: 4,
-        DESGULPA_PADRAO: 3,
-        ATRASO_LEVE: 2,
-        EM_DIA: 1,
+        BROKEN_AGREEMENT: 4,
+        STANDARD_EXCUSE: 3,
+        LIGHT_DELAY: 2,
+        ON_TIME: 1,
       };
       const scoreDiff =
         gravityScore[b.promise.gravity] - gravityScore[a.promise.gravity];
@@ -377,3 +389,4 @@ export const getAcompanhamentoDataApi = async (
     },
   };
 };
+

@@ -2,18 +2,21 @@ import { SummaryCardsGrid } from "./components/summary-cards-grid"
 import { PromisesList } from "./components/promises-list"
 import { NewButton } from "@/components/buttons/new-button"
 import type {
-  AcompanhamentoSummaryData,
+  TrackingSummaryData,
   PaginatedPromisesResult,
-} from "@/commons/models/acompanhamento"
+} from "@/commons/models/tracking"
+import type { UserPlanLimits } from "@/commons/models/subscription"
 
 interface DashboardFeatureProps {
-  initialSummary?: AcompanhamentoSummaryData
+  initialSummary?: TrackingSummaryData
   initialPaginated?: PaginatedPromisesResult
+  planLimits?: UserPlanLimits | null
 }
 
 export function DashboardFeature({
   initialSummary,
   initialPaginated,
+  planLimits,
 }: DashboardFeatureProps) {
   return (
     <div className="flex-1 p-4 sm:p-6 space-y-6 w-full min-w-0 overflow-x-hidden">
@@ -32,7 +35,11 @@ export function DashboardFeature({
           <NewButton
             href="/painel/dividas/nova"
             label="Nova Dívida"
-            icon="plus"
+            icon="file-circle-plus"
+            isLocked={planLimits?.isDebtLimitReached}
+            lockReason="debt"
+            maxAllowed={planLimits?.maxDebtors ?? 2}
+            planName={planLimits?.planName ?? "Tubarão Lixa"}
           />
         </div>
       </div>

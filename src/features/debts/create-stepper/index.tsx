@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { DebtorItemFormatted } from "@/commons/models/debtor";
-import type { UserPermissions } from "@/commons/models/subscription";
+import type { UserPermissions, UserPlanLimits } from "@/commons/models/subscription";
 import type { InterestType } from "@/commons/models/debt";
 import { createDebtAction } from "@/actions/debts";
 import { useStepper } from "./utils/stepper-definition";
@@ -24,6 +24,7 @@ interface CreateDebtStepperFeatureProps {
     defaultInterestType: string;
   } | null;
   preselectedDebtorId?: string;
+  planLimits?: UserPlanLimits | null;
 }
 
 export function CreateDebtStepperFeature({
@@ -31,6 +32,7 @@ export function CreateDebtStepperFeature({
   permissions,
   defaultSettings,
   preselectedDebtorId,
+  planLimits,
 }: CreateDebtStepperFeatureProps) {
   const router = useRouter();
   const stepper = useStepper();
@@ -165,6 +167,7 @@ export function CreateDebtStepperFeature({
             selectedDebtor={selectedDebtor}
             onSelectDebtor={(debtor) => setSelectedDebtor(debtor)}
             onNext={() => stepper.next()}
+            planLimits={planLimits}
           />
         )}
 

@@ -8,11 +8,13 @@ import { FinancialKpiGrid } from "./components/financial-kpi-grid"
 import { PriorityDebtorCard } from "./components/priority-debtor-card"
 import { PortfolioDistribution } from "./components/portfolio-distribution"
 import { DebtsEfficiency } from "./components/debts-efficiency"
+import type { UserPlanLimits } from "@/commons/models/subscription"
 
-import { useRouter } from "next/navigation"
+interface DebtsFeatureProps {
+  planLimits?: UserPlanLimits | null
+}
 
-export function DebtsFeature() {
-  const router = useRouter()
+export function DebtsFeature({ planLimits }: DebtsFeatureProps) {
   const [period, setPeriod] = useState<FinancialPeriod>("month")
   const currentData = FINANCIAL_DATA_BY_PERIOD[period]
 
@@ -22,7 +24,7 @@ export function DebtsFeature() {
       <DebtsHeader
         period={period}
         onPeriodChange={setPeriod}
-        onNewDebtClick={() => router.push("/painel/dividas/nova")}
+        planLimits={planLimits}
       />
 
       {/* 2. Grid dos 4 Cards Financeiros em R$ (A Receber, Já no Bolso, Travado, Prejuízo) */}

@@ -10,8 +10,7 @@ export interface DebtWithRelationsRow extends DebtRow {
 }
 
 /**
- * Busca todas as dívidas ativas (e recentemente quitadas se necessário)
- * com devedores e parcelas vinculadas para o Tubarão autenticado.
+ * Busca todas as dívidas ativas com devedores e parcelas vinculadas para o Tubarão autenticado.
  */
 export const getActiveDebtsWithRelationsSupabase = async (
   userId: string
@@ -37,7 +36,7 @@ export const getActiveDebtsWithRelationsSupabase = async (
 };
 
 /**
- * Busca os IDs de parcelas com desculpas/caôs registradas
+ * Busca os IDs de parcelas com desculpas registradas
  */
 export const getInstallmentIdsWithExcusesSupabase = async (
   installmentIds: string[]

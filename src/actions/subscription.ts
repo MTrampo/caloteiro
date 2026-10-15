@@ -5,11 +5,13 @@ import {
   cancelSubscriptionApi,
   createCheckoutSessionApi,
   changeSubscriptionPlanApi,
+  getPlanLimitsApi,
 } from "@/server/account/service/subscription.api";
 import { getUserLoggedApi } from "@/server/account/service/auth.api";
 import { HttpStatusEnum } from "@/commons/enums/http";
 import type {
   Plan,
+  UserPlanLimits,
   CheckoutSessionResult,
   PlanChangeResult,
 } from "@/commons/models/subscription";
@@ -192,6 +194,34 @@ export async function changeSubscriptionPlanAction(
     return {
       success: false,
       error: "Falha na comunicação ao alterar o plano.",
+    };
+  }
+}
+
+/**
+ * Retorna os limites e travas de plano do usuário autenticado
+ */
+export async function getPlanLimitsAction(): Promise<ActionResponse<UserPlanLimits>> {
+  try {
+    const userResponse = await getUserLoggedApi();
+    const userId = userResponse.data?.user?.id;
+    if (userResponse.status !== HttpStatusEnum.Ok || !userId) {
+      return {
+        success: false,
+        error: "Acesso negado. Usuário não autenticado.",
+      };
+    }
+
+    const limits = await getPlanLimitsApi(userId);
+    return {
+      success: true,
+      data: limits,
+    };
+  } catch (err) {
+    console.error("[getPlanLimitsAction] Erro inesperado:", err);
+    return {
+      success: false,
+      error: "Falha ao obter limites do plano.",
     };
   }
 }

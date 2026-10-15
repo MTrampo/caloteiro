@@ -24,12 +24,15 @@ import { sendPlanChangeEmailApi } from "@/server/email/service/email.api";
 import type { ResponseProps } from "@/commons/models/api";
 import type {
   UserPermissions,
+  UserPlanLimits,
   CreateCheckoutSessionPayload,
   CheckoutSessionResult,
   CancelSubscriptionPayload,
   ChangeSubscriptionPlanPayload,
   PlanChangeResult,
 } from "@/commons/models/subscription";
+import { countDebtorsByUserIdSupabase } from "@/server/debtors/repository/debtor.supabase";
+import { countActiveDebtsByUserIdSupabase } from "@/server/debts/repository/debt.supabase";
 
 /**
  * Retorna as permissões e limites ativos do credor no servidor
@@ -68,6 +71,38 @@ export const getUserPermissionsOrCacheApi = async (
     );
   }
   return permissions;
+};
+
+/**
+ * Retorna os limites e status de trava de plano do usuário (devedores e dívidas)
+ */
+export const getPlanLimitsApi = async (
+  userId: string
+): Promise<UserPlanLimits> => {
+  const [permissions, currentDebtorsCount, currentActiveDebtsCount, sub] =
+    await Promise.all([
+      getUserPermissionsOrCacheApi(userId),
+      countDebtorsByUserIdSupabase(userId),
+      countActiveDebtsByUserIdSupabase(userId),
+      getSubscriptionByUserIdSupabase(userId),
+    ]);
+
+  const max = permissions.maxDebtors;
+  const isDebtorLimitReached = max !== null && currentDebtorsCount >= max;
+  const isDebtLimitReached = max !== null && currentActiveDebtsCount >= max;
+
+  return {
+    maxDebtors: max,
+    currentDebtorsCount,
+    currentActiveDebtsCount,
+    canCreateDebtor: !isDebtorLimitReached,
+    canCreateDebt: !isDebtLimitReached,
+    isDebtorLimitReached,
+    isDebtLimitReached,
+    planSlug: sub?.plan?.slug || "tubarao-lixa",
+    planName: sub?.plan?.name || "Tubarão Lixa",
+    isFreePlan: permissions.isFreePlan,
+  };
 };
 
 

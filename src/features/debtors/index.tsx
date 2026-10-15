@@ -9,11 +9,13 @@ import { DebtorCard } from "./components/debtor-card"
 import { DebtorCardSkeleton } from "./components/debtor-card-skeleton"
 import { getDebtorsAction } from "@/actions/debtors"
 import type { DebtorItemFormatted } from "./types"
+import type { UserPlanLimits } from "@/commons/models/subscription"
 
 interface DebtorsFeatureProps {
   initialDebtors?: DebtorItemFormatted[]
   initialHasMore?: boolean
   initialTotalCount?: number
+  planLimits?: UserPlanLimits | null
 }
 
 const ITEMS_PER_PAGE = 12
@@ -22,6 +24,7 @@ export function DebtorsFeature({
   initialDebtors = [],
   initialHasMore = false,
   initialTotalCount = 0,
+  planLimits,
 }: DebtorsFeatureProps) {
   const [debtors, setDebtors] = React.useState<DebtorItemFormatted[]>(initialDebtors)
   const [searchTerm, setSearchTerm] = React.useState("")
@@ -127,6 +130,10 @@ export function DebtorsFeature({
           href="/painel/devedores/novo"
           label="Cadastrar Devedor"
           icon="user-plus"
+          isLocked={planLimits?.isDebtorLimitReached}
+          lockReason="debtor"
+          maxAllowed={planLimits?.maxDebtors ?? 2}
+          planName={planLimits?.planName ?? "Tubarão Lixa"}
         />
       </div>
 
@@ -215,6 +222,10 @@ export function DebtorsFeature({
               href="/painel/devedores/novo"
               label="Cadastrar Primeiro Devedor"
               icon="user-plus"
+              isLocked={planLimits?.isDebtorLimitReached}
+              lockReason="debtor"
+              maxAllowed={planLimits?.maxDebtors ?? 2}
+              planName={planLimits?.planName ?? "Tubarão Lixa"}
             />
           </div>
         </div>

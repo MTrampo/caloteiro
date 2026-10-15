@@ -3,7 +3,8 @@ import type { Metadata } from "next"
 import Header from "@/components/header/dashboard"
 import { DashboardFeature } from "@/features/dashboard"
 import { getUserLoggedApi } from "@/server/account/service/auth.api"
-import { getAcompanhamentoDataApi } from "@/server/debts/service/acompanhamento.api"
+import { getTrackingDataApi } from "@/server/debts/service/tracking.api"
+import { getPlanLimitsApi } from "@/server/account/service/subscription.api"
 
 export const metadata: Metadata = {
   title: "Acompanhamento — Dívidas & Pessoas",
@@ -18,13 +19,16 @@ export default async function AcompanhamentoPage() {
     redirect("/signin")
   }
 
-  const { summary, paginated } = await getAcompanhamentoDataApi({
-    userId,
-    page: 1,
-    limit: 12,
-    tab: "EM_ABERTO",
-    sortBy: "late_first",
-  })
+  const [{ summary, paginated }, planLimits] = await Promise.all([
+    getTrackingDataApi({
+      userId,
+      page: 1,
+      limit: 12,
+      tab: "OPEN",
+      sortBy: "late_first",
+    }),
+    getPlanLimitsApi(userId),
+  ])
 
   return (
     <>
@@ -32,6 +36,7 @@ export default async function AcompanhamentoPage() {
       <DashboardFeature
         initialSummary={summary}
         initialPaginated={paginated}
+        planLimits={planLimits}
       />
     </>
   )

@@ -7,6 +7,10 @@ import { getCreditorSettingsApi } from "@/server/account/service/creditor-settin
 import { presentDebtorsList } from "@/commons/utils/format";
 import { CreateDebtStepperFeature } from "@/features/debts/create-stepper";
 
+import Link from "next/link";
+import { FaTriangleExclamation } from "react-icons/fa6";
+import { getPlanLimitsApi } from "@/server/account/service/subscription.api";
+
 export const metadata: Metadata = {
   title: "Nova Dívida — Caloteiro",
   description: "Criação e formalização de acordo de dívida com cronograma de parcelas.",
@@ -28,10 +32,11 @@ export default async function NovaDividaPage({ searchParams }: NovaDividaPagePro
   const query = searchParams ? await searchParams : undefined;
   const preselectedDebtorId = query?.debtorId;
 
-  // Busca todos os devedores do usuário para seleção no passo 1
-  const [debtorsResult, settingsResult] = await Promise.all([
+  // Busca todos os devedores do usuário, configurações e limites do plano
+  const [debtorsResult, settingsResult, planLimits] = await Promise.all([
     getDebtorsApi({ userId, limit: 100, page: 1 }),
     getCreditorSettingsApi(userId),
+    getPlanLimitsApi(userId),
   ]);
 
   const debtorsFormatted = presentDebtorsList(debtorsResult.items);
@@ -58,12 +63,58 @@ export default async function NovaDividaPage({ searchParams }: NovaDividaPagePro
   return (
     <>
       <Header title="Nova Dívida" />
-      <CreateDebtStepperFeature
-        debtors={debtorsFormatted}
-        permissions={permissions}
-        defaultSettings={defaultSettings}
-        preselectedDebtorId={preselectedDebtorId}
-      />
+      {planLimits.isDebtLimitReached ? (
+        <div className="flex-1 p-4 sm:p-6 space-y-6 w-full">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+            <div className="space-y-1">
+              <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white">
+                Nova Dívida
+              </h2>
+              <p className="text-xs sm:text-sm text-zinc-400 font-mono">
+                Formalize o empréstimo, configure valores e prazos, e ative o rastreio do Tubarão.
+              </p>
+            </div>
+          </div>
+
+          <div className="py-16 sm:py-24 text-center space-y-5 max-w-md mx-auto">
+            <div className="size-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto text-amber-500 shadow-xs">
+              <FaTriangleExclamation className="size-6" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-heading text-lg font-bold text-white">
+                O Tanque Encheu!
+              </h3>
+              <p className="text-xs sm:text-sm font-mono text-zinc-400 leading-relaxed">
+                Seu plano atual ({planLimits.planName}) permite manter até {planLimits.maxDebtors} dívidas ativas simultaneamente. Finalize uma pendência ou evolua de plano para continuar farejando cada centavo na pista!
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/painel/dividas/acompanhamento"
+                className="w-full sm:w-auto inline-flex items-center justify-center h-10 px-4 text-xs font-mono rounded-xl border border-zinc-800 text-zinc-400 hover:text-white"
+              >
+                Voltar ao Acompanhamento
+              </Link>
+              <Link
+                href="/painel/conta/assinatura"
+                className="w-full sm:w-auto inline-flex items-center justify-center h-10 px-6 text-xs sm:text-sm font-bold font-heading rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 shadow-md"
+              >
+                Fazer Upgrade
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <CreateDebtStepperFeature
+          debtors={debtorsFormatted}
+          permissions={permissions}
+          defaultSettings={defaultSettings}
+          preselectedDebtorId={preselectedDebtorId}
+          planLimits={planLimits}
+        />
+      )}
     </>
   );
 }

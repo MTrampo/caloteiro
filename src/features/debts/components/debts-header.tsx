@@ -1,13 +1,13 @@
-"use client"
-
 import { NewButton } from "@/components/buttons/new-button"
 import { FinancialPeriod } from "../types"
 import { cn } from "@/commons/lib/utils"
+import type { UserPlanLimits } from "@/commons/models/subscription"
 
 type DebtsHeaderProps = {
   period: FinancialPeriod
   onPeriodChange: (period: FinancialPeriod) => void
   onNewDebtClick?: () => void
+  planLimits?: UserPlanLimits | null
 }
 
 const PERIOD_OPTIONS: { id: FinancialPeriod; label: string; sub: string }[] = [
@@ -16,7 +16,7 @@ const PERIOD_OPTIONS: { id: FinancialPeriod; label: string; sub: string }[] = [
   { id: "year", label: "Ano", sub: "12 meses" },
 ]
 
-export function DebtsHeader({ period, onPeriodChange, onNewDebtClick }: DebtsHeaderProps) {
+export function DebtsHeader({ period, onPeriodChange, onNewDebtClick, planLimits }: DebtsHeaderProps) {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-1">
       {/* Bloco de Título */}
@@ -57,8 +57,12 @@ export function DebtsHeader({ period, onPeriodChange, onNewDebtClick }: DebtsHea
         <NewButton
           href="/painel/dividas/nova"
           label="Nova Dívida"
-          icon="plus"
+          icon="file-circle-plus"
           onClick={onNewDebtClick}
+          isLocked={planLimits?.isDebtLimitReached}
+          lockReason="debt"
+          maxAllowed={planLimits?.maxDebtors ?? 2}
+          planName={planLimits?.planName ?? "Tubarão Lixa"}
         />
       </div>
     </div>

@@ -1,17 +1,17 @@
 'use server';
 
 import { getUserLoggedApi } from '@/server/account/service/auth.api';
-import { getPromisesQuerySchema } from '@/commons/validations/acompanhamento';
-import { getAcompanhamentoDataApi } from '@/server/debts/service/acompanhamento.api';
+import { getPromisesQuerySchema } from '@/commons/validations/tracking';
+import { getTrackingDataApi } from '@/server/debts/service/tracking.api';
 import type {
   PaginatedPromisesResult,
-  AcompanhamentoSummaryData,
-} from '@/commons/models/acompanhamento';
+  TrackingSummaryData,
+} from '@/commons/models/tracking';
 
 /**
- * Consulta de dados completos do acompanhamento (KPIs + Lista de Promessas paginada)
+ * Consulta de dados completos do acompanhamento de promessas (KPIs + Lista paginada)
  */
-export async function getAcompanhamentoDataAction(params?: {
+export async function getTrackingDataAction(params?: {
   page?: number;
   limit?: number;
   tab?: string;
@@ -20,7 +20,7 @@ export async function getAcompanhamentoDataAction(params?: {
 }): Promise<{
   success: boolean;
   data?: {
-    summary: AcompanhamentoSummaryData;
+    summary: TrackingSummaryData;
     paginated: PaginatedPromisesResult;
   };
   error?: string;
@@ -40,7 +40,7 @@ export async function getAcompanhamentoDataAction(params?: {
       };
     }
 
-    const result = await getAcompanhamentoDataApi({
+    const result = await getTrackingDataApi({
       userId,
       page: validation.data.page,
       limit: validation.data.limit,
@@ -54,11 +54,14 @@ export async function getAcompanhamentoDataAction(params?: {
       data: result,
     };
   } catch (error) {
-    console.error('[getAcompanhamentoDataAction] Erro inesperado:', error);
+    console.error('[getTrackingDataAction] Erro inesperado:', error);
     return {
       success: false,
       error: 'Ocorreu um erro ao carregar os dados de acompanhamento.',
     };
   }
 }
+
+// Alias de transição para compatibilidade retroativa
+export const getAcompanhamentoDataAction = getTrackingDataAction;
 

@@ -1,12 +1,12 @@
-"use client"
-
 import { NewButton } from "@/components/buttons/new-button"
+import type { UserPlanLimits } from "@/commons/models/subscription"
 
 type GreetingBannerProps = {
   userName: string
   timeGreeting: string
   punchline: string
   onNewDebtClick?: () => void
+  planLimits?: UserPlanLimits | null
 }
 
 export function GreetingBanner({
@@ -14,6 +14,7 @@ export function GreetingBanner({
   timeGreeting,
   punchline,
   onNewDebtClick,
+  planLimits,
 }: GreetingBannerProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-start md:items-center justify-between gap-4 pb-1">
@@ -33,6 +34,10 @@ export function GreetingBanner({
           label="Nova Dívida"
           icon="plus"
           onClick={onNewDebtClick}
+          isLocked={planLimits?.isDebtLimitReached}
+          lockReason="debt"
+          maxAllowed={planLimits?.maxDebtors ?? 2}
+          planName={planLimits?.planName ?? "Tubarão Lixa"}
         />
       </div>
     </div>

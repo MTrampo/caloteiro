@@ -15,12 +15,14 @@ import {
 } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 import { NewButton } from "@/components/buttons/new-button";
+import type { UserPlanLimits } from "@/commons/models/subscription";
 
 interface StepTargetDebtorProps {
   debtors: DebtorItemFormatted[];
   selectedDebtor: DebtorItemFormatted | null;
   onSelectDebtor: (debtor: DebtorItemFormatted) => void;
   onNext: () => void;
+  planLimits?: UserPlanLimits | null;
 }
 
 export function StepTargetDebtor({
@@ -28,6 +30,7 @@ export function StepTargetDebtor({
   selectedDebtor,
   onSelectDebtor,
   onNext,
+  planLimits,
 }: StepTargetDebtorProps) {
   const [searchTerm, setSearchTerm] = React.useState("");
 
@@ -58,14 +61,19 @@ export function StepTargetDebtor({
           />
         </div>
 
-        {/* Link para página de novo devedor com retorno automático */}
-        <Link
+        {/* Botão para página de novo devedor com retorno automático */}
+        <NewButton
           href="/painel/devedores/novo?returnTo=/painel/dividas/nova"
-          className="inline-flex items-center justify-center h-10 px-4 text-xs font-mono font-semibold rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-all gap-2 shrink-0 cursor-pointer"
-        >
-          <FaUserPlus className="size-3.5 text-emerald-400" />
-          <span>Cadastrar Novo Devedor</span>
-        </Link>
+          label="Cadastrar Novo Devedor"
+          icon="user-plus"
+          size="sm"
+          variant="outline"
+          isLocked={planLimits?.isDebtorLimitReached}
+          lockReason="debtor"
+          maxAllowed={planLimits?.maxDebtors ?? 2}
+          planName={planLimits?.planName ?? "Tubarão Lixa"}
+          className="h-10 text-xs font-mono border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+        />
       </div>
 
       {/* Lista de Cards de Devedores */}
