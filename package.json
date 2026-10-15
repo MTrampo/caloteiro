@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:visual": "playwright test",
+    "test:visual:update": "playwright test --update-snapshots",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -36,6 +42,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -43,7 +50,9 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^5.0.4"
   },
   "packageManager": "pnpm@12.9.1"
 }

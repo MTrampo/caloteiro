@@ -88,3 +88,17 @@ O fluxo de execução deve respeitar uma hierarquia rigorosa: **UI -> Action -> 
 * **Proibição de Parâmetros Soltos em Excesso (DTOs Obrigatórios):**
   * É proibido criar funções em Repositories ou Services com mais de 2 parâmetros primitivos soltos (ex: `fn(userId, name, email, nickname, avatar, phone)`).
   * Toda mutação ou conjunto de parâmetros com 3 ou mais campos deve obrigatoriamente ser agrupado em uma interface DTO/Payload tipada em `src/commons/models` (ex: `CreateProfilePayload`, `UpdateSubscriptionPayload`).
+
+## 9. Testes Automatizados e Política de Qualidade (Foco Server)
+* **Escopo Inicial dos Testes:** Os testes automatizados devem cobrir estritamente a camada de regras de negócio do servidor (`src/server/**`), com foco primordial em `Services` e lógica matemática/financeira.
+* **Cobertura Obrigatória de Regras de Negócio:**
+  * Toda regra de negócio estabelecida (cálculos de juros, multas, divisão de parcelas, amortização, regras de limite de planos do Tubarão, transições de status de dívidas e assinaturas) **deve obrigatoriamente possuir testes unitários correspondentes**.
+  * É expressamente proibido subir novas regras de negócio ou mutações em `src/server` sem os testes associados.
+* **Política de Correção de Bugs e Testes de Regressão:**
+  * Toda vez que um bug for identificado e corrigido, **é obrigatório criar um teste de regressão automatizado** que reproduza o cenário da falha e comprove a sua resolução definitiva.
+  * O teste de regressão deve ser mantido de forma permanente na suite de testes para garantir que o erro nunca volte a ocorrer.
+* **Localização e Estrutura dos Arquivos de Teste:**
+  * Os testes devem residir dentro da pasta de testes do próprio domínio: `src/server/[dominio]/test/[nome].api.test.ts` (ex: `src/server/debts/test/debt.api.test.ts`).
+  * Repositories e dependências externas (ex: chamadas de rede do Supabase, Mercado Pago, Resend) devem ser mockados nos testes de Service para garantir execução ultrarrápida, determinística e sem efeitos colaterais.
+* **Blindagem do `server-only` em Testes:**
+  * O setup global dos testes deve mockar o pacote `server-only` para que os arquivos da camada `src/server` possam ser executados pelo test runner em ambiente Node/Vitest sem erros de runtime.
