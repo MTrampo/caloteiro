@@ -28,16 +28,16 @@ export function renderCancellationHtml(data: CancellationEmailData): { subject: 
     </div>
     <div style="font-size: 13px; color: #d4d4d8; line-height: 1.6;">
       ${data.accessUntil ? `
-        Seu acesso completo às ferramentas e fichas continuará liberado até o dia <strong style="color: #34d399;">${data.accessUntil}</strong>.
+        Seu acesso completo às ferramentas e presas marcadas continuará liberado até o dia <strong style="color: #34d399;">${data.accessUntil}</strong>.
       ` : "Nenhuma nova cobrança automática será realizada no seu cartão."}
       <br/><br/>
-      Seus cadastros de devedores e histórico de promessas ficarão guardados com segurança no cofre caso você decida reativar o arsenal no futuro!
+      Seus cadastros de devedores e histórico de promessas ficarão guardados com segurança na sua gruta caso você decida reativar sua assinatura no futuro!
     </div>
   `
 
   const html = renderBaseEmailLayout({
     title: "Cancelamento Confirmado",
-    previewText: "Sua assinatura foi cancelada. Seu cofre e fichas continuarão preservados para quando você quiser voltar.",
+    previewText: "Sua assinatura foi cancelada. Sua gruta e presas marcadas continuarão preservadas para quando você quiser voltar.",
     bannerSvgPath: "/email/feeling-blue.svg",
     bannerSvgAlt: "Cancelamento de assinatura do Caloteiro",
     name: data.recipientName,

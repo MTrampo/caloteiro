@@ -32,7 +32,7 @@ export function TriageKPIsGrid({ kpis }: TriageKPIsProps) {
           <div className="text-3xl sm:text-4xl font-black font-heading text-white tracking-tight">
             {dueSoonCount}{" "}
             <span className="text-sm font-mono font-normal text-zinc-400">
-              {dueSoonCount === 1 ? "cobrança" : "cobranças"}
+              {dueSoonCount === 1 ? "parcela" : "parcelas"}
             </span>
           </div>
           <p className="text-xs text-zinc-400 font-mono">

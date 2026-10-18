@@ -1,5 +1,6 @@
 export type {
   FeedItemType,
+  FeedCategory,
   FeedOccurrence,
   TriageKPIs,
   WisdomQuote,

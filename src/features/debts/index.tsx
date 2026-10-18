@@ -1,42 +1,60 @@
 "use client"
 
-import { useState } from "react"
-import { FinancialPeriod } from "./types"
-import { FINANCIAL_DATA_BY_PERIOD } from "./utils/financial-data"
+import { useState, useTransition } from "react"
+import { toast } from "sonner"
+import type { FinancialPeriod, FinancialAnalyticsResult } from "./types"
 import { DebtsHeader } from "./components/debts-header"
 import { FinancialKpiGrid } from "./components/financial-kpi-grid"
 import { PriorityDebtorCard } from "./components/priority-debtor-card"
 import { PortfolioDistribution } from "./components/portfolio-distribution"
 import { DebtsEfficiency } from "./components/debts-efficiency"
+import { getFinancialAnalyticsAction } from "@/actions/financial"
 import type { UserPlanLimits } from "@/commons/models/subscription"
+import { cn } from "@/commons/lib/utils"
 
 interface DebtsFeatureProps {
+  initialData: FinancialAnalyticsResult
   planLimits?: UserPlanLimits | null
 }
 
-export function DebtsFeature({ planLimits }: DebtsFeatureProps) {
+export function DebtsFeature({ initialData, planLimits }: DebtsFeatureProps) {
   const [period, setPeriod] = useState<FinancialPeriod>("month")
-  const currentData = FINANCIAL_DATA_BY_PERIOD[period]
+  const [data, setData] = useState<FinancialAnalyticsResult>(initialData)
+  const [isPending, startTransition] = useTransition()
+
+  const handlePeriodChange = (newPeriod: FinancialPeriod) => {
+    if (newPeriod === period) return
+    setPeriod(newPeriod)
+
+    startTransition(async () => {
+      const res = await getFinancialAnalyticsAction({ period: newPeriod })
+      if (res.success && res.data) {
+        setData(res.data)
+      } else if (!res.success) {
+        toast.error(res.error || "Erro ao atualizar dados do período.")
+      }
+    })
+  }
 
   return (
-    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full">
+    <div className={cn("flex-1 p-4 sm:p-6 space-y-6 w-full transition-opacity duration-200", isPending && "opacity-70")}>
       {/* 1. Cabeçalho com Título, Seletor de Períodos e Ação Global */}
       <DebtsHeader
         period={period}
-        onPeriodChange={setPeriod}
+        onPeriodChange={handlePeriodChange}
         planLimits={planLimits}
       />
 
       {/* 2. Grid dos 4 Cards Financeiros em R$ (A Receber, Já no Bolso, Travado, Prejuízo) */}
-      <FinancialKpiGrid kpis={currentData.kpis} />
+      <FinancialKpiGrid kpis={data.kpis} />
 
       {/* 3. Card do Alvo Imediato (Próxima Cobrança em Destaque Prioritário) */}
-      <PriorityDebtorCard debtor={currentData.priorityDebtor} />
+      <PriorityDebtorCard debtor={data.priorityDebtor} />
 
       {/* 4. Gráficos de Inteligência Financeira Lado a Lado (Distribuição da Carteira & Eficiência) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-        <PortfolioDistribution data={currentData.portfolio} />
-        <DebtsEfficiency data={currentData.efficiency} />
+        <PortfolioDistribution data={data.portfolio} />
+        <DebtsEfficiency data={data.efficiency} />
       </div>
     </div>
   )

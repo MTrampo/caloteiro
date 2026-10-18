@@ -108,10 +108,10 @@ export function DebtorForm() {
           }
           router.refresh()
         } else if (res.code === "LIMIT_REACHED" || res.isLimitReached) {
-          toast.warning(res.error || "Limite de devedores no radar atingido!", {
+          toast.warning(res.error || "Sua gruta atingiu a capacidade máxima de presas!", {
             action: {
               label: "Fazer Upgrade",
-              onClick: () => router.push("/painel/conta"),
+              onClick: () => router.push("/painel/conta/assinatura"),
             },
             duration: 8000,
           })

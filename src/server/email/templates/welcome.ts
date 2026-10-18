@@ -12,7 +12,7 @@ export interface WelcomeEmailData {
 export function renderWelcomeSubscriptionHtml(data: WelcomeEmailData): { subject: string; html: string } {
   const isTrial = data.isTrial ?? true
   const trialDays = data.trialDays ?? 7
-  const subject = "🛡️ Arsenal Liberado! Bem-vindo à Central do Caloteiro"
+  const subject = "🦈 Assinatura Liberada! Bem-vindo à Gruta do Tubarão"
 
   const contentHtml = `
     <p style="margin: 0 0 14px 0; font-size: 15px; color: #10b981; font-weight: 700;">
@@ -24,19 +24,19 @@ export function renderWelcomeSubscriptionHtml(data: WelcomeEmailData): { subject
     <p style="margin: 0;">
       Sua assinatura foi <strong>confirmada com sucesso</strong>! ${isTrial 
         ? `Você ganhou <strong>${trialDays} dias de degustação gratuita</strong> para cadastrar seus suspeitos e testar toda a artilharia.`
-        : `Todos os recursos do seu plano <strong>${data.planName || "Arsenal Ativo"}</strong> já estão 100% liberados!`
+        : `Todos os recursos do seu plano <strong>${data.planName || "Plano Ativo"}</strong> já estão 100% liberados!`
       }
     </p>
   `
 
   const highlightCardHtml = `
     <div style="font-size: 12px; color: #10b981; font-weight: 800; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.8px; font-family: monospace;">
-      🎯 Armas liberadas na sua conta:
+      🎯 Ferramentas liberadas na sua conta:
     </div>
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px; color: #d4d4d8; line-height: 1.6;">
       <tr>
         <td style="padding: 5px 0; vertical-align: top; width: 22px;">📋</td>
-        <td style="padding: 5px 0;"><strong style="color: #ffffff;">Fichas de Devedores:</strong> cadastre os suspeitos com valores, datas de vencimento e juros.</td>
+        <td style="padding: 5px 0;"><strong style="color: #ffffff;">Presas Marcadas:</strong> cadastre os devedores na sua gruta com valores, datas de vencimento e juros.</td>
       </tr>
       <tr>
         <td style="padding: 5px 0; vertical-align: top; width: 22px;">💬</td>
@@ -55,12 +55,12 @@ export function renderWelcomeSubscriptionHtml(data: WelcomeEmailData): { subject
   `
 
   const html = renderBaseEmailLayout({
-    title: "Arsenal de Cobrança Liberado!",
+    title: "Recursos de Cobrança Liberados!",
     previewText: "Sua assinatura foi confirmada com sucesso! Bem-vindo ao Caloteiro. Chega de tomar prejuízo em silêncio.",
     name: data.recipientName,
     contentHtml,
     highlightCardHtml,
-    buttonText: "Acessar Central de Cobranças 🛡️",
+    buttonText: "Entrar na Gruta 🦈",
     buttonUrl: `${APP_URL}/painel`,
     footerNote: "Liberdade total: cancele ou altere seu plano quando quiser diretamente pelo painel, sem taxas escondidas ou multas.",
   })

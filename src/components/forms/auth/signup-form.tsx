@@ -121,7 +121,7 @@ export function SignupForm({ signUpUser }: SignupFormProps) {
           </div>
           <Input
             type="email"
-            placeholder="tubarao@radar.com"
+            placeholder="tubarao@central.com"
             autoComplete="email"
             disabled={isPending}
             className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-sm h-11"

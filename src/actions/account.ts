@@ -7,6 +7,7 @@ import {
   updatePasswordSchema,
   confirmUpdatePasswordOtpSchema,
   confirmEmailChangeOtpSchema,
+  deleteAccountSchema,
 } from '@/commons/validations/account';
 import {
   updateProfileApi,
@@ -15,6 +16,7 @@ import {
   requestPasswordChangeOtpApi,
   confirmUpdatePasswordOtpApi,
   confirmEmailChangeOtpApi,
+  deleteUserAccountApi,
 } from '@/server/account/service/account.api';
 
 /**
@@ -248,6 +250,45 @@ export async function updatePasswordAccountAction(
   } catch (error) {
     console.error('[updatePasswordAccountAction] Erro inesperado:', error);
     return { success: false, error: 'Ocorreu um erro ao atualizar a senha.' };
+  }
+}
+
+/**
+ * Exclui a conta do credor definitivamente, cancelando assinaturas e expurgando dados
+ */
+export async function deleteAccountAction(
+  rawData: unknown
+): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    const userRes = await getUserLoggedApi();
+    const userId = userRes.data?.user?.id;
+    if (!userId) {
+      return { success: false, error: 'Acesso não autorizado. Faça login novamente.' };
+    }
+
+    const validation = deleteAccountSchema.safeParse(rawData);
+    if (!validation.success) {
+      return {
+        success: false,
+        error: validation.error.issues[0]?.message || 'Confirmação inválida.',
+      };
+    }
+
+    const result = await deleteUserAccountApi(userId);
+    if (result.status !== 200) {
+      return {
+        success: false,
+        error: result.message || 'Erro ao excluir a conta.',
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Sua conta e todos os seus dados foram excluídos com sucesso.',
+    };
+  } catch (error) {
+    console.error('[deleteAccountAction] Erro inesperado:', error);
+    return { success: false, error: 'Ocorreu um erro ao excluir a conta.' };
   }
 }
 

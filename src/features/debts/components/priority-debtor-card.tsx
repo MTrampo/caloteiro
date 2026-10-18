@@ -16,11 +16,38 @@ import {
 import { cn } from "@/commons/lib/utils"
 
 type PriorityDebtorCardProps = {
-  debtor: PriorityDebtor
+  debtor?: PriorityDebtor | null
 }
 
 export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
   const [copiedPix, setCopiedPix] = useState(false)
+
+  if (!debtor) {
+    return (
+      <div className="space-y-2.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FaCrosshairs className="size-4 text-zinc-500" />
+            <h3 className="font-heading text-base sm:text-lg font-bold text-white tracking-tight">
+              Próxima Cobrança (Alvo Imediato)
+            </h3>
+          </div>
+          <span className="text-xs font-mono font-bold text-zinc-500">
+            Mar Calmo
+          </span>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs text-center space-y-1.5">
+          <p className="font-heading text-sm sm:text-base font-bold text-white">
+            Nenhum devedor na mira imediata!
+          </p>
+          <p className="text-xs font-mono text-zinc-400 max-w-md mx-auto">
+            Todas as promessas estão quitadas ou em dia, sem nenhuma cobrança de emergência necessária no momento.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   const relativeDate = formatRelativeDueDate(debtor.dueDate)
 
   const isCritical = relativeDate.isPast || debtor.urgency === "CRITICO"

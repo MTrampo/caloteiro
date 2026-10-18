@@ -123,11 +123,11 @@ export function SignInForm({
         {isPending ? (
           <>
             <Loader2 className="size-4 animate-spin text-zinc-950" />
-            <span>Consultando Cofre...</span>
+            <span>Acessando a Gruta...</span>
           </>
         ) : (
           <>
-            <span>Entrar na Central</span>
+            <span>Entrar na Gruta</span>
             <FaArrowRight className="size-3.5" />
           </>
         )}

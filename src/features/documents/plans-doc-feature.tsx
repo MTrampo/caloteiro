@@ -85,10 +85,10 @@ const PLANS_DATA = [
 
 const COMPARISON_ROWS = [
   {
-    label: "Devedores no Radar",
-    description: "Quantidade de devedores cadastrados simultaneamente",
-    lixa: "Até 2 alvos",
-    branco: "Até 10 alvos",
+    label: "Capacidade da Gruta (Presas Marcadas)",
+    description: "Quantidade de presas marcadas sob vigilância simultaneamente",
+    lixa: "Até 2 presas",
+    branco: "Até 10 presas",
     chato: "Ilimitado",
   },
   {
@@ -149,8 +149,8 @@ const COMPARISON_ROWS = [
     chato: true,
   },
   {
-    label: "Portal Externo do Devedor",
-    description: "Link exclusivo para o caloteiro acompanhar as próprias parcelas",
+    label: "Link da Dívida para a Presa",
+    description: "Link exclusivo para a presa acompanhar as próprias parcelas e pagar no Pix",
     lixa: false,
     branco: true,
     chato: true,
@@ -177,7 +177,12 @@ const FAQS = [
   {
     question: "Como funciona a cobrança na troca de plano?",
     answer:
-      "A cobrança de upgrade ou downgrade é processada com transparência pelo Mercado Pago. Se você fizer upgrade para o Tubarão Branco ou Cabeça Chato, os recursos e limites superiores são desbloqueados imediatamente na sua conta, e o valor ajustado será cobrado na fatura subsequente do seu ciclo de assinatura.",
+      "A cobrança de upgrade ou downgrade é processada com total transparência pelo Mercado Pago. Se você está no plano gratuito Tubarão Lixa e faz upgrade para o Tubarão Branco ou Cabeça Chato, a primeira mensalidade é cobrada no ato da assinatura no Mercado Pago, liberando a nova gruta imediatamente após a aprovação do pagamento. Caso você já possua uma assinatura paga ativa no Mercado Pago e mude de categoria, o novo valor será cobrado na fatura subsequente do seu ciclo de assinatura.",
+  },
+  {
+    question: "Existe período de degustação gratuita de 30 dias nos planos pagos?",
+    answer:
+      "A regra de 30 dias de degustação gratuita é válida única e exclusivamente para novos cadastros que entram diretamente em um plano pago sem plano prévio. Se você já possui ou ativou a versão gratuita (Tubarão Lixa), você já experimentou a plataforma de graça; portanto, ao migrar para um plano pago, a cobrança da mensalidade é realizada no ato da assinatura no Mercado Pago.",
   },
   {
     question: "O que acontece com minhas dívidas se eu fizer downgrade?",
@@ -190,7 +195,7 @@ const FAQS = [
       "Sim! Aqui não tem fidelidade, pegadinha ou multa rescisória. Você pode cancelar quando quiser diretamente pelo painel ou pela sua conta do Mercado Pago, mantendo o acesso até o fim do período mensal já pago.",
   },
   {
-    question: "Por que o Score de Cara de Pau é exclusivo do plano Pro?",
+    question: "Por que o Score de Cara de Pau é exclusivo do plano Tubarão Cabeça Chato?",
     answer:
       "O algoritmo de Score de Cara de Pau e o Arquivo de Provas com anexo de recibos são ferramentas de alta intensidade projetadas para credores frequentes que precisam de auditoria rigorosa de cada calote e histórico comportamental do devedor.",
   },
@@ -206,7 +211,7 @@ export function PlansDocFeature() {
             Planos e Regras de Cobrança
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 font-mono">
-            Entenda detalhadamente os limites, modalidades de juros e arsenal de cada espécie de Tubarão.
+            Entenda detalhadamente os limites, modalidades de juros e recursos de cada espécie de Tubarão.
           </p>
         </div>
 
@@ -244,7 +249,7 @@ export function PlansDocFeature() {
                   {plan.isPro && (
                     <span className="flex items-center gap-1 text-[11px] font-mono text-emerald-400 font-bold">
                       <FaCrown className="size-3" />
-                      <span>Arsenal Completo</span>
+                      <span>Recursos Completos</span>
                     </span>
                   )}
                 </div>

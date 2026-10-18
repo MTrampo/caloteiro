@@ -20,7 +20,7 @@ export function resolveAuthError(errorCode?: string): { message: string; status:
       };
     case "weak_password":
       return {
-        message: "Senha muito fraca! Coloque pelo menos 6 caracteres para proteger seu radar de calotes.",
+        message: "Senha muito fraca! Coloque pelo menos 6 caracteres para proteger sua gruta contra caloteiros.",
         status: HttpStatusEnum.BadRequest,
       };
     case "over_request_rate_limit":

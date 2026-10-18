@@ -202,6 +202,7 @@ describe("Serviço do Painel Principal / Central de Comando (home-command.api.ts
 
       // 1º e 2º devem ser urgent_overdue (as mais atrasadas primeiro)
       expect(feed[0].type).toBe("urgent_overdue");
+      expect(feed[0].category).toBe("overdue");
       expect(feed[0].id).toBe("inst-overdue-10");
       expect(feed[0].relativeTimeText).toBe("Venceu há 10 dias");
       expect(feed[0].lastExcuseNote).toBe("Disse que o aplicativo do banco travou");
@@ -209,21 +210,47 @@ describe("Serviço do Painel Principal / Central de Comando (home-command.api.ts
       expect(feed[0].pixKey).toBe("11999998888");
 
       expect(feed[1].type).toBe("urgent_overdue");
+      expect(feed[1].category).toBe("overdue");
       expect(feed[1].id).toBe("inst-overdue-2");
       expect(feed[1].relativeTimeText).toBe("Venceu há 2 dias");
 
       // 3º deve ser due_today
       expect(feed[2].type).toBe("due_today");
+      expect(feed[2].category).toBe("upcoming");
       expect(feed[2].id).toBe("inst-today");
       expect(feed[2].relativeTimeText).toBe("Vence Hoje");
 
       // 4º deve ser due_soon
       expect(feed[3].type).toBe("due_soon");
+      expect(feed[3].category).toBe("upcoming");
       expect(feed[3].id).toBe("inst-due-soon");
       expect(feed[3].relativeTimeText).toBe("Vence em 2 dias");
     });
 
-    it("deve limitar a exibição a no máximo 8 ocorrências para manter o layout executivo", () => {
+    it("deve incluir parcelas vencendo em até 7 dias na categoria upcoming", () => {
+      const debts: HomeCommandDebtRow[] = [
+        createFakeDebt(
+          "debt-semana",
+          createFakeDebtor("d1", "Carlos Prazo"),
+          [
+            createFakeInstallment("inst-5d", "debt-semana", 1, 100, 0, getRelativeDate(5)),
+            createFakeInstallment("inst-7d", "debt-semana", 2, 100, 0, getRelativeDate(7)),
+            createFakeInstallment("inst-8d", "debt-semana", 3, 100, 0, getRelativeDate(8)),
+          ]
+        ),
+      ];
+
+      const feed = buildHomeCommandFeed(debts, {});
+
+      // 5 dias e 7 dias devem ser incluídos; 8 dias não
+      expect(feed.length).toBe(2);
+      expect(feed[0].id).toBe("inst-5d");
+      expect(feed[0].category).toBe("upcoming");
+      expect(feed[1].id).toBe("inst-7d");
+      expect(feed[1].category).toBe("upcoming");
+    });
+
+    it("deve limitar a exibição a no máximo 10 ocorrências para manter o layout executivo", () => {
       const installments: InstallmentRow[] = [];
       for (let i = 1; i <= 15; i++) {
         installments.push(
@@ -240,7 +267,7 @@ describe("Serviço do Painel Principal / Central de Comando (home-command.api.ts
       ];
 
       const feed = buildHomeCommandFeed(debts, {});
-      expect(feed.length).toBe(8);
+      expect(feed.length).toBe(10);
     });
   });
 

@@ -8,8 +8,15 @@ import {
   confirmCodePasswordReset,
   verifyEmailChangeCodeSupabase,
   updateProfileEmailByUserIdSupabase,
+  deleteUserAccountSupabase,
+  killAuthSupabase,
 } from "../repository/auth.supabase";
-import { getInvoicesByUserIdSupabase } from "../repository/subscription.supabase";
+import {
+  getInvoicesByUserIdSupabase,
+  getSubscriptionByUserIdSupabase,
+} from "../repository/subscription.supabase";
+import { cancelPreApprovalApi } from "@/server/payment/service/payment.api";
+import { clearCookieSubscription } from "@/commons/lib/auth/subscription";
 import type {
   UpdateProfilePayload,
   UpdateEmailPayload,
@@ -214,3 +221,40 @@ export const getAccountInvoicesApi = async (
     };
   });
 };
+
+/**
+ * Exclui definitivamente a conta do usuário, cancelando assinatura ativa no MP e expurgando todos os dados
+ */
+export const deleteUserAccountApi = async (
+  userId: string
+): Promise<ResponseProps<null>> => {
+  // 1. Cancela assinatura no Mercado Pago se houver
+  const sub = await getSubscriptionByUserIdSupabase(userId);
+  if (sub?.mp_subscription_id) {
+    try {
+      await cancelPreApprovalApi(sub.mp_subscription_id);
+    } catch (err) {
+      console.error("[deleteUserAccountApi] Erro ao cancelar preapproval no MP:", err);
+    }
+  }
+
+  // 2. Apaga registros do banco (perfil e cascata completa + auth.users)
+  const { error } = await deleteUserAccountSupabase(userId);
+  if (error) {
+    console.error("[deleteUserAccountApi] Erro ao excluir usuário:", error);
+    return ApiResponse.InternalError({
+      message: "Não foi possível excluir a conta. Tente novamente mais tarde.",
+      error: error.message,
+    });
+  }
+
+  // 3. Limpa cookies de assinatura e encerra sessão
+  await clearCookieSubscription();
+  await killAuthSupabase();
+
+  return ApiResponse.Ok({
+    message: "Conta excluída com sucesso.",
+    data: null,
+  });
+};
+

@@ -221,24 +221,39 @@ export const getPlanByIdSupabase = async (planId: string): Promise<Plan | null> 
 };
 
 /**
- * Verifica se o usuário já possui histórico de assinatura ou pagamento (para elegibilidade de trial)
+ * Busca um plano comercial pelo nome (usado para mapear retorno do Mercado Pago)
+ */
+export const getPlanByNameSupabase = async (planName: string): Promise<Plan | null> => {
+  const supabase = await getClient();
+  const { data, error } = await supabase
+    .from("plans")
+    .select("*, config_plan:config_plans(*)")
+    .ilike("name", planName.trim())
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data as unknown as Plan;
+};
+
+/**
+ * Verifica se o usuário já possui histórico de assinatura ou plano ativo (para elegibilidade de trial)
+ * Regra: se o usuário já possui ou teve qualquer plano (inclusive o gratuito), NÃO é elegível a trial.
  */
 export const hasActiveSubscriptionHistorySupabase = async (userId: string): Promise<boolean> => {
   const supabase = await getClient();
 
   const { data: sub } = await supabase
     .from("subscriptions")
-    .select("current_period_start, mp_status")
+    .select("id, plan_id, mp_status")
     .eq("user_id", userId)
     .maybeSingle();
 
   if (sub) {
-    const hasHistory = Boolean(
-      sub.current_period_start ||
-      sub.mp_status === "authorized" ||
-      sub.mp_status === "cancelled"
-    );
-    if (hasHistory) return true;
+    return true;
   }
 
   const { data: invoices } = await supabase

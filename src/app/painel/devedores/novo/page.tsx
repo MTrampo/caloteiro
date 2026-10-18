@@ -49,7 +49,7 @@ export default async function NovoDevedorPage() {
                 O Tanque Encheu!
               </h3>
               <p className="text-xs sm:text-sm font-mono text-zinc-400 leading-relaxed">
-                Seu plano atual ({planLimits.planName}) permite até {planLimits.maxDebtors} devedores no radar. Chega de amadorismo: é hora de evoluir para o próximo nível de Tubarão para fichar novos caloteiros!
+                Seu plano atual ({planLimits.planName}) permite manter até {planLimits.maxDebtors} presas marcadas na sua gruta. Chega de amadorismo: é hora de evoluir de plano para marcar novos caloteiros!
               </p>
             </div>
 

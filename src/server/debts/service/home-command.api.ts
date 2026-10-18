@@ -20,11 +20,6 @@ import {
 } from "@/commons/utils/format";
 import { getRandomWisdomQuote } from "@/features/home-command/utils/greeting-helper";
 
-interface FeedCandidate {
-  item: FeedOccurrence;
-  priority: number; // 1: urgent_overdue, 2: due_today, 3: due_soon, 4: recently_paid
-  orderWeight: number;
-}
 
 /**
  * Calcula os 3 KPIs de triagem rápida a partir das dívidas e pagamentos recentes
@@ -73,23 +68,30 @@ export function buildHomeCommandKPIs(
 }
 
 /**
- * Constrói o Feed de ocorrências do dia priorizando urgências e ações imediatas
+ * Constrói o Feed de ocorrências do dia priorizando:
+ * 1. Parcelas Atrasadas (da mais atrasada para a menos atrasada)
+ * 2. Próximos Vencimentos (do mais próximo [hoje, amanhã] até 7 dias)
+ * 3. Pagamentos Recentes (últimas 48 horas)
  */
 export function buildHomeCommandFeed(
   debts: HomeCommandDebtRow[],
   excusesMap: Record<string, string> = {},
   creditorPixKey?: string
 ): FeedOccurrence[] {
-  const candidates: FeedCandidate[] = [];
+  const overdueItems: FeedOccurrence[] = [];
+  const upcomingItems: FeedOccurrence[] = [];
+  const paidItems: FeedOccurrence[] = [];
 
   for (const debt of debts) {
+    if (debt.status === "settled" || debt.status === "cancelled") continue;
+
     const debtor = debt.debtor;
     if (!debtor) continue;
 
     const debtorName = debtor.name;
     const debtorNickname = debtor.nickname || undefined;
     const debtorPhone = formatDisplayPhone(debtor.phone);
-    const pixKey = creditorPixKey || debtor.pix_key || undefined;
+    const pixKey = creditorPixKey || undefined;
     const totalInstallments = debt.installments_count || debt.installments?.length || 1;
 
     for (const inst of debt.installments || []) {
@@ -111,23 +113,20 @@ export function buildHomeCommandFeed(
         const diffHours = (nowTime - updatedTime) / (1000 * 60 * 60);
 
         if (diffHours >= 0 && diffHours <= 48) {
-          candidates.push({
-            priority: 4,
-            orderWeight: diffHours,
-            item: {
-              id: inst.id,
-              debtId: debt.id,
-              debtorName,
-              debtorNickname,
-              debtorPhone,
-              type: "recently_paid",
-              relativeTimeText: diffHours <= 24 ? "Pagou hoje" : "Pagou ontem",
-              installmentText,
-              pixKey,
-              lastExcuseNote,
-              nominalAmount: nominal,
-              paidAmount: paid,
-            },
+          paidItems.push({
+            id: inst.id,
+            debtId: debt.id,
+            debtorName,
+            debtorNickname,
+            debtorPhone,
+            type: "recently_paid",
+            category: "paid",
+            relativeTimeText: diffHours <= 24 ? "Pagou hoje" : "Pagou ontem",
+            installmentText,
+            pixKey,
+            lastExcuseNote,
+            nominalAmount: nominal,
+            paidAmount: paid,
           });
         }
         continue;
@@ -137,79 +136,77 @@ export function buildHomeCommandFeed(
       const { isLate, lateDays, diffDays } = calculateDaysDifference(inst.due_date);
 
       if (isLate && lateDays > 0) {
-        // Atrasada
-        candidates.push({
-          priority: 1,
-          orderWeight: -lateDays, // As mais atrasadas têm maior prioridade
-          item: {
-            id: inst.id,
-            debtId: debt.id,
-            debtorName,
-            debtorNickname,
-            debtorPhone,
-            type: "urgent_overdue",
-            relativeTimeText: lateDays === 1 ? "Venceu ontem" : `Venceu há ${lateDays} dias`,
-            installmentText,
-            pixKey,
-            lastExcuseNote,
-            nominalAmount: nominal,
-            paidAmount: paid,
-          },
+        // Atrasada: prioridade máxima do Tubarão
+        overdueItems.push({
+          id: inst.id,
+          debtId: debt.id,
+          debtorName,
+          debtorNickname,
+          debtorPhone,
+          type: "urgent_overdue",
+          category: "overdue",
+          lateDays,
+          diffDays,
+          relativeTimeText: lateDays === 1 ? "Venceu ontem" : `Venceu há ${lateDays} dias`,
+          installmentText,
+          pixKey,
+          lastExcuseNote,
+          nominalAmount: nominal,
+          paidAmount: paid,
         });
       } else if (diffDays === 0) {
         // Vence Hoje
-        candidates.push({
-          priority: 2,
-          orderWeight: 0,
-          item: {
-            id: inst.id,
-            debtId: debt.id,
-            debtorName,
-            debtorNickname,
-            debtorPhone,
-            type: "due_today",
-            relativeTimeText: "Vence Hoje",
-            installmentText,
-            pixKey,
-            lastExcuseNote,
-            nominalAmount: nominal,
-            paidAmount: paid,
-          },
+        upcomingItems.push({
+          id: inst.id,
+          debtId: debt.id,
+          debtorName,
+          debtorNickname,
+          debtorPhone,
+          type: "due_today",
+          category: "upcoming",
+          lateDays: 0,
+          diffDays: 0,
+          relativeTimeText: "Vence Hoje",
+          installmentText,
+          pixKey,
+          lastExcuseNote,
+          nominalAmount: nominal,
+          paidAmount: paid,
         });
-      } else if (diffDays > 0 && diffDays <= 3) {
-        // Vence nos próximos 3 dias
-        candidates.push({
-          priority: 3,
-          orderWeight: diffDays, // 1 dia na frente de 2 dias
-          item: {
-            id: inst.id,
-            debtId: debt.id,
-            debtorName,
-            debtorNickname,
-            debtorPhone,
-            type: "due_soon",
-            relativeTimeText: diffDays === 1 ? "Vence amanhã" : `Vence em ${diffDays} dias`,
-            installmentText,
-            pixKey,
-            lastExcuseNote,
-            nominalAmount: nominal,
-            paidAmount: paid,
-          },
+      } else if (diffDays > 0 && diffDays <= 7) {
+        // Vence nos próximos 7 dias (alinhado com o KPI semanal)
+        upcomingItems.push({
+          id: inst.id,
+          debtId: debt.id,
+          debtorName,
+          debtorNickname,
+          debtorPhone,
+          type: "due_soon",
+          category: "upcoming",
+          lateDays: 0,
+          diffDays,
+          relativeTimeText: diffDays === 1 ? "Vence amanhã" : `Vence em ${diffDays} dias`,
+          installmentText,
+          pixKey,
+          lastExcuseNote,
+          nominalAmount: nominal,
+          paidAmount: paid,
         });
       }
     }
   }
 
-  // Ordena por prioridade de urgência e peso
-  candidates.sort((a, b) => {
-    if (a.priority !== b.priority) {
-      return a.priority - b.priority;
-    }
-    return a.orderWeight - b.orderWeight;
-  });
+  // 1. Parcelas atrasadas: da mais atrasada para a menos atrasada (lateDays DESC)
+  overdueItems.sort((a, b) => (b.lateDays ?? 0) - (a.lateDays ?? 0));
 
-  // Limite enxuto de até 8 itens para visualização executiva do dia
-  return candidates.slice(0, 8).map((c) => c.item);
+  // 2. Próximos vencimentos: do mais próximo para frente (diffDays ASC: 0 [hoje], 1 [amanhã]...)
+  upcomingItems.sort((a, b) => (a.diffDays ?? 0) - (b.diffDays ?? 0));
+
+  // Hierarquia unificada: [Atrasadas mais críticas -> Próximos vencimentos -> Pagos]
+  const combined = [...overdueItems, ...upcomingItems, ...paidItems];
+
+  // Limite enxuto de até 10 ocorrências para visualização executiva
+  return combined.slice(0, 10);
 }
 
 /**

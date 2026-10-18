@@ -32,7 +32,7 @@ export function GreetingBanner({
         <NewButton
           href="/painel/dividas/nova"
           label="Nova Dívida"
-          icon="plus"
+          icon="file-circle-plus"
           onClick={onNewDebtClick}
           isLocked={planLimits?.isDebtLimitReached}
           lockReason="debt"

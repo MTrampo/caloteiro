@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { cancelSubscriptionAction } from "@/actions/subscription";
 import type { Subscription, Plan } from "@/commons/models/subscription";
 import type { InvoiceFormatted } from "@/commons/models/account";
+import { FREE_PLAN_SLUG } from "@/commons/constants/subscription";
 import { PlanChangeManager } from "./components/plan-change-manager";
 import {
   FaCreditCard,
@@ -14,6 +15,7 @@ import {
   FaBan,
   FaArrowUpRightFromSquare,
   FaShieldHalved,
+  FaXmark,
 } from "react-icons/fa6";
 import { Loader2 } from "lucide-react";
 
@@ -39,6 +41,7 @@ export function SubscriptionPageFeature({
   const mpStatus = subscription?.mp_status || "inativo";
   const isAuthorized = mpStatus === "authorized";
   const isCancelled = mpStatus === "cancelled";
+  const isPaidPlan = Number(subscription?.base_value || 0) > 0 && subscription?.plan?.slug !== FREE_PLAN_SLUG;
 
   const maxDebtors = subscription?.plan?.config_plan?.max_debtors;
   const maxDebtorsLabel =
@@ -174,14 +177,21 @@ export function SubscriptionPageFeature({
               <span>Consultar assinaturas no Mercado Pago</span>
             </a>
 
-            <button
-              type="button"
-              onClick={() => setCancelModalOpen(true)}
-              className="text-xs font-mono text-zinc-500 hover:text-rose-400 transition-colors cursor-pointer flex items-center gap-1.5 self-start sm:self-auto"
-            >
-              <FaBan className="size-3" />
-              <span>Cancelar assinatura</span>
-            </button>
+            {isPaidPlan ? (
+              <button
+                type="button"
+                onClick={() => setCancelModalOpen(true)}
+                className="text-xs font-mono text-zinc-500 hover:text-rose-400 transition-colors cursor-pointer flex items-center gap-1.5 self-start sm:self-auto"
+              >
+                <FaBan className="size-3" />
+                <span>Cancelar assinatura</span>
+              </button>
+            ) : (
+              <span className="text-xs font-mono text-zinc-500 flex items-center gap-1.5 self-start sm:self-auto">
+                <FaShieldHalved className="size-3 text-emerald-400" />
+                <span>Plano Gratuito Ativo (Sem cobrança recorrente)</span>
+              </span>
+            )}
           </div>
         ) : (
           <div className="pt-3 border-t border-zinc-800">
@@ -307,13 +317,23 @@ export function SubscriptionPageFeature({
       {cancelModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95">
-            <div className="space-y-1">
-              <h3 className="font-heading text-lg font-bold text-white">
-                Deseja cancelar sua assinatura?
-              </h3>
-              <p className="text-xs font-mono text-zinc-400 leading-relaxed">
-                Ao cancelar, seu plano continuará ativo até o término do ciclo já pago. Depois disso, sua conta retornará automaticamente ao plano gratuito Tubarão Lixa.
-              </p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <h3 className="font-heading text-lg font-bold text-white">
+                  Deseja cancelar sua assinatura?
+                </h3>
+                <p className="text-xs font-mono text-zinc-400 leading-relaxed">
+                  Ao cancelar, seu plano continuará ativo até o término do ciclo já pago. Depois disso, sua conta retornará automaticamente ao plano gratuito Tubarão Lixa.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCancelModalOpen(false)}
+                disabled={isCanceling}
+                className="text-zinc-500 hover:text-white transition-colors p-1 rounded-lg hover:bg-zinc-800 cursor-pointer shrink-0"
+              >
+                <FaXmark className="size-4" />
+              </button>
             </div>
 
             <div className="space-y-1.5">
@@ -329,19 +349,11 @@ export function SubscriptionPageFeature({
               />
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <Button
-                variant="outline"
-                disabled={isCanceling}
-                onClick={() => setCancelModalOpen(false)}
-                className="border-zinc-800 text-zinc-300 hover:bg-zinc-800 cursor-pointer"
-              >
-                Voltar
-              </Button>
+            <div className="flex items-center justify-end pt-2">
               <Button
                 disabled={isCanceling}
                 onClick={handleConfirmCancel}
-                className="bg-rose-600 hover:bg-rose-500 text-white font-bold cursor-pointer"
+                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl cursor-pointer"
               >
                 {isCanceling ? (
                   <div className="flex items-center gap-2">

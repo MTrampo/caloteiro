@@ -78,6 +78,8 @@ O fluxo de execução deve respeitar uma hierarquia rigorosa: **UI -> Action -> 
 * **Uso Correto de Cards:** Utilize cards (`rounded-2xl border border-border bg-card`) apenas para unidades semânticas individuais: cards de KPI numéricos, gráficos analíticos, ou cada card individual de dívida/devedor.
 * **Nomenclatura Semântica:** Mantenha sempre "Dívidas" em vez de "Cobranças", e "Dívida" em vez de "Ficha".
 * **PROIBIÇÃO ABSOLUTA DE BADGES/PÍLULAS NO TOPO:** É terminantemente PROIBIDO adicionar badges, tags ou pílulas (ex: "CENTRAL DE INTELIGÊNCIA", "RESGATE DE ACESSO", badges de categoria ou status) acima de títulos no topo de páginas ou no cabeçalho de e-mails. O cabeçalho deve ser limpo e direto (apenas logo e título), sem enfeites de badge flutuantes que poluem o visual.
+* **PROIBIÇÃO DE BOTÕES REDUNDANTES DE FECHAR/CANCELAR EM MODAIS/DIALOGS:** Quando um modal ou dialog já possui o botão de fechar 'X' (ícone) no topo, **É TERMINANTEMENTE PROIBIDO** adicionar botões como "Cancelar", "Fechar", "Voltar" ou "Deixar para depois" no rodapé. O rodapé do modal deve conter única e exclusivamente o botão de ação principal (CTA), alinhado à direita e com o estilo padronizado na cor branca (ou cor de perigo em casos de exclusão definitiva).
+* **PROIBIÇÃO ABSOLUTA DE 'RADAR' E 'FICHA', E ADOÇÃO DA TRÍADE (TUBARÃO ➔ PRESA MARCADA ➔ GRUTA):** É terminantemente PROIBIDO utilizar as palavras "radar", "ficha" ou "fichado" no sistema. Em limites de planos, capacidade de armazenamento, avisos de bloqueio, e-mails e empty states, utilize a identidade da **Gruta** (o covil/território do Tubarão) e **Presa Marcada** (devedor que recebeu a mordida exploratória do tubarão até que pague o Pix), ex: "capacidade da sua gruta: 10 presas marcadas", "marcada na gruta desde...", "marcar novos caloteiros". Mantenha "devedor" apenas nos campos e formulários de cadastro técnico (ex: "Nome do devedor", "CPF").
 
 ## 8. Organização de Validações, Modelos e Assinaturas de Métodos (Clean Code)
 * **Separação Rígida entre `validations` e `models`:**
@@ -92,8 +94,8 @@ O fluxo de execução deve respeitar uma hierarquia rigorosa: **UI -> Action -> 
 ## 9. Testes Automatizados e Política de Qualidade (Foco Server)
 * **Escopo Inicial dos Testes:** Os testes automatizados devem cobrir estritamente a camada de regras de negócio do servidor (`src/server/**`), com foco primordial em `Services` e lógica matemática/financeira.
 * **Cobertura Obrigatória de Regras de Negócio:**
-  * Toda regra de negócio estabelecida (cálculos de juros, multas, divisão de parcelas, amortização, regras de limite de planos do Tubarão, transições de status de dívidas e assinaturas) **deve obrigatoriamente possuir testes unitários correspondentes**.
-  * É expressamente proibido subir novas regras de negócio ou mutações em `src/server` sem os testes associados.
+  * Toda nova regra de negócio ou Service criado (cálculos de inteligência financeira, juros, multas, divisão de parcelas, amortização, regras de limite de planos do Tubarão, transições de status de dívidas e assinaturas) **DEVE obrigatoriamente ser acompanhada da criação imediata de seus respectivos testes unitários**.
+  * É expressamente proibido entregar novos Services ou mutações em `src/server` sem a suite de testes unitários associada no Vitest.
 * **Política de Correção de Bugs e Testes de Regressão:**
   * Toda vez que um bug for identificado e corrigido, **é obrigatório criar um teste de regressão automatizado** que reproduza o cenário da falha e comprove a sua resolução definitiva.
   * O teste de regressão deve ser mantido de forma permanente na suite de testes para garantir que o erro nunca volte a ocorrer.

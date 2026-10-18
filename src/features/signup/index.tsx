@@ -91,7 +91,7 @@ export function SignUpFlow() {
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 font-mono">
               {step === "register"
-                ? "Crie sua credencial de tubarão para fichar caloteiros e rastrear cada centavo na pista."
+                ? "Crie sua credencial de tubarão para marcar caloteiros e rastrear cada centavo na pista."
                 : "Insira o código de 8 dígitos que enviamos para validar seu acesso."}
             </p>
           </div>

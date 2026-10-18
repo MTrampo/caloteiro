@@ -57,7 +57,7 @@ export function HomeCommandFeature({
               O mar está calmo por aqui, Tubarão
             </h3>
             <p className="text-xs sm:text-sm text-zinc-400 font-mono leading-relaxed">
-              Você ainda não cadastrou nenhuma promessa ou dívida no seu radar. Cadastre seu primeiro devedor antes que ele gaste o seu dinheiro no fim de semana.
+              Você ainda não trouxe nenhuma presa marcada para a sua gruta. Marque seu primeiro devedor antes que ele gaste o seu dinheiro no fim de semana.
             </p>
           </div>
 

@@ -7,6 +7,7 @@ import { createCheckoutSubscriptionAction } from "@/actions/subscription";
 import type { SubscriptionFlowProps } from "./types";
 import { TrialBanner } from "./components/trial-banner";
 import { PlanCard } from "./components/plan-card";
+export { SubscriptionSuccessScreen } from "./components/subscription-success-screen";
 
 function redirectToCheckout(url: string) {
   window.location.assign(url);
@@ -73,8 +74,8 @@ export function SubscriptionFlow({
         )}
       </div>
 
-      {/* Faixa Promocional / Degustação */}
-      <TrialBanner />
+      {/* Faixa Promocional / Degustação: Exclusiva para quem ainda NÃO tem plano cadastrado */}
+      {!currentSubscriptionPlanSlug && <TrialBanner />}
 
       {/* Grid de Planos Comerciais */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">

@@ -7,6 +7,8 @@ export const feedItemTypeSchema = z.enum([
   "recently_paid",
 ]);
 
+export const feedCategorySchema = z.enum(["overdue", "upcoming", "paid"]);
+
 export const feedOccurrenceSchema = z.object({
   id: z.string().uuid("ID de ocorrência inválido"),
   debtId: z.string().uuid("ID de dívida inválido"),
@@ -14,12 +16,15 @@ export const feedOccurrenceSchema = z.object({
   debtorNickname: z.string().optional(),
   debtorPhone: z.string(),
   type: feedItemTypeSchema,
+  category: feedCategorySchema,
   relativeTimeText: z.string(),
   installmentText: z.string(),
   pixKey: z.string().optional(),
   lastExcuseNote: z.string().optional(),
   nominalAmount: z.number().nonnegative(),
   paidAmount: z.number().nonnegative().optional(),
+  lateDays: z.number().int().nonnegative().optional(),
+  diffDays: z.number().int().optional(),
 });
 
 export const triageKpisSchema = z.object({

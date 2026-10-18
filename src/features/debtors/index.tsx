@@ -151,8 +151,23 @@ export function DebtorsFeature({
         </div>
 
         {/* Contador de Devedores */}
-        <div className="text-xs font-mono text-zinc-400 shrink-0">
-          <span>{totalCount} {totalCount === 1 ? "devedor cadastrado" : "devedores cadastrados"}</span>
+        <div className="text-xs font-mono text-zinc-400 shrink-0 flex items-center gap-2">
+          {planLimits?.maxDebtors !== null && planLimits?.maxDebtors !== undefined ? (
+            <>
+              <span>
+                {totalCount} / {planLimits.maxDebtors} no tanque
+              </span>
+              {planLimits.isDebtorLimitReached && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                  Limite atingido
+                </span>
+              )}
+            </>
+          ) : planLimits?.maxDebtors === null ? (
+            <span>{totalCount} {totalCount === 1 ? "devedor no tanque" : "devedores no tanque"} (Ilimitado)</span>
+          ) : (
+            <span>{totalCount} {totalCount === 1 ? "devedor cadastrado" : "devedores cadastrados"}</span>
+          )}
         </div>
       </div>
 
@@ -210,7 +225,7 @@ export function DebtorsFeature({
         <div className="py-16 sm:py-24 text-center space-y-5 max-w-md mx-auto">
           <div className="space-y-2">
             <h3 className="font-heading text-lg font-bold text-white">
-              Nenhum caloteiro fichado no tanque
+              Nenhuma presa marcada na sua gruta
             </h3>
             <p className="text-xs sm:text-sm font-mono text-zinc-400 leading-relaxed">
               Ou você é abençoado, ou finalmente aprendeu a dizer &ldquo;não&rdquo;. Se alguém te pediu um Pix emprestado hoje, cadastre agora antes que suma no mundo.

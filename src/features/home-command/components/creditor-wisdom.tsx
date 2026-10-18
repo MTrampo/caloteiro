@@ -30,7 +30,7 @@ export function CreditorWisdom({ initialWisdom }: CreditorWisdomProps) {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="text-[10px] sm:text-[11px] font-mono font-extrabold uppercase tracking-wider text-amber-400/90">
-              Pílula de Sabedoria Matinal
+              Pílula de Sabedoria
             </span>
             <span className="text-zinc-600 font-mono text-xs">•</span>
             <span className="text-xs font-mono font-bold text-zinc-400">

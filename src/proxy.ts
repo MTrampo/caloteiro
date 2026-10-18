@@ -3,8 +3,8 @@ import { updateSession } from "@/commons/lib/supabase/session"
 import { handleRouteAccess } from "./commons/lib/http/security"
 
 export async function proxy(request: NextRequest) {
-  const { user, supabaseResponse } = await updateSession(request)
-  return await handleRouteAccess(request, user, supabaseResponse)
+  const { user, supabaseResponse, supabase } = await updateSession(request)
+  return await handleRouteAccess(request, user, supabaseResponse, supabase)
 }
 
 

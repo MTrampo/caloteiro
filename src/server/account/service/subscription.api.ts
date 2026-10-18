@@ -21,6 +21,13 @@ import {
   getCookieSubscriptionPayload,
 } from "@/commons/lib/auth/subscription";
 import { sendPlanChangeEmailApi } from "@/server/email/service/email.api";
+import {
+  FREE_PLAN_SLUG,
+  DEFAULT_FREE_PLAN_NAME,
+  FREE_PLAN_PRICE,
+  FREE_PLAN_DEFAULT_MAX_DEBTORS,
+  FREE_PLAN_RESET_PAYLOAD,
+} from "@/commons/constants/subscription";
 import type { ResponseProps } from "@/commons/models/api";
 import type {
   UserPermissions,
@@ -141,7 +148,12 @@ export const cancelSubscriptionApi = async (
     reason_details: reasonDetails || null,
   });
 
-  // 2. Atualiza o status local para cancelled (o webhook do MP também confirmará)
+  // 2. Cancela a recorrência no Mercado Pago se houver assinatura ativa
+  if (subscription.mp_subscription_id) {
+    await cancelPreApprovalApi(subscription.mp_subscription_id);
+  }
+
+  // 3. Atualiza o status local para cancelled (mantém o current_period_end vigente até a data de expiração)
   await updateSubscriptionByIdSupabase(subscription.id, {
     mp_status: "cancelled",
   });
@@ -168,7 +180,7 @@ export const createCheckoutSessionApi = async (
     });
   }
 
-  if (Number(plan.price) === 0 || plan.slug === "tubarao-lixa") {
+  if (Number(plan.price) === FREE_PLAN_PRICE || plan.slug === FREE_PLAN_SLUG) {
     console.info(
       `🦈 [SUBSCRIPTION] Ativação direta de plano gratuito | userId: ${userId} | plan: ${plan.name}`
     );
@@ -179,9 +191,8 @@ export const createCheckoutSessionApi = async (
       const { data: created, error: createError } = await upsertSubscriptionSupabase({
         user_id: userId,
         plan_id: plan.id,
-        base_value: 0,
-        mp_status: "authorized",
         mp_payer_email: userEmail,
+        ...FREE_PLAN_RESET_PAYLOAD,
       });
 
       if (createError || !created) {
@@ -194,9 +205,8 @@ export const createCheckoutSessionApi = async (
     } else {
       await updateSubscriptionByIdSupabase(existingSub.id, {
         plan_id: plan.id,
-        base_value: 0,
-        mp_status: "authorized",
         mp_payer_email: userEmail,
+        ...FREE_PLAN_RESET_PAYLOAD,
       });
       activeSubId = existingSub.id;
     }
@@ -239,10 +249,11 @@ export const createCheckoutSessionApi = async (
     }
     subscription = created as unknown as typeof subscription;
   } else {
-    // Se a assinatura já existia, atualiza plano e valor base
+    // BLINDAGEM: Se a assinatura já existia (ex: plano gratuito Tubarão Lixa),
+    // NUNCA atualizamos o plan_id prematuramente para o plano pago aqui!
+    // Caso contrário, como o status é 'authorized', o usuário ganharia o plano pago sem pagar!
+    // A promoção para o novo plano só ocorre quando o Mercado Pago confirmar o status 'authorized'.
     await updateSubscriptionByIdSupabase(subscription.id, {
-      plan_id: plan.id,
-      base_value: plan.price,
       mp_payer_email: userEmail,
     });
   }
@@ -261,6 +272,8 @@ export const createCheckoutSessionApi = async (
       : userEmail;
 
   // 4. Verificar elegibilidade ao período de degustação (trial de 30 dias)
+  // REGRA: Usuários que já têm plano gratuito (ou histórico de assinatura) NÃO recebem 30 dias de trial.
+  // Apenas novos cadastros que nunca tiveram plano algum poderiam ser elegíveis.
   const hasHistory = await hasActiveSubscriptionHistorySupabase(userId);
   const includeTrial = !hasHistory;
 
@@ -321,7 +334,7 @@ export const changeSubscriptionPlanApi = async (
   const currentPrice = Number(currentSub?.base_value ?? currentPlan?.price ?? 0);
   const newPrice = Number(targetPlan.price ?? 0);
   const isUpgrade = newPrice > currentPrice;
-  const isFreePlan = targetPlan.slug === "tubarao-lixa" || newPrice === 0;
+  const isFreePlan = targetPlan.slug === FREE_PLAN_SLUG || newPrice === FREE_PLAN_PRICE;
 
   console.info(
     `🦈 [SUBSCRIPTION:changePlan] ${isUpgrade ? "UPGRADE" : "DOWNGRADE"} | userId: ${userId} | de: ${
@@ -338,16 +351,14 @@ export const changeSubscriptionPlanApi = async (
     if (currentSub) {
       await updateSubscriptionByIdSupabase(currentSub.id, {
         plan_id: targetPlan.id,
-        base_value: 0,
-        mp_status: "authorized",
+        ...FREE_PLAN_RESET_PAYLOAD,
       });
     } else {
       await upsertSubscriptionSupabase({
         user_id: userId,
         plan_id: targetPlan.id,
-        base_value: 0,
-        mp_status: "authorized",
         mp_payer_email: userEmail,
+        ...FREE_PLAN_RESET_PAYLOAD,
       });
     }
 
@@ -367,20 +378,20 @@ export const changeSubscriptionPlanApi = async (
 
     // Dispara e-mail de alteração para plano gratuito
     await sendPlanChangeEmailApi(userEmail, {
-      previousPlanName: currentPlan?.name || "Plano Anterior",
+      previousPlanName: currentPlan?.name || DEFAULT_FREE_PLAN_NAME,
       newPlanName: targetPlan.name,
       isUpgrade: false,
-      newPrice: 0,
-      maxDebtors: targetPlan.config_plan?.max_debtors ?? 2,
+      newPrice: FREE_PLAN_PRICE,
+      maxDebtors: targetPlan.config_plan?.max_debtors ?? FREE_PLAN_DEFAULT_MAX_DEBTORS,
     });
 
     return ApiResponse.Ok({
-      message: "Plano alterado para Tubarão Lixa com sucesso!",
+      message: `Plano alterado para ${DEFAULT_FREE_PLAN_NAME} com sucesso!`,
       data: {
         isUpgrade: false,
-        previousPlanName: currentPlan?.name || "Plano Anterior",
+        previousPlanName: currentPlan?.name || DEFAULT_FREE_PLAN_NAME,
         newPlanName: targetPlan.name,
-        newPrice: 0,
+        newPrice: FREE_PLAN_PRICE,
         effectiveNextBilling: false,
         isFreePlan: true,
         initPoint: null,
@@ -389,8 +400,14 @@ export const changeSubscriptionPlanApi = async (
   }
 
   // Cenário 2: Mudança para plano pago
-  // 2.A: Já possui assinatura no Mercado Pago -> atualiza via PUT /preapproval/{id}
-  if (currentSub?.mp_subscription_id) {
+  // 2.A: Migração em segundo plano: SOMENTE se o usuário já possuir assinatura PAGA e AUTORIZADA no Mercado Pago
+  const isCurrentPaidAndAuthorized =
+    Boolean(currentSub?.mp_subscription_id) &&
+    currentSub?.mp_status === "authorized" &&
+    currentPrice > FREE_PLAN_PRICE &&
+    currentPlan?.slug !== FREE_PLAN_SLUG;
+
+  if (isCurrentPaidAndAuthorized && currentSub?.mp_subscription_id) {
     const mpUpdateRes = await updatePreApprovalPlanOrPriceApi(
       currentSub.mp_subscription_id,
       newPrice,
@@ -425,7 +442,7 @@ export const changeSubscriptionPlanApi = async (
 
     // Dispara e-mail de alteração com aviso de cobrança na próxima fatura
     await sendPlanChangeEmailApi(userEmail, {
-      previousPlanName: currentPlan?.name || "Plano Anterior",
+      previousPlanName: currentPlan?.name || DEFAULT_FREE_PLAN_NAME,
       newPlanName: targetPlan.name,
       isUpgrade,
       newPrice,
@@ -438,7 +455,7 @@ export const changeSubscriptionPlanApi = async (
         : `Plano alterado para ${targetPlan.name}.`,
       data: {
         isUpgrade,
-        previousPlanName: currentPlan?.name || "Plano Anterior",
+        previousPlanName: currentPlan?.name || DEFAULT_FREE_PLAN_NAME,
         newPlanName: targetPlan.name,
         newPrice,
         effectiveNextBilling: true,
@@ -448,7 +465,7 @@ export const changeSubscriptionPlanApi = async (
     });
   }
 
-  // 2.B: Não possuía assinatura ativa no MP -> precisa gerar novo checkout
+  // 2.B: Não possuía assinatura ativa e paga no MP (vindo do plano gratuito, cancelado ou pendente) -> OBRIGATÓRIO gerar novo checkout
   const checkoutRes = await createCheckoutSessionApi({
     userId,
     userEmail,
@@ -466,7 +483,7 @@ export const changeSubscriptionPlanApi = async (
     message: "Redirecionando para autorização no Mercado Pago...",
     data: {
       isUpgrade: true,
-      previousPlanName: currentPlan?.name || "Tubarão Lixa",
+      previousPlanName: currentPlan?.name || DEFAULT_FREE_PLAN_NAME,
       newPlanName: targetPlan.name,
       newPrice,
       effectiveNextBilling: false,

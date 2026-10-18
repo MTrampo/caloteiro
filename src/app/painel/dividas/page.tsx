@@ -5,6 +5,7 @@ import {
   getUserPermissionsOrCacheApi,
   getPlanLimitsApi,
 } from "@/server/account/service/subscription.api"
+import { getFinancialAnalyticsApi } from "@/server/debts/service/financial.api"
 import { redirect } from "next/navigation"
 import type { Metadata } from "next"
 
@@ -17,25 +18,24 @@ export default async function DividasPage() {
     data: { user },
   } = await getUserLogged()
 
-  let planLimits = null
-
-  if (user) {
-    const [permissions, limits] = await Promise.all([
-      getUserPermissionsOrCacheApi(user.id),
-      getPlanLimitsApi(user.id),
-    ])
-    if (!permissions.canAccessFinancial) {
-      redirect("/painel/dividas/acompanhamento")
-    }
-    planLimits = limits
-  } else {
+  if (!user) {
     redirect("/entrar")
+  }
+
+  const [permissions, planLimits, initialData] = await Promise.all([
+    getUserPermissionsOrCacheApi(user.id),
+    getPlanLimitsApi(user.id),
+    getFinancialAnalyticsApi(user.id, "month"),
+  ])
+
+  if (!permissions.canAccessFinancial) {
+    redirect("/painel/dividas/acompanhamento")
   }
 
   return (
     <>
       <Header title="Financeiro" />
-      <DebtsFeature planLimits={planLimits} />
+      <DebtsFeature initialData={initialData} planLimits={planLimits} />
     </>
   )
 }

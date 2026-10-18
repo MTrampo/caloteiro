@@ -9,28 +9,28 @@ export type DashboardSummaryData = TrackingSummaryData;
 
 const defaultSummaryData: DashboardSummaryData = {
   open: {
-    amount: "16 suspeitos",
+    amount: "0 suspeitos",
     description: "Promessas e pendências na praça",
-    last: "Dívidas ativas no radar",
-    changePercent: 100,
+    last: "Dívidas ativas na gruta",
+    changePercent: 0,
   },
   onTime: {
-    amount: "8 milagreiros",
+    amount: "0 milagreiros",
     description: "Pagando sem drama nem desculpa",
     last: "Raros e pontuais",
-    changePercent: 50,
+    changePercent: 0,
   },
   overdue: {
-    amount: "5 sumidos",
+    amount: "0 sumidos",
     description: "Passou do prazo combinado",
     last: "Hora do 'bom dia, sumido'",
-    changePercent: 31,
+    changePercent: 0,
   },
   defaulted: {
-    amount: "3 lendas",
+    amount: "0 lendas",
     description: "Deram o perdido no mês",
     last: "Alerta vermelho de golpe",
-    changePercent: 19,
+    changePercent: 0,
   },
 };
 
@@ -51,7 +51,7 @@ export function SummaryCardsGrid({
 
   const openBadge = (
     <span className="inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[11px] font-bold text-zinc-300 bg-zinc-800/80 border border-zinc-700/60">
-      {data.open.changePercent}% no radar
+      {data.open.changePercent}% na gruta
     </span>
   );
 

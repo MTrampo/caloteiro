@@ -71,9 +71,9 @@ export const createDebtorApi = async (
     const currentCount = await countDebtorsByUserIdSupabase(userId);
     if (currentCount >= permissions.maxDebtors) {
       return ApiResponse.Forbidden({
-        message: `O tanque encheu! Seu plano permite até ${permissions.maxDebtors} ${
-          permissions.maxDebtors === 1 ? "devedor" : "devedores"
-        } no radar. Chega de amadorismo, hora de evoluir para o próximo nível de Tubarão!`,
+        message: `Sua gruta encheu! Seu plano permite manter até ${permissions.maxDebtors} ${
+          permissions.maxDebtors === 1 ? "presa marcada" : "presas marcadas"
+        } simultaneamente. Chega de amadorismo, hora de evoluir para o próximo nível de Tubarão!`,
         error: "LIMIT_REACHED",
       });
     }

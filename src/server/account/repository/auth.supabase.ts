@@ -211,3 +211,18 @@ export const updateProfileEmailByUserIdSupabase = async (userId: string, email: 
 
   return { data, error };
 };
+
+export const deleteUserAccountSupabase = async (userId: string) => {
+  const supabaseInternal = await getInternalClient();
+
+  // 1. Deletar do perfil público (cascateia para debts, debtors, subscriptions, invoices, etc.)
+  const { error: profileError } = await supabaseInternal
+    .from("profiles")
+    .delete()
+    .eq("id", userId);
+
+  // 2. Deletar do auth.users via admin do Supabase
+  const { error: authError } = await supabaseInternal.auth.admin.deleteUser(userId);
+
+  return { error: profileError || authError };
+};

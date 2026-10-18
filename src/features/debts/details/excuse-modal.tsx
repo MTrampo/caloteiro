@@ -121,25 +121,13 @@ export function ExcuseModal({
             />
           </Field>
 
-          {/* Botões */}
-          <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              onClick={onClose}
-              disabled={isPending}
-              className="w-full sm:w-auto"
-            >
-              Cancelar
-            </Button>
-
+          {/* Botão de Ação */}
+          <div className="flex items-center justify-end pt-2">
             <Button
               type="submit"
-              variant="default"
               size="lg"
               disabled={isPending}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl shadow-xs transition-all cursor-pointer"
             >
               {isPending ? (
                 <>

@@ -68,7 +68,7 @@ export default async function DocumentosLayout({
       {/* Rodapé da Documentação */}
       <footer className="border-t border-border/40 py-6 text-center text-xs font-mono text-zinc-500">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>© {new Date().getFullYear()} Caloteiro — A Central do Tubarão.</p>
+          <p>© {new Date().getFullYear()} Caloteiro — A Gruta do Tubarão.</p>
           <div className="flex items-center gap-4">
             <Link href="/assinatura" className="hover:text-zinc-300 transition-colors">
               Assinatura

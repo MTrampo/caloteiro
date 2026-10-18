@@ -19,7 +19,7 @@ export function renderRenewalFailedHtml(data: RenewalFailedEmailData): { subject
       Não se preocupe: isso costuma acontecer por motivos simples (limite momentâneo, troca de cartão ou bloqueio preventivo de segurança do seu banco).
     </p>
     <p style="margin: 0;">
-      Os devedores já estavam quase comemorando, mas não vamos deixar seu arsenal desativado! Para que seu cofre continue 100% blindado e seus cálculos automáticos não parem, basta atualizar os dados do cartão direto pelo painel.
+      Os devedores já estavam quase comemorando, mas não vamos deixar suas ferramentas desativadas! Para que seu cofre continue 100% blindado e seus cálculos automáticos não parem, basta atualizar os dados do cartão direto pelo painel.
     </p>
   `
 
@@ -36,7 +36,7 @@ export function renderRenewalFailedHtml(data: RenewalFailedEmailData): { subject
 
   const html = renderBaseEmailLayout({
     title: "Atenção: Renovação Pendente",
-    previewText: "Tivemos um imprevisto ao processar sua mensalidade. Atualize seu cartão para manter seu arsenal ativo!",
+    previewText: "Tivemos um imprevisto ao processar sua mensalidade. Atualize seu cartão para manter seu plano ativo!",
     bannerSvgPath: "/email/empty-wallet.svg",
     bannerSvgAlt: "Carteira indicando pagamento pendente",
     name: data.recipientName,
@@ -44,7 +44,7 @@ export function renderRenewalFailedHtml(data: RenewalFailedEmailData): { subject
     highlightCardHtml,
     buttonText: "Atualizar Meu Cartão 💳",
     buttonUrl: `${APP_URL}/painel/conta`,
-    footerNote: "Assim que a fatura for aprovada, sua blindagem financeira continuará normalmente sem nenhum impacto nas suas fichas.",
+    footerNote: "Assim que a fatura for aprovada, sua blindagem financeira continuará normalmente sem nenhum impacto nas presas da sua gruta.",
   })
 
   return { subject, html }

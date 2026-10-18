@@ -1,7 +1,10 @@
 import "server-only";
 
-import { Resend } from 'resend'
+import { Resend } from "resend";
+import { RESEND_API_KEY, RESEND_FROM_EMAIL } from "@/commons/constants/env";
 
-const resendApiKey = process.env.RESEND_API_KEY || 're_placeholder_for_build'
-export const resend = new Resend(resendApiKey)
-export const EMAIL_FROM = process.env.RESEND_FROM_EMAIL || 'Caloteiro <notificacoes@meutrampo.dev.br>'
+export const resend = new Resend(RESEND_API_KEY);
+
+export const EMAIL_FROM = RESEND_FROM_EMAIL.includes("<")
+  ? RESEND_FROM_EMAIL
+  : `Caloteiro <${RESEND_FROM_EMAIL.trim()}>`;

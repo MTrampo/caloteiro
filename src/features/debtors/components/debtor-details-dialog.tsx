@@ -202,7 +202,7 @@ export function DebtorDetailsDialog({
           {debtor.created_at && (
             <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 pt-1">
               <FaCalendarDays className="size-3" />
-              <span>No radar desde {formatDate(debtor.created_at)}</span>
+              <span>Marcada na gruta desde {formatDate(debtor.created_at)}</span>
             </div>
           )}
         </div>

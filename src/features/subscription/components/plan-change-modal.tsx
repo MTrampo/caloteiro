@@ -72,7 +72,7 @@ export function PlanChangeModal({
 
         if (isUpgrade) {
           toast.success(
-            `Parabéns, Tubarão! Você subiu para o plano ${targetPlan.name}. Arsenal liberado!`
+            `Parabéns, Tubarão! Você subiu para o plano ${targetPlan.name}. A nova gruta fica liberada!`
           );
         } else {
           toast.success(`Plano alterado para ${targetPlan.name} com sucesso.`);
@@ -85,6 +85,8 @@ export function PlanChangeModal({
       }
     });
   };
+
+  const isFromFreePlan = currentPrice === 0 || currentPlan?.slug === "tubarao-lixa";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-50">
@@ -125,15 +127,15 @@ export function PlanChangeModal({
         {isUpgrade ? (
           <div className="space-y-3">
             <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider block">
-              ⚡ O que você GANHA a partir de agora:
+              O que você GANHA a partir de agora:
             </span>
             <ul className="space-y-2 text-xs font-mono text-zinc-300">
               <li className="flex items-start gap-2">
                 <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
                 <span>
-                  Capacidade no radar:{" "}
+                  Capacidade da sua gruta:{" "}
                   <strong className="text-white">
-                    {targetMaxDebtors ? `Até ${targetMaxDebtors} devedores simultâneos` : "Devedores ILIMITADOS"}
+                    {targetMaxDebtors ? `Até ${targetMaxDebtors} presas marcadas simultaneamente` : "Presas ILIMITADAS"}
                   </strong>{" "}
                   {currentMaxDebtors ? `(você tinha ${currentMaxDebtors})` : ""}
                 </span>
@@ -149,7 +151,7 @@ export function PlanChangeModal({
               {targetPlan.config_plan?.can_debtor_portal && (
                 <li className="flex items-start gap-2">
                   <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>Portal do Devedor: link exclusivo para o caloteiro ver o estrago</span>
+                  <span>Link da Dívida para a Presa: página exclusiva para o caloteiro ver o estrago</span>
                 </li>
               )}
             </ul>
@@ -163,8 +165,8 @@ export function PlanChangeModal({
               <li className="flex items-start gap-2">
                 <FaTriangleExclamation className="size-3.5 text-amber-400 shrink-0 mt-0.5" />
                 <span>
-                  Limite de radar reduzido para{" "}
-                  <strong className="text-white">{targetMaxDebtors ?? 2} devedores simultâneos</strong>.
+                  Capacidade da sua gruta reduzida para{" "}
+                  <strong className="text-white">{targetMaxDebtors ?? 2} presas simultâneas</strong>.
                 </span>
               </li>
               <li className="flex items-start gap-2">
@@ -175,20 +177,28 @@ export function PlanChangeModal({
 
             {/* Aviso de Devedores Existentes */}
             <div className="rounded-xl bg-amber-950/30 border border-amber-900/50 p-3 text-xs font-mono text-amber-300 leading-relaxed">
-              <strong>Importante:</strong> Seus caloteiros cadastrados <strong>NÃO</strong> serão apagados. Porém, enquanto você tiver mais presas que o limite permitido ({targetMaxDebtors ?? 2}), não será possível cadastrar novos indivíduos.
+              <strong>Importante:</strong> Seus caloteiros cadastrados <strong>NÃO</strong> serão apagados. Porém, enquanto você tiver mais presas que o limite permitido ({targetMaxDebtors ?? 2}), não será possível marcar novos caloteiros.
             </div>
           </div>
         )}
 
-        {/* Caixa Informativa: Cobrança na Próxima Fatura */}
+        {/* Caixa Informativa: Regra Real de Faturamento */}
         <div className="rounded-xl bg-zinc-950/70 border border-zinc-800 p-3 text-xs font-mono text-zinc-400 space-y-1">
           <div className="flex items-center gap-1.5 text-zinc-200 font-bold">
             <FaInfo className="size-3 text-emerald-400 shrink-0" />
-            <span>Regra de Faturamento: Próxima Fatura</span>
+            <span>
+              {isFromFreePlan
+                ? "Regra de Faturamento: Cobrança Imediata"
+                : isFreePlan
+                ? "Regra de Faturamento: Cancelamento de Recorrência"
+                : "Regra de Faturamento: Próxima Fatura"}
+            </span>
           </div>
           <p className="leading-relaxed">
-            {isUpgrade
-              ? `O valor de ${formattedTargetPrice}/mês será cobrado SOMENTE na sua próxima fatura do Mercado Pago. Os novos benefícios ficam liberados IMEDIATAMENTE.`
+            {isFromFreePlan
+              ? "Primeira cobrança realizada no ato da assinatura no Mercado Pago. A nova gruta fica liberada assim que o pagamento for aprovado."
+              : isUpgrade
+              ? `O valor de ${formattedTargetPrice}/mês será cobrado na sua próxima fatura do Mercado Pago. Os novos recursos ficam liberados imediatamente.`
               : isFreePlan
               ? "A cobrança recorrente será cancelada no Mercado Pago e você não terá novas cobranças."
               : `A redução do valor para ${formattedTargetPrice}/mês será aplicada no próximo ciclo de faturamento no Mercado Pago.`}
@@ -196,25 +206,13 @@ export function PlanChangeModal({
         </div>
 
         {/* Ações do Modal */}
-        <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-3 border-t border-zinc-800">
+        <div className="flex items-center justify-end pt-3 border-t border-zinc-800">
           <Button
             type="button"
-            variant="outline"
-            size="lg"
-            disabled={isPending}
-            onClick={onClose}
-            className="w-full sm:w-auto"
-          >
-            Cancelar
-          </Button>
-
-          <Button
-            type="button"
-            variant={isUpgrade ? "success" : "default"}
             size="lg"
             disabled={isPending}
             onClick={handleConfirmChange}
-            className="w-full sm:w-auto"
+            className="w-full bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl shadow-xs transition-all cursor-pointer"
           >
             {isPending ? (
               <div className="flex items-center gap-2">
@@ -222,7 +220,11 @@ export function PlanChangeModal({
                 <span>Atualizando Plano...</span>
               </div>
             ) : isUpgrade ? (
-              <span>Confirmar Upgrade ({formattedTargetPrice}/mês)</span>
+              isFromFreePlan ? (
+                <span>Ir para Pagamento no Mercado Pago ({formattedTargetPrice}/mês)</span>
+              ) : (
+                <span>Confirmar Upgrade ({formattedTargetPrice}/mês)</span>
+              )
             ) : (
               <span>Confirmar Downgrade</span>
             )}

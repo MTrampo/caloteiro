@@ -105,7 +105,7 @@ export function SignInFlow({ initialEmail = "" }: SignInFlowProps) {
           toast.success("Código confirmado com sucesso!");
           setStep("reset-password");
         } else {
-          toast.success("Conta confirmada com sucesso! Bem-vindo à Central de Investigação.");
+          toast.success("Conta confirmada com sucesso! Bem-vindo à Gruta do Tubarão.");
           if (typeof window !== "undefined") {
             window.location.href = "/painel";
           } else {
@@ -168,7 +168,7 @@ export function SignInFlow({ initialEmail = "" }: SignInFlowProps) {
           {/* Título do Card (Sem ícones nem emojis) */}
           <div className="space-y-1 text-center sm:text-left border-b border-zinc-800/80 pb-4">
             <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white">
-              {step === "login" && "Central de Acesso"}
+              {step === "login" && "Acesso do Tubarão"}
               {step === "forgot-password" && "Recuperação de Acesso"}
               {step === "verify" && (verificationReason === "signup" ? "Confirmar E-mail" : "Confirmação de Identidade")}
               {step === "reset-password" && "Cadastrar Nova Senha"}
@@ -178,7 +178,7 @@ export function SignInFlow({ initialEmail = "" }: SignInFlowProps) {
               {step === "forgot-password" && "Digite seu e-mail para enviarmos um código seguro de recuperação."}
               {step === "verify" &&
                 (verificationReason === "signup"
-                  ? "Insira o código de 8 dígitos que enviamos para validar seu acesso à central."
+                  ? "Insira o código de 8 dígitos que enviamos para validar seu acesso à gruta."
                   : "Digite o código de 8 dígitos que enviamos para sua caixa de entrada.")}
               {step === "reset-password" && "Crie uma senha forte para blindar seus registros de cobrança."}
             </p>

@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/input-otp";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { DeleteAccountCard } from "./components/delete-account-card";
 
 interface AccountFeatureProps {
   profile: Profile | null;
@@ -748,6 +749,9 @@ export function AccountFeature({
               Seus dados de cobrança e informações de devedores são isolados com Row Level Security (RLS) e criptografia de ponta a ponta.
             </p>
           </div>
+
+          {/* Zona de Perigo: Exclusão Definitiva de Conta */}
+          <DeleteAccountCard />
         </div>
       </div>
     </div>

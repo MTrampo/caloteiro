@@ -3,6 +3,12 @@ import "server-only";
 import { ApiResponse } from "@/commons/lib/http/responses";
 import type { ResponseProps } from "@/commons/models/api";
 import { clientPreAproval, clientInvoice } from "@/commons/lib/mercadopago/server";
+import {
+  APP_URL,
+  DEV_TUNNEL_URL,
+  IS_DEV,
+  MP_EMAIL_COMPRADOR_TEST,
+} from "@/commons/constants/env";
 import type {
   CreatePreApprovalPayload,
   MercadopagoAutoRecurring,
@@ -21,12 +27,8 @@ export const createPreApprovalSubscriptionApi = async (
   } = payload;
 
   try {
-    const isDev =
-      process.env.NODE_ENV === "development" ||
-      process.env.ENVIRONMENT === "development";
     const isBuyerTest = Boolean(
-      process.env.MP_EMAIL_COMPRADOR_TEST &&
-        payerEmail === process.env.MP_EMAIL_COMPRADOR_TEST
+      MP_EMAIL_COMPRADOR_TEST && payerEmail === MP_EMAIL_COMPRADOR_TEST
     );
     console.info(
       `🌐 [PAYMENT:createPreApproval] Criando assinatura individual no MP | payerEmail: ${payerEmail}${
@@ -34,14 +36,15 @@ export const createPreApprovalSubscriptionApi = async (
       } | subId: ${subscriptionId} | preço: ${planPrice} | plano: ${planName} | trial30Dias: ${includeTrial}`
     );
 
-    let baseUrl = process.env.NEXT_PUBLIC_APP_URL;
-    if (isDev && process.env.DEV_TUNNEL_URL) {
+    let baseUrl = APP_URL;
+    if (IS_DEV && DEV_TUNNEL_URL) {
       console.info(
         "🔧 [PAYMENT:createPreApproval] Modo dev detectado. Usando URL do Dev Tunnel para retorno do Mercado Pago."
       );
-      baseUrl = process.env.DEV_TUNNEL_URL;
+      baseUrl = DEV_TUNNEL_URL;
     }
-    const backUrl = `${baseUrl}/assinatura`;
+    const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+    const backUrl = `${normalizedBaseUrl}/assinatura/sucesso`;
 
     const autoRecurringBody: MercadopagoAutoRecurring = {
       frequency: 1,

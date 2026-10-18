@@ -27,11 +27,21 @@ export function DashboardFeature({
             Acompanhamento de Dívidas
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 font-mono">
-            Status de promessas, cobranças em andamento e pessoas no radar.
+            Status de promessas, cobranças em andamento e presas marcadas na sua gruta.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {planLimits?.maxDebtors !== null && planLimits?.maxDebtors !== undefined && (
+            <div className="text-xs font-mono text-zinc-400 flex items-center gap-1.5 shrink-0">
+              <span>{planLimits.currentActiveDebtsCount} / {planLimits.maxDebtors} ativas</span>
+              {planLimits.isDebtLimitReached && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                  Limite atingido
+                </span>
+              )}
+            </div>
+          )}
           <NewButton
             href="/painel/dividas/nova"
             label="Nova Dívida"

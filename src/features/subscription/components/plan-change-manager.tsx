@@ -53,7 +53,7 @@ export function PlanChangeManager({
                       {plan.name}
                     </h4>
                     <p className="text-xs font-mono text-zinc-400">
-                      {plan.description || "Arsenal de cobrança"}
+                      {plan.description || "Recursos de cobrança"}
                     </p>
                   </div>
 
@@ -86,7 +86,7 @@ export function PlanChangeManager({
                   <div className="flex items-center gap-2">
                     <FaCheck className="size-3 text-emerald-400 shrink-0" />
                     <span>
-                      {maxDebtors ? `${maxDebtors} devedores no radar` : "Devedores ilimitados"}
+                      {maxDebtors ? `${maxDebtors} presas na gruta` : "Presas ilimitadas na gruta"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -98,7 +98,7 @@ export function PlanChangeManager({
                   {plan.config_plan?.can_debtor_portal && (
                     <div className="flex items-center gap-2">
                       <FaCheck className="size-3 text-emerald-400 shrink-0" />
-                      <span>Portal do Devedor incluso</span>
+                      <span>Link da Dívida para a Presa incluso</span>
                     </div>
                   )}
                 </div>

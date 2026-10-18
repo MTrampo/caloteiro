@@ -297,11 +297,21 @@ export const getDebtDetailsApi = async (
     formattedPaidAt: formatDateTime(payment.paid_at),
   }));
 
-  const originalAmount = Number(debt.original_amount);
-  const remainingAmount = Math.max(0, originalAmount - totalAmortized);
-  const progressPercentage = originalAmount > 0
-    ? Math.min(100, Math.round((totalAmortized / originalAmount) * 100))
+  const originalAmount = Number(debt.original_amount) || 0;
+  const totalDebtAmount = Number(debt.total_amount || debt.original_amount) || 0;
+  const totalInterestAmount = Math.max(0, Math.round((totalDebtAmount - originalAmount) * 100) / 100);
+  const hasInterest = totalInterestAmount > 0;
+
+  // O saldo restante na pista reflete o compromisso total contratado (com juros) menos o amortizado
+  const remainingAmount = Math.max(0, Math.round((totalDebtAmount - totalAmortized) * 100) / 100);
+  const progressPercentage = totalDebtAmount > 0
+    ? Math.min(100, Math.round((totalAmortized / totalDebtAmount) * 100))
     : 0;
+
+  const remainingInstallmentsCount = Math.max(0, installmentsFormatted.length - paidInstallmentsCount);
+  const formattedTotalInterestAmount = totalInterestAmount > 0
+    ? `+ ${formatBRL(totalInterestAmount)}`
+    : formatBRL(0);
 
   const isFullySettled = remainingAmount <= 0 || debt.status === "settled";
 
@@ -325,9 +335,13 @@ export const getDebtDetailsApi = async (
   const formattedData: DebtDetailsFormatted = {
     ...debt,
     formattedOriginalAmount: formatBRL(originalAmount),
-    formattedTotalAmount: formatBRL(Number(debt.total_amount || debt.original_amount)),
+    formattedTotalAmount: formatBRL(totalDebtAmount),
     formattedPaidAmount: formatBRL(totalAmortized),
     formattedRemainingAmount: formatBRL(remainingAmount),
+    totalInterestAmount,
+    formattedTotalInterestAmount,
+    hasInterest,
+    remainingInstallmentsCount,
     progressPercentage,
     formattedLoanDate: formatDate(debt.loan_date),
     formattedFirstDueDate: formatDate(debt.first_due_date),

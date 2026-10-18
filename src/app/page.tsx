@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
+  Activity,
   CheckCircle2,
   Clock,
   DollarSign,
   Flame,
   PlusCircle,
-  Radar,
   ShieldAlert,
   UserX,
 } from "lucide-react";
@@ -21,7 +21,7 @@ export default function Home() {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-sm shadow-cyan-500/10">
-              <Radar className="size-5 animate-pulse" />
+              <Activity className="size-5 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -29,7 +29,7 @@ export default function Home() {
                   CALOTEIRO
                 </span>
                 <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                  Radar v1.0
+                  Gruta v1.0
                 </span>
               </div>
               <p className="text-xs text-muted-foreground font-mono">
@@ -68,7 +68,7 @@ export default function Home() {
           <div className="absolute -right-8 -bottom-8 size-48 rounded-full bg-cyan-500/5 blur-3xl pointer-events-none" />
         </div>
 
-        {/* Métricas do Radar */}
+        {/* Métricas da Gruta */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card className="border-slate-800 bg-slate-900/80 backdrop-blur shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -122,12 +122,12 @@ export default function Home() {
           </Card>
         </section>
 
-        {/* Fichas dos Suspeitos Recentes */}
+        {/* Presas Marcadas Recentes */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <h2 className="font-heading text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                <ShieldAlert className="size-5 text-cyan-400" /> Fichas de Suspeitos
+              <h2 className="font-heading text-xl font-bold tracking-tight text-white">
+                Presas Marcadas
               </h2>
               <p className="text-xs text-slate-400 font-mono">
                 Monitoramento ativo de quem esqueceu de acertar as contas

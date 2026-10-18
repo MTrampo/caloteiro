@@ -70,7 +70,7 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
         </span>
       </div>
 
-      {/* 6. Link de acompanhamento do devedor */}
+      {/* 6. Link da dívida para a presa */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck
           className={`size-3 shrink-0 ${
@@ -84,11 +84,11 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
               : "text-zinc-500 line-through"
           }
         >
-          Portal de acompanhamento do devedor
+          Link da dívida para a presa {config?.can_debtor_portal && <span className="text-[10px] text-amber-400 font-mono font-normal">(Em breve)</span>}
         </span>
       </div>
 
-      {/* 7. Nível de Cara de Pau (Score de Risco) - Exclusivo Pro */}
+      {/* 7. Nível de Cara de Pau (Score de Risco) - Exclusivo Tubarão Cabeça Chato */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck
           className={`size-3 shrink-0 ${
@@ -102,11 +102,11 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
               : "text-zinc-500 line-through"
           }
         >
-          Nível de Cara de Pau (Score de Risco)
+          Nível de Cara de Pau (Score de Risco) {config?.can_risk_score && <span className="text-[10px] text-amber-400 font-mono font-normal">(Em breve)</span>}
         </span>
       </div>
 
-      {/* 8. Arquivo de Provas (Anexo de Recibos) - Exclusivo Pro */}
+      {/* 8. Arquivo de Provas (Anexo de Recibos) - Exclusivo Tubarão Cabeça Chato */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck
           className={`size-3 shrink-0 ${
@@ -120,7 +120,7 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
               : "text-zinc-500 line-through"
           }
         >
-          Arquivo de Provas (Anexo de Recibos)
+          Arquivo de Provas (Anexo de Recibos) {config?.can_attach_receipts && <span className="text-[10px] text-amber-400 font-mono font-normal">(Em breve)</span>}
         </span>
       </div>
     </div>

@@ -185,7 +185,7 @@ export function buildSummaryCards(
     open: {
       amount: total === 1 ? "1 suspeito" : `${total} suspeitos`,
       description: "Promessas e pendências na praça",
-      last: "Dívidas ativas no radar",
+      last: "Dívidas ativas na gruta",
       changePercent: total > 0 ? 100 : 0,
     },
     onTime: {

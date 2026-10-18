@@ -37,3 +37,7 @@ export interface InvoiceFormatted {
   formattedCreatedAt: string;
 }
 
+export interface DeleteAccountPayload {
+  confirmation: string;
+}
+

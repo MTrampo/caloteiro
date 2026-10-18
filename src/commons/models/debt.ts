@@ -171,8 +171,12 @@ export interface DebtDetailsFormatted extends DebtRow {
   statusBadgeClass: string;
   categoryLabel: string;
   interestLabel: string;
+  totalInterestAmount: number;
+  formattedTotalInterestAmount: string;
+  hasInterest: boolean;
   paidInstallmentsCount: number;
   totalInstallmentsCount: number;
+  remainingInstallmentsCount: number;
   isFullySettled: boolean;
   hasLateInstallments: boolean;
   lateInstallmentsCount: number;

@@ -63,8 +63,8 @@ export function PlanLimitModal({
           <DialogDescription className="text-xs sm:text-sm font-mono text-zinc-400 leading-relaxed pt-1">
             {isDebtor ? (
               <>
-                Seu plano atual (<span className="text-white font-bold">{planName}</span>) permite até{" "}
-                <span className="text-white font-bold">{maxAllowed} devedores</span> no radar. Chega de amadorismo: é hora de evoluir para o próximo nível de Tubarão para fichar novos caloteiros e não deixar ninguém escapar!
+                Seu plano atual (<span className="text-white font-bold">{planName}</span>) permite manter até{" "}
+                <span className="text-white font-bold">{maxAllowed} presas marcadas</span> na sua gruta. Chega de amadorismo: é hora de evoluir de plano para marcar novos caloteiros e não deixar ninguém escapar!
               </>
             ) : (
               <>
@@ -84,34 +84,24 @@ export function PlanLimitModal({
             <li className="flex items-start gap-2">
               <FaUsers className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
               <span>
-                <strong className="text-white">Tubarão Branco:</strong> até 10 devedores e dívidas no radar, painel financeiro consolidado e portal do devedor.
+                <strong className="text-white">Tubarão Branco:</strong> até 10 presas marcadas e dívidas na sua gruta, painel financeiro consolidado e link da dívida para a presa.
               </span>
             </li>
             <li className="flex items-start gap-2">
               <FaShieldHalved className="size-3.5 text-rose-400 shrink-0 mt-0.5" />
               <span>
-                <strong className="text-white">Tubarão Cabeça Chato:</strong> devedores e dívidas <strong className="text-emerald-400">ilimitados</strong>, score de risco do caloteiro e anexo de comprovantes.
+                <strong className="text-white">Tubarão Cabeça Chato:</strong> presas e dívidas <strong className="text-emerald-400">ilimitadas</strong> na sua gruta, score de risco do caloteiro e anexo de comprovantes.
               </span>
             </li>
           </ul>
         </div>
 
-        <DialogFooter className="flex-col-reverse sm:flex-row gap-2 pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto font-mono text-xs border-zinc-800 text-zinc-400 hover:text-white"
-          >
-            Deixar para depois
-          </Button>
-
+        <DialogFooter className="flex items-center justify-end pt-2">
           <Button
             type="button"
             size="lg"
             onClick={handleUpgradeClick}
-            className="w-full sm:w-auto bg-white hover:bg-zinc-200 text-zinc-950 font-bold rounded-xl font-heading shadow-md"
+            className="w-full sm:w-auto bg-white hover:bg-zinc-200 text-zinc-950 font-bold rounded-xl font-heading shadow-md cursor-pointer"
           >
             <span>Evoluir Meu Plano</span>
             <FaArrowRight className="size-3.5 ml-1.5" />

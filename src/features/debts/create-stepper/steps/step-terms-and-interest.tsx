@@ -205,16 +205,24 @@ export function StepTermsAndInterest({
               </option>
 
               {/* Disponível a partir do Tubarão Branco */}
-              {!permissions.isFreePlan && (
+              {permissions.isFreePlan ? (
+                <option value="fixed" disabled className="bg-zinc-900 text-zinc-500">
+                  {INTEREST_TYPE_LABELS.fixed} (Liberado no Tubarão Branco)
+                </option>
+              ) : (
                 <option value="fixed" className="bg-zinc-900 text-white">
                   {INTEREST_TYPE_LABELS.fixed}
                 </option>
               )}
 
-              {/* Exclusivo Tubarão Cabeça Chato (Pro) */}
-              {permissions.maxDebtors === null && (
+              {/* Exclusivo Tubarão Cabeça Chato */}
+              {permissions.maxDebtors !== null ? (
+                <option value="monthly_percentage" disabled className="bg-zinc-900 text-zinc-500">
+                  {INTEREST_TYPE_LABELS.monthly_percentage} (Exclusivo Tubarão Cabeça Chato)
+                </option>
+              ) : (
                 <option value="monthly_percentage" className="bg-zinc-900 text-white">
-                  {INTEREST_TYPE_LABELS.monthly_percentage} (Exclusivo Pro)
+                  {INTEREST_TYPE_LABELS.monthly_percentage}
                 </option>
               )}
             </select>

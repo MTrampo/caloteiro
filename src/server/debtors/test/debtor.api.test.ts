@@ -114,7 +114,8 @@ describe("Serviço de Devedores (debtor.api.ts)", () => {
 
       expect(response.status).toBe(HttpStatusEnum.Forbidden);
       expect(response.error).toBe("LIMIT_REACHED");
-      expect(response.message).toContain("O tanque encheu!");
+      expect(response.message).toContain("Sua gruta encheu!");
+      expect(response.message).toContain("presas marcadas");
     });
 
     it("deve rejeitar cadastro com telefone inválido (menos de 8 dígitos)", async () => {

@@ -121,7 +121,7 @@ export function DebtDetailsFeature({
       {/* 4 Cards de Métricas e KPIs Financeiros */}
       <DebtKpis debt={debt} />
 
-      {/* Ficha Resumida do Devedor */}
+      {/* Resumo da Presa Marcada */}
       <DebtorSummaryCard debtor={debt.debtor} />
 
       {/* Seção Principal: Cronograma de Parcelas e Extrato de Pix */}

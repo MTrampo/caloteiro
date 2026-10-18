@@ -8,7 +8,7 @@ import { getPlanLimitsApi } from "@/server/account/service/subscription.api"
 
 export const metadata: Metadata = {
   title: "Acompanhamento — Dívidas & Pessoas",
-  description: "Status de promessas, cobranças em andamento e pessoas no radar do Tubarão.",
+  description: "Status de promessas, cobranças em andamento e presas marcadas na sua gruta.",
 }
 
 export default async function AcompanhamentoPage() {
@@ -16,7 +16,7 @@ export default async function AcompanhamentoPage() {
   const userId = userRes.data?.user?.id
 
   if (!userId) {
-    redirect("/signin")
+    redirect("/entrar")
   }
 
   const [{ summary, paginated }, planLimits] = await Promise.all([

@@ -53,9 +53,19 @@ export const confirmEmailChangeOtpSchema = z.object({
   code: z.string().length(8, "O código de confirmação deve ter 8 dígitos."),
 });
 
+export const deleteAccountSchema = z.object({
+  confirmation: z
+    .string()
+    .trim()
+    .refine((val) => val.toUpperCase() === "EXCLUIR", {
+      message: 'Digite a palavra "EXCLUIR" em maiúsculas para confirmar.',
+    }),
+});
+
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 export type UpdateEmailInput = z.infer<typeof updateEmailSchema>;
 export type UpdatePasswordInput = z.infer<typeof updatePasswordSchema>;
 export type ConfirmUpdatePasswordOtpInput = z.infer<typeof confirmUpdatePasswordOtpSchema>;
 export type ConfirmEmailChangeOtpInput = z.infer<typeof confirmEmailChangeOtpSchema>;
+export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
 

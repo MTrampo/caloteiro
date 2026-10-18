@@ -4,37 +4,43 @@ import { internalSupabase } from "@/commons/lib/supabase/internal";
 import type { InvoiceInsertPayload } from "@/commons/models/payment";
 import type { Subscription } from "@/commons/models/subscription";
 
-export const webhookGetSubscriptionByIdSupabase = async (id: string) => {
+export const webhookGetSubscriptionByIdSupabase = async (
+  id: string
+): Promise<Subscription | null> => {
   const supabase = internalSupabase();
   const { data } = await supabase
     .from("subscriptions")
-    .select()
+    .select("*, plan:plans(*, config_plan:config_plans(*))")
     .eq("id", id)
-    .single();
+    .maybeSingle();
 
-  return data;
+  return (data as unknown as Subscription) || null;
 };
 
-export const webhookGetSubscriptionByPayerEmailSupabase = async (payerEmail: string) => {
+export const webhookGetSubscriptionByPayerEmailSupabase = async (
+  payerEmail: string
+): Promise<Subscription | null> => {
   const supabase = internalSupabase();
   const { data } = await supabase
     .from("subscriptions")
-    .select()
+    .select("*, plan:plans(*, config_plan:config_plans(*))")
     .eq("mp_payer_email", payerEmail)
-    .single();
+    .maybeSingle();
 
-  return data;
+  return (data as unknown as Subscription) || null;
 };
 
-export const webhookGetSubscriptionByPayerIdSupabase = async (payerId: number) => {
+export const webhookGetSubscriptionByPayerIdSupabase = async (
+  payerId: number
+): Promise<Subscription | null> => {
   const supabase = internalSupabase();
   const { data } = await supabase
     .from("subscriptions")
-    .select()
+    .select("*, plan:plans(*, config_plan:config_plans(*))")
     .eq("mp_payer_id", payerId)
-    .single();
+    .maybeSingle();
 
-  return data;
+  return (data as unknown as Subscription) || null;
 };
 
 export const webhookSyncSubscriptionSupabase = async (
@@ -61,24 +67,44 @@ export const webhookSyncSubscriptionSupabase = async (
 
 export const webhookGetSubscriptionByMpSubscriptionIdSupabase = async (
   mpSubscriptionId: string
-) => {
+): Promise<Subscription | null> => {
   const supabase = internalSupabase();
   const { data } = await supabase
     .from("subscriptions")
-    .select()
+    .select("*, plan:plans(*, config_plan:config_plans(*))")
     .eq("mp_subscription_id", mpSubscriptionId)
-    .single();
+    .maybeSingle();
 
-  return data;
+  return (data as unknown as Subscription) || null;
 };
 
 export const webhookUpsertInvoiceSupabase = async (payload: InvoiceInsertPayload) => {
   const supabase = internalSupabase();
+
+  if (payload.mp_invoice_id) {
+    const { data: existing } = await supabase
+      .from("invoices")
+      .select("id, status")
+      .eq("mp_invoice_id", payload.mp_invoice_id)
+      .maybeSingle();
+
+    if (existing?.id) {
+      const { data, error } = await supabase
+        .from("invoices")
+        .update(payload)
+        .eq("id", existing.id)
+        .select("id")
+        .single();
+
+      return { data, error, previousStatus: existing.status as string | null };
+    }
+  }
+
   const { data, error } = await supabase
     .from("invoices")
-    .upsert(payload, { onConflict: "mp_invoice_id" })
+    .insert(payload)
     .select("id")
     .single();
 
-  return { data, error };
+  return { data, error, previousStatus: null };
 };

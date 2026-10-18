@@ -19,7 +19,7 @@ export default async function AssinaturaPage() {
   const userId = userRes.data?.user?.id;
 
   if (!userId) {
-    redirect("/signin");
+    redirect("/entrar");
   }
 
   const [subscription, plans, invoices] = await Promise.all([

@@ -21,7 +21,7 @@ export async function setCookieSubscription(payload: SubscriptionPayloadCookie |
       secure: process.env.NODE_ENV === 'production',
       maxAge: expiresIn / 1000, // segundos
       path: '/',
-      sameSite: 'strict',
+      sameSite: 'lax',
     })
   } catch (error: unknown) {
     // No Next.js App Router, cookies não podem ser modificados durante a fase de renderização SSR.

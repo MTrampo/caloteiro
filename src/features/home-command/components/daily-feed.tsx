@@ -28,6 +28,7 @@ export function DailyFeed({
   pixKeyDefault = "",
   canCopyPix = false,
 }: DailyFeedProps) {
+  const [selectedFilter, setSelectedFilter] = React.useState<"all" | "overdue" | "upcoming">("all");
   const [copiedId, setCopiedId] = React.useState<string | null>(null);
   const [paidIds, setPaidIds] = React.useState<string[]>([]);
   const [payingIds, setPayingIds] = React.useState<string[]>([]);
@@ -89,27 +90,99 @@ export function DailyFeed({
     return `https://wa.me/55${phone}?text=${encodeURIComponent(text)}`;
   };
 
+  // Contadores dinâmicos por categoria (descontando quem já foi baixado na sessão)
+  const overdueItems = feed.filter(
+    (i) => i.category === "overdue" && !paidIds.includes(i.id)
+  );
+  const upcomingItems = feed.filter(
+    (i) => i.category === "upcoming" && !paidIds.includes(i.id)
+  );
+
+  const displayedItems = feed.filter((item) => {
+    if (paidIds.includes(item.id)) return true; // Mantém exibido com status "Milagre Confirmado"
+    if (selectedFilter === "overdue") return item.category === "overdue";
+    if (selectedFilter === "upcoming") return item.category === "upcoming";
+    return true;
+  });
+
   return (
     <div className="space-y-4 pt-1">
       {/* Cabeçalho da Seção */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="space-y-0.5">
           <h3 className="font-heading text-lg sm:text-xl font-bold text-white tracking-tight">
-            Ocorrências &amp; Ações do Dia
+            Ocorrências
           </h3>
           <p className="text-xs sm:text-[13px] text-zinc-400 font-mono">
-            Linha do tempo dos alvos prioritários que exigem sua atenção ou atitude imediata.
+            Linha do tempo das presas prioritárias que exigem sua atenção ou atitude imediata.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-mono font-bold text-zinc-400 bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-800">
-            {feed.length} {feed.length === 1 ? "evento relevante" : "eventos relevantes"}
-          </span>
-        </div>
+        {/* Filtros por Categoria (Pills Limpos) */}
+        {feed.length > 0 && (
+          <div className="flex items-center gap-1.5 p-1 bg-zinc-900/80 border border-zinc-800 rounded-xl self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setSelectedFilter("all")}
+              className={`px-2.5 py-1 text-xs font-mono rounded-lg transition-all cursor-pointer ${
+                selectedFilter === "all"
+                  ? "bg-white text-zinc-950 font-bold shadow-xs"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              Todas ({feed.length})
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedFilter("overdue")}
+              className={`px-2.5 py-1 text-xs font-mono rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedFilter === "overdue"
+                  ? "bg-white text-zinc-950 font-bold shadow-xs"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <span>Atrasadas</span>
+              {overdueItems.length > 0 && (
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    selectedFilter === "overdue"
+                      ? "bg-rose-500 text-white"
+                      : "bg-rose-500/20 text-rose-400"
+                  }`}
+                >
+                  {overdueItems.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedFilter("upcoming")}
+              className={`px-2.5 py-1 text-xs font-mono rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedFilter === "upcoming"
+                  ? "bg-white text-zinc-950 font-bold shadow-xs"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <span>A Vencer</span>
+              {upcomingItems.length > 0 && (
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    selectedFilter === "upcoming"
+                      ? "bg-amber-500 text-white"
+                      : "bg-amber-500/20 text-amber-400"
+                  }`}
+                >
+                  {upcomingItems.length}
+                </span>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Lista de Ocorrências ou Empty State do Feed */}
+      {/* Lista de Ocorrências ou Empty States Contextuais */}
       {feed.length === 0 ? (
         <div className="py-12 sm:py-16 text-center space-y-3 max-w-md mx-auto">
           <div className="size-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-emerald-400">
@@ -117,24 +190,27 @@ export function DailyFeed({
           </div>
           <div className="space-y-1">
             <h4 className="font-heading text-base font-bold text-white">
-              Nenhuma ocorrência urgente para hoje
+              Nenhuma ocorrência para hoje
             </h4>
             <p className="text-xs font-mono text-zinc-400 leading-relaxed">
-              Todos os seus devedores estão sob controle ou você já cobrou quem precisava. Um verdadeiro milagre da praça!
+              Todas as suas presas estão sob controle ou você já cobrou quem precisava. Um verdadeiro milagre da praça!
             </p>
           </div>
-          <div className="pt-2 flex items-center justify-center gap-3">
-            <Link
-              href="/painel/dividas/acompanhamento"
-              className="text-xs font-mono font-bold text-zinc-300 hover:text-white underline underline-offset-4"
-            >
-              Ver Acompanhamento Completo
-            </Link>
+        </div>
+      ) : displayedItems.length === 0 ? (
+        <div className="py-10 text-center space-y-2 max-w-md mx-auto">
+          <div className="size-9 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-400">
+            <FaCircleCheck className="size-4 text-emerald-400" />
           </div>
+          <p className="text-xs font-mono text-zinc-400">
+            {selectedFilter === "overdue"
+              ? "Nenhuma presa atrasada no momento. Cardume em ordem!"
+              : "Nenhum vencimento previsto para os próximos 7 dias."}
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
-          {feed.map((item) => {
+          {displayedItems.map((item) => {
             const isPaid = paidIds.includes(item.id) || item.type === "recently_paid";
             const isPaying = payingIds.includes(item.id);
 
@@ -151,8 +227,12 @@ export function DailyFeed({
                     : "bg-zinc-950/60 border-zinc-800 hover:border-zinc-700"
                 }`}
               >
-                {/* Informações da Ocorrência */}
-                <div className="flex items-start gap-3.5 min-w-0">
+                {/* Informações da Ocorrência (Clicável direto para a Dívida) */}
+                <Link
+                  href={`/painel/dividas/${item.debtId}`}
+                  className="flex items-start gap-3.5 min-w-0 flex-1 group/link cursor-pointer"
+                  title="Ver detalhes da dívida"
+                >
                   {/* Ícone de Estado */}
                   <div className="pt-0.5 shrink-0">
                     {isPaid ? (
@@ -172,7 +252,7 @@ export function DailyFeed({
 
                   <div className="space-y-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-heading font-bold text-sm sm:text-base text-white truncate">
+                      <span className="font-heading font-bold text-sm sm:text-base text-white group-hover/link:text-emerald-400 transition-colors truncate">
                         {item.debtorName}
                       </span>
 
@@ -221,9 +301,9 @@ export function DailyFeed({
                       )}
                     </p>
                   </div>
-                </div>
+                </Link>
 
-                {/* Ações Rápidas */}
+                {/* Ações Rápidas de Cobrança e Baixa */}
                 <div className="flex items-center gap-2 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-zinc-800/60">
                   {isPaid ? (
                     <span className="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
@@ -293,6 +373,15 @@ export function DailyFeed({
                           "Pingou?"
                         )}
                       </Button>
+
+                      {/* Atalho Sutil para a Dívida */}
+                      <Link
+                        href={`/painel/dividas/${item.debtId}`}
+                        title="Ver detalhes da dívida"
+                        className="size-8.5 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors shrink-0"
+                      >
+                        <FaArrowRight className="size-3" />
+                      </Link>
                     </>
                   )}
                 </div>
@@ -301,21 +390,6 @@ export function DailyFeed({
           })}
         </div>
       )}
-
-      {/* Atalho Inteligente para o Acompanhamento Completo */}
-      <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between">
-        <p className="text-xs font-mono text-zinc-500">
-          Visualização enxuta para ações imediatas do dia a dia.
-        </p>
-
-        <Link
-          href="/painel/dividas/acompanhamento"
-          className="text-xs font-mono font-bold text-zinc-300 hover:text-white flex items-center gap-1.5 transition-colors group"
-        >
-          <span>Ver acompanhamento completo de todas as promessas</span>
-          <FaArrowRight className="size-3 transition-transform group-hover:translate-x-1 text-zinc-400 group-hover:text-white" />
-        </Link>
-      </div>
     </div>
   );
 }

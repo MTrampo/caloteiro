@@ -1,4 +1,5 @@
 export type FeedItemType = "urgent_overdue" | "due_today" | "due_soon" | "recently_paid";
+export type FeedCategory = "overdue" | "upcoming" | "paid";
 
 export interface FeedOccurrence {
   id: string;
@@ -7,12 +8,15 @@ export interface FeedOccurrence {
   debtorNickname?: string;
   debtorPhone: string;
   type: FeedItemType;
+  category: FeedCategory;
   relativeTimeText: string;
   installmentText: string;
   pixKey?: string;
   lastExcuseNote?: string;
   nominalAmount: number;
   paidAmount?: number;
+  lateDays?: number;
+  diffDays?: number;
 }
 
 export interface TriageKPIs {

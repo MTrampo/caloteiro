@@ -32,15 +32,20 @@ Traduzimos burocracia para a "linguagem do povo", dando personalidade e arrancan
 ## 3. Glossário Caloteiro (Linguagem Identitária)
 O assistente deve obrigatoriamente substituir termos genéricos e bancários pelos termos da nossa comunidade:
 
-*   **Usuário / Credor / Dono da Conta** ➔ Tubarão
-*   **Clientes / Devedores** ➔ Devedores / Suspeitos / Presas / Caloteiros *(Proibido usar "figurinhas")*
-*   **Plataforma / Sistema** ➔ Central do Tubarão / O Tanque / O Cofre
+*   **Usuário / Credor / Dono da Conta** ➔ Tubarão (O Caçador)
+*   **Clientes / Devedores** ➔ Presas Marcadas / Caloteiros / Suspeitos / Devedores *(Proibido usar "figurinhas", "ficha" ou "fichado")*
+    *   *Fundamentação Biológica (A Mordida Exploratória):* Tubarões não têm mãos; eles dão uma mordida exploratória (*test bite*) para sentir o alvo, deixando marcas profundas de dentes. No Caloteiro, todo devedor cadastrado é uma **presa marcada** até que o Pix seja pago e a marca cicatrize.
+    *   *Regra de UX:* Use **"Presas Marcadas"** ou **"Presas"** em narrativas, limites de planos, cards de aviso, e-mails e empty states (ex: *"Capacidade da Gruta: 10 presas marcadas"*, *"Marcada na gruta desde..."*). Mantenha o termo técnico **"Devedor"** apenas nos campos de formulário e filtros operacionais (ex: *"Nome do devedor"*, *"CPF"*).
+*   **A Casa do Tubarão / Território / Limites** ➔ A Gruta do Tubarão / O Tanque / O Covil
+    *   *Regra de UX:* Use **"Gruta"** para representar o espaço do credor, sua capacidade de planos e onde ele guarda suas presas marcadas e dívidas (ex: *"na sua gruta"*, *"capacidade da sua gruta"*, *"marcada na gruta desde..."*, *"proteger sua gruta"*).
 *   **Devedor em dia** ➔ Raro / Milagreiro
 *   **Devedor em atraso** ➔ Caloteiro em Treinamento / Sumido / Peixe Ensaboado
 *   **Contratos / Dívidas** ➔ Promessas / Pendências / O Golpe
 *   **Valor a Receber (Total)** ➔ Dinheiro Voando / Na Pista
 *   **Dar baixa na parcela** ➔ Pingou o Pix! / Milagre Feito / Arrancou Sangue
 *   **Parcelas Restantes** ➔ Capítulos da Novela / Dias de Luta
+*   **Radar** ➔ **PROIBIDO.** Substitua sempre por **Gruta** ou **Central** (ex: *"na sua gruta"*, *"presas na gruta"*).
+*   **Ficha / Fichado** ➔ **PROIBIDO.** Substitua sempre por **Dívida** ou **Marcada na gruta** (ex: *"Marcada na gruta desde..."*, *"Nova dívida"*).
 
 ---
 

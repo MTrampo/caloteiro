@@ -15,7 +15,7 @@ export default async function ContaPage() {
   } = await getUserLogged();
 
   if (!user) {
-    redirect("/signin");
+    redirect("/entrar");
   }
 
   const { data: userProfile } = await getProfileByUserIdSupabase(user.id);

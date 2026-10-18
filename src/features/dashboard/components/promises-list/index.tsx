@@ -167,7 +167,7 @@ export function PromisesList({
         <div className="py-16 text-center space-y-3 font-mono">
           <Loader2 className="size-6 animate-spin text-zinc-400 mx-auto" />
           <p className="text-xs text-zinc-500">
-            Atualizando promessas no radar...
+            Atualizando promessas na gruta...
           </p>
         </div>
       ) : items.length > 0 ? (

@@ -25,7 +25,7 @@ export default function Error({
         Algo deu errado no Gabinete!
       </h2>
       <p className="text-sm text-slate-400 max-w-md mb-6">
-        Ocorreu uma instabilidade ao carregar os dados. Fique tranquilo, suas anotações e fichas estão salvas.
+        Ocorreu uma instabilidade ao carregar os dados. Fique tranquilo, suas anotações e dívidas estão salvas na sua gruta.
       </p>
 
       <Button

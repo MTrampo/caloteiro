@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { HttpStatusEnum } from "@/commons/enums/http";
+import { formatBRL } from "@/commons/utils/format";
 import { DebtorRelationshipEnum } from "@/commons/models/debtor";
 import type {
   DebtRow,
@@ -9,7 +10,12 @@ import type {
 } from "@/commons/models/debt";
 import type { DebtorItem } from "@/commons/models/debtor";
 import type { UserPermissions } from "@/commons/models/subscription";
-import { createDebtApi, registerDebtPaymentApi, registerDebtExcuseApi } from "../service/debt.api";
+import {
+  createDebtApi,
+  registerDebtPaymentApi,
+  registerDebtExcuseApi,
+  getDebtDetailsApi,
+} from "../service/debt.api";
 import * as debtSupabase from "../repository/debt.supabase";
 import * as debtorSupabase from "@/server/debtors/repository/debtor.supabase";
 import * as subscriptionService from "@/server/account/service/subscription.api";
@@ -591,6 +597,218 @@ describe("Serviço de Dívidas (debt.api.ts)", () => {
         excuse_text: "O banco bloqueou minha conta temporariamente",
         promised_date: "2026-03-01",
       });
+    });
+  });
+
+  describe("getDebtDetailsApi (Consulta Detalhada & Teste de Regressão de Juros)", () => {
+    it("deve calcular corretamente o valor total com juros, o saldo restante e o percentual de progresso (Teste de Regressão: caso Cleiton Lopes)", async () => {
+      const debtId = "debt-cleiton-regression";
+
+      const mockDebt: DebtRow = {
+        id: debtId,
+        user_id: userId,
+        debtor_id: "debtor-cleiton",
+        title: "Ajuda Familiar",
+        status: "pending",
+        original_amount: 10000,
+        total_amount: 10756,
+        installments_count: 12,
+        loan_date: "2026-03-13",
+        first_due_date: "2026-04-05",
+        interest_type: "total_percentage",
+        interest_rate: 7.56,
+        category: "family_help",
+        payment_method: "pix",
+        settled_at: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const mockDebtor: DebtorItem = {
+        id: "debtor-cleiton",
+        user_id: userId,
+        name: "Cleiton Lopes",
+        nickname: "Tio",
+        phone: "11973642456",
+        document: null,
+        address: null,
+        notes: null,
+        pix_key: null,
+        pix_key_type: null,
+        relationship: DebtorRelationshipEnum.PARENT,
+        is_archived: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      // 12 parcelas: 1 a 7 quitadas (6.274,35), 8 parcialmente paga (725,65), 9 a 12 abertas. Total pago: 7.000,00
+      const mockInstallments: InstallmentRow[] = [
+        {
+          id: "inst-1",
+          debt_id: debtId,
+          debtor_id: "debtor-cleiton",
+          user_id: userId,
+          installment_number: 1,
+          nominal_amount: 896.37,
+          paid_amount: 896.37,
+          due_date: "2026-04-05",
+          status: "paid",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        ...Array.from({ length: 6 }, (_, idx) => ({
+          id: `inst-${idx + 2}`,
+          debt_id: debtId,
+          debtor_id: "debtor-cleiton",
+          user_id: userId,
+          installment_number: idx + 2,
+          nominal_amount: 896.33,
+          paid_amount: 896.33,
+          due_date: `2026-0${idx + 5}-05`,
+          status: "paid",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })),
+        {
+          id: "inst-8",
+          debt_id: debtId,
+          debtor_id: "debtor-cleiton",
+          user_id: userId,
+          installment_number: 8,
+          nominal_amount: 896.33,
+          paid_amount: 725.65,
+          due_date: "2026-11-05",
+          status: "partially_paid",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        ...Array.from({ length: 4 }, (_, idx) => ({
+          id: `inst-${idx + 9}`,
+          debt_id: debtId,
+          debtor_id: "debtor-cleiton",
+          user_id: userId,
+          installment_number: idx + 9,
+          nominal_amount: 896.33,
+          paid_amount: 0,
+          due_date: `2026-12-05`,
+          status: "pending",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })),
+      ];
+
+      vi.mocked(debtSupabase.getDebtByIdSupabase).mockResolvedValue(mockDebt);
+      vi.mocked(debtorSupabase.getDebtorByIdSupabase).mockResolvedValue(mockDebtor);
+      vi.mocked(debtSupabase.getInstallmentsByDebtIdSupabase).mockResolvedValue(mockInstallments);
+      vi.mocked(debtSupabase.getPaymentsByDebtIdSupabase).mockResolvedValue([]);
+      vi.mocked(debtSupabase.getExcusesByInstallmentIdsSupabase).mockResolvedValue([]);
+
+      const response = await getDebtDetailsApi(debtId, userId);
+
+      expect(response.status).toBe(HttpStatusEnum.Ok);
+      const data = response.data!;
+
+      // Verificação do valor total com juros (deve ser R$ 10.756,00 e NUNCA R$ 10.000,00)
+      expect(data.formattedTotalAmount).toBe(formatBRL(10756));
+      expect(data.formattedOriginalAmount).toBe(formatBRL(10000));
+
+      // Verificação do juros calculado
+      expect(data.totalInterestAmount).toBe(756);
+      expect(data.formattedTotalInterestAmount).toBe(`+ ${formatBRL(756)}`);
+      expect(data.hasInterest).toBe(true);
+
+      // Verificação do total pago
+      expect(data.formattedPaidAmount).toBe(formatBRL(7000));
+
+      // Verificação do saldo restante na pista: 10.756 - 7.000 = 3.756 (deve ser R$ 3.756,00 e NUNCA R$ 3.000,00)
+      expect(data.formattedRemainingAmount).toBe(formatBRL(3756));
+
+      // Verificação da porcentagem de progresso: 7.000 / 10.756 = 65% (deve ser 65% e NUNCA 70%)
+      expect(data.progressPercentage).toBe(65);
+
+      // Verificação da contagem de parcelas
+      expect(data.paidInstallmentsCount).toBe(7);
+      expect(data.totalInstallmentsCount).toBe(12);
+      expect(data.remainingInstallmentsCount).toBe(5);
+    });
+
+    it("deve tratar corretamente dívidas sem juros (empréstimo camarada)", async () => {
+      const debtId = "debt-sem-juros";
+
+      const mockDebt: DebtRow = {
+        id: debtId,
+        user_id: userId,
+        debtor_id: "debtor-amigo",
+        title: "Empréstimo Camarada",
+        status: "pending",
+        original_amount: 500,
+        total_amount: 500,
+        installments_count: 1,
+        loan_date: "2026-03-01",
+        first_due_date: "2026-04-01",
+        interest_type: "none",
+        interest_rate: 0,
+        category: "personal_loan",
+        payment_method: "pix",
+        settled_at: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const mockDebtor: DebtorItem = {
+        id: "debtor-amigo",
+        user_id: userId,
+        name: "Amigo do Peito",
+        nickname: null,
+        phone: "11999991111",
+        document: null,
+        address: null,
+        notes: null,
+        pix_key: null,
+        pix_key_type: null,
+        relationship: DebtorRelationshipEnum.OTHER,
+        is_archived: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const mockInstallments: InstallmentRow[] = [
+        {
+          id: "inst-sem-juros-1",
+          debt_id: debtId,
+          debtor_id: "debtor-amigo",
+          user_id: userId,
+          installment_number: 1,
+          nominal_amount: 500,
+          paid_amount: 200,
+          due_date: "2026-04-01",
+          status: "partially_paid",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ];
+
+      vi.mocked(debtSupabase.getDebtByIdSupabase).mockResolvedValue(mockDebt);
+      vi.mocked(debtorSupabase.getDebtorByIdSupabase).mockResolvedValue(mockDebtor);
+      vi.mocked(debtSupabase.getInstallmentsByDebtIdSupabase).mockResolvedValue(mockInstallments);
+      vi.mocked(debtSupabase.getPaymentsByDebtIdSupabase).mockResolvedValue([]);
+      vi.mocked(debtSupabase.getExcusesByInstallmentIdsSupabase).mockResolvedValue([]);
+
+      const response = await getDebtDetailsApi(debtId, userId);
+
+      expect(response.status).toBe(HttpStatusEnum.Ok);
+      const data = response.data!;
+
+      expect(data.formattedTotalAmount).toBe(formatBRL(500));
+      expect(data.formattedOriginalAmount).toBe(formatBRL(500));
+      expect(data.totalInterestAmount).toBe(0);
+      expect(data.formattedTotalInterestAmount).toBe(formatBRL(0));
+      expect(data.hasInterest).toBe(false);
+      expect(data.formattedRemainingAmount).toBe(formatBRL(300));
+      expect(data.progressPercentage).toBe(40);
+      expect(data.remainingInstallmentsCount).toBe(1);
     });
   });
 });

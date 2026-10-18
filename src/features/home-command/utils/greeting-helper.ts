@@ -29,10 +29,10 @@ const ALL_CLEAR_PUNCHLINES = [
 ]
 
 const EMPTY_PUNCHLINES = [
-  "Nenhum caloteiro fichado. Ou você é abençoado ou finalmente aprendeu a dizer 'não'.",
+  "Nenhuma presa marcada na gruta. Ou você é abençoado ou finalmente aprendeu a dizer 'não'.",
   "Lista zerada! O segredo da tranquilidade financeira de um tubarão é nunca emprestar dinheiro a parentes.",
   "Zero pendências por aqui. Se alguém te pedir um Pix hoje, lembre-se desta tela vazia e fuja.",
-  "Mar aberto e sem presas fichadas. Se bater a vontade de ser bonzinho, respire fundo e feche a carteira.",
+  "Mar aberto e sem presas na gruta. Se bater a vontade de ser bonzinho, respire fundo e feche a carteira.",
 ]
 
 export const CREDITOR_WISDOM_QUOTES = [

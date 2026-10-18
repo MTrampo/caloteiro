@@ -9,14 +9,14 @@ export interface RenewalSuccessEmailData {
 }
 
 export function renderRenewalSuccessHtml(data: RenewalSuccessEmailData): { subject: string; html: string } {
-  const subject = "✨ Arsenal Recarregado! Sua mensalidade Caloteiro foi confirmada"
+  const subject = "✨ Assinatura Renovada! Sua mensalidade Caloteiro foi confirmada"
 
   const contentHtml = `
     <p style="margin: 0 0 14px 0;">
       Passando para avisar que a renovação da sua assinatura foi <strong>processada e confirmada com sucesso</strong>!
     </p>
     <p style="margin: 0;">
-      Mais um ciclo de blindagem garantido. Suas fichas de devedores, cálculo automático de juros e mensagens afiadas continuam operando com força total para não deixar nenhum centavo sumir.
+      Mais um ciclo de blindagem garantido. Suas presas marcadas, cálculo automático de juros e mensagens afiadas continuam operando com força total para não deixar nenhum centavo sumir.
     </p>
   `
 
@@ -46,7 +46,7 @@ export function renderRenewalSuccessHtml(data: RenewalSuccessEmailData): { subje
   `
 
   const html = renderBaseEmailLayout({
-    title: "Arsenal Renovado com Sucesso!",
+    title: "Assinatura Renovada com Sucesso!",
     previewText: "Seu pagamento foi confirmado com sucesso. Seu cofre e ferramentas continuam 100% ativos.",
     bannerSvgPath: "/email/printing-invoice.svg",
     bannerSvgAlt: "Fatura de pagamento confirmada",
