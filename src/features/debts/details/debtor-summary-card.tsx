@@ -51,7 +51,7 @@ export function DebtorSummaryCard({ debtor }: DebtorSummaryCardProps) {
             </div>
             {debtor.formattedNickname && (
               <p className="text-xs font-mono text-zinc-400">
-                Conhecido na praça como: <span className="text-zinc-200">"{debtor.formattedNickname}"</span>
+                Conhecido na praça como: <span className="text-zinc-200">&ldquo;{debtor.formattedNickname}&rdquo;</span>
               </p>
             )}
           </div>

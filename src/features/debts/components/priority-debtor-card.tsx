@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { toast } from "sonner"
 import { PriorityDebtor } from "../types"
 import { formatRelativeDueDate, formatCurrencyBRL } from "@/commons/utils/date-formatter"
 import { Button } from "@/components/ui/button"
@@ -10,7 +11,6 @@ import {
   FaCalendarDays,
   FaCheck,
   FaCopy,
-  FaCrosshairs,
   FaWhatsapp,
 } from "react-icons/fa6"
 import { cn } from "@/commons/lib/utils"
@@ -27,7 +27,6 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
       <div className="space-y-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FaCrosshairs className="size-4 text-zinc-500" />
             <h3 className="font-heading text-base sm:text-lg font-bold text-white tracking-tight">
               Próxima Cobrança (Alvo Imediato)
             </h3>
@@ -49,21 +48,31 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
   }
 
   const relativeDate = formatRelativeDueDate(debtor.dueDate)
-
   const isCritical = relativeDate.isPast || debtor.urgency === "CRITICO"
+  const remainingAmount = debtor.remainingAmount ?? debtor.installmentAmount
+  const isPartiallyPaid =
+    typeof debtor.remainingAmount === "number" &&
+    debtor.remainingAmount < debtor.installmentAmount
 
   const handleCopyPix = () => {
-    if (debtor.pixKey) {
-      navigator.clipboard.writeText(debtor.pixKey)
+    const pixToCopy = debtor.debtorPixKey || debtor.pixKey
+    if (pixToCopy && pixToCopy.trim()) {
+      navigator.clipboard.writeText(pixToCopy.trim())
       setCopiedPix(true)
+      toast.success("Chave Pix da presa copiada!")
       setTimeout(() => setCopiedPix(false), 2500)
+    } else {
+      toast.info("Esta presa não possui chave Pix cadastrada.")
     }
   }
 
+  const paymentPixKey = debtor.creditorPixKey ? ` Segue minha chave Pix: ${debtor.creditorPixKey}.` : ""
+  const currentAmountToPay = isPartiallyPaid ? remainingAmount : debtor.installmentAmount
+
   const whatsappMessage = encodeURIComponent(
     `Fala ${debtor.debtorName}, tudo bem? Passando pra lembrar da parcela de ${formatCurrencyBRL(
-      debtor.installmentAmount
-    )} do acordo "${debtor.debtTitle}". Segue minha chave Pix: ${debtor.pixKey}. Manda o comprovante assim que transferir!`
+      currentAmountToPay
+    )} do acordo "${debtor.debtTitle}".${paymentPixKey} Manda o comprovante assim que transferir!`
   )
 
   return (
@@ -71,7 +80,6 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
       {/* Título da Seção do Alvo */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FaCrosshairs className="size-4 text-rose-400" />
           <h3 className="font-heading text-base sm:text-lg font-bold text-white tracking-tight">
             Próxima Cobrança (Alvo Imediato)
           </h3>
@@ -142,14 +150,19 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
           <div className="lg:col-span-3 lg:border-x lg:border-border lg:px-6 space-y-3">
             <div>
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400">
-                Valor da Parcela
+                {isPartiallyPaid ? "Saldo Restante da Parcela" : "Valor da Parcela"}
               </span>
               <div className="text-2xl sm:text-3xl font-black font-heading text-white tabular-nums tracking-tight">
-                {formatCurrencyBRL(debtor.installmentAmount)}
+                {formatCurrencyBRL(currentAmountToPay)}
               </div>
-              <span className="text-[11px] font-mono text-zinc-400">
-                Total acumulado: {formatCurrencyBRL(debtor.totalDebtAmount)}
-              </span>
+              <div className="text-[11px] font-mono text-zinc-400 space-y-0.5">
+                {isPartiallyPaid && (
+                  <p className="text-emerald-400 font-medium">
+                    Amortizado: {formatCurrencyBRL(debtor.installmentAmount - remainingAmount)} de {formatCurrencyBRL(debtor.installmentAmount)}
+                  </p>
+                )}
+                <p>Total acumulado: {formatCurrencyBRL(debtor.totalDebtAmount)}</p>
+              </div>
             </div>
 
             <div className="space-y-1 pt-1 border-t border-border/70">
@@ -176,13 +189,13 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
           {/* Bloco 3: Ações Rápidas de Cobrança (4 Colunas) */}
           <div className="lg:col-span-4 flex flex-col gap-2.5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
-              {/* Botão Baixa Imediata */}
+              {/* Botão Baixa Imediata -> Leva direto aos detalhes da dívida para registrar baixa */}
               <Button
+                render={<Link href={`/painel/dividas/${debtor.debtId || debtor.id}`} />}
                 size="sm"
-                className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold shadow-xs shadow-emerald-500/20 h-9 justify-center"
-                onClick={() => alert(`Milagre confirmado! Baixa registrada para ${debtor.debtorName}.`)}
+                className="bg-white hover:bg-zinc-200 text-zinc-950 font-bold shadow-xs h-9 justify-center rounded-xl"
               >
-                <FaCheck className="size-3.5 mr-1.5" />
+                <FaCheck className="size-3.5 mr-1.5 text-emerald-600" />
                 Pingou o Pix! (Dar Baixa)
               </Button>
 
@@ -196,7 +209,7 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
                   />
                 }
                 size="sm"
-                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-bold border border-zinc-700 h-9 justify-center"
+                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-bold border border-zinc-700 h-9 justify-center rounded-xl"
               >
                 <FaWhatsapp className="size-3.5 mr-1.5 text-emerald-400" />
                 Cobrar no WhatsApp
@@ -224,7 +237,7 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
               </button>
 
               <Link
-                href={`/painel/dividas/${debtor.id}`}
+                href={`/painel/dividas/${debtor.debtId || debtor.id}`}
                 className="text-zinc-400 hover:text-white transition-colors inline-flex items-center gap-1"
               >
                 <span>Ver Dívida</span>

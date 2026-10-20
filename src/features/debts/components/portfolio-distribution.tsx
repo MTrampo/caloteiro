@@ -124,7 +124,7 @@ export function PortfolioDistribution({ data }: PortfolioDistributionProps) {
             {healthMetrics.immediateLiquidityLabel}
           </span>
           <div className="text-xl sm:text-2xl font-black font-heading text-white tabular-nums tracking-tight">
-            {formatCompactCurrencyBRL(healthMetrics.immediateLiquidity)}
+            {healthMetrics.immediateLiquidity}%
           </div>
           <p className="text-xs text-emerald-400/90 font-mono truncate font-medium">
             {healthMetrics.immediateLiquidityDesc}

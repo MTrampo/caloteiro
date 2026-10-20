@@ -91,5 +91,21 @@ describe("Conformidade de Design System e Consistência Visual", () => {
       }
     }
   });
+
+  it("deve proibir o uso de emojis gráficos nos componentes da fatura pública e menu da dívida (usar exclusivamente react-icons)", () => {
+    const targetFiles = [
+      path.join(featuresDir, "debts/details/debt-portal-menu.tsx"),
+      path.join(featuresDir, "debt-invoice-portal/index.tsx"),
+    ];
+    const emojiRegex = /\p{Extended_Pictographic}/u;
+
+    for (const filePath of targetFiles) {
+      const content = fs.readFileSync(filePath, "utf-8");
+      expect(
+        emojiRegex.test(content),
+        `Arquivo ${path.basename(filePath)} não pode conter emojis; utilize ícones do react-icons`
+      ).toBe(false);
+    }
+  });
 });
 

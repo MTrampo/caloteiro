@@ -65,3 +65,31 @@ export const registerExcuseSchema = z.object({
     .max(500, "A desculpa deve ter no máximo 500 caracteres."),
   promised_date: z.string().min(1, "Informe a nova data prometida pelo caloteiro."),
 });
+
+/**
+ * Esquema de validação para configuração do Link Público da Fatura (/fatura/[id])
+ */
+export const updateDebtPortalConfigSchema = z.object({
+  debtId: z.string().uuid("Identificador da dívida inválido."),
+  publicLinkEnabled: z.boolean(),
+  publicAccessCode: z
+    .string()
+    .trim()
+    .min(4, "O código de acesso deve ter pelo menos 4 caracteres.")
+    .max(16, "O código de acesso deve ter no máximo 16 caracteres.")
+    .optional(),
+  regenerateCode: z.boolean().optional(),
+});
+
+/**
+ * Esquema de validação para desbloqueio da fatura pública pelo devedor
+ */
+export const verifyDebtInvoiceAccessSchema = z.object({
+  debtId: z.string().uuid("Link de fatura inválido."),
+  accessCode: z
+    .string()
+    .trim()
+    .min(1, "Informe o código de acesso para visualizar a fatura.")
+    .max(20, "Código de acesso inválido."),
+});
+

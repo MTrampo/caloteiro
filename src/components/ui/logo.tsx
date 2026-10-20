@@ -9,28 +9,28 @@ interface LogoProps {
 
 const sizeMap = {
   sm: {
-    container: "size-9 rounded-xl",
+    container: "size-9 rounded-lg",
     width: 36,
     height: 36,
     title: "text-sm",
     subtitle: "text-[11px]",
   },
   md: {
-    container: "size-10 rounded-xl",
+    container: "size-10 rounded-lg",
     width: 40,
     height: 40,
     title: "text-base",
     subtitle: "text-xs",
   },
   lg: {
-    container: "size-14 rounded-2xl",
+    container: "size-14 rounded-xl",
     width: 56,
     height: 56,
     title: "text-xl",
     subtitle: "text-xs",
   },
   xl: {
-    container: "size-20 rounded-3xl",
+    container: "size-20 rounded-2xl",
     width: 80,
     height: 80,
     title: "text-2xl",

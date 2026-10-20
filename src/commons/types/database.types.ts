@@ -298,6 +298,8 @@ export type Database = {
           notes: string | null
           original_amount: number
           payment_method: string
+          public_access_code?: string
+          public_link_enabled?: boolean
           settled_at: string | null
           status: string
           title: string
@@ -318,6 +320,8 @@ export type Database = {
           notes?: string | null
           original_amount: number
           payment_method?: string
+          public_access_code?: string
+          public_link_enabled?: boolean
           settled_at?: string | null
           status?: string
           title: string
@@ -338,6 +342,8 @@ export type Database = {
           notes?: string | null
           original_amount?: number
           payment_method?: string
+          public_access_code?: string
+          public_link_enabled?: boolean
           settled_at?: string | null
           status?: string
           title?: string

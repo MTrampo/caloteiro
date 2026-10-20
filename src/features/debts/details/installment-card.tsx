@@ -3,9 +3,6 @@
 import * as React from "react";
 import type { InstallmentFormatted } from "@/commons/models/debt";
 import {
-  FaCheck,
-  FaClock,
-  FaTriangleExclamation,
   FaHandHoldingDollar,
   FaCommentDots,
   FaCalendarDays,
@@ -156,7 +153,7 @@ export function InstallmentCard({
                   </span>
                 </div>
                 <p className="text-zinc-200 italic">
-                  "{excuse.excuse_text}"
+                  &ldquo;{excuse.excuse_text}&rdquo;
                 </p>
               </div>
             ))}

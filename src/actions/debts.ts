@@ -1,18 +1,35 @@
 'use server';
 
+import { cookies } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 import { getUserLoggedApi } from '@/server/account/service/auth.api';
 import {
   createDebtSchema,
   registerPaymentSchema,
   registerExcuseSchema,
+  updateDebtPortalConfigSchema,
+  verifyDebtInvoiceAccessSchema,
 } from '@/commons/validations/debt';
 import {
   createDebtApi,
   getDebtDetailsApi,
   registerDebtPaymentApi,
   registerDebtExcuseApi,
+  updateDebtPortalConfigApi,
+  getPublicDebtInvoiceDataApi,
 } from '@/server/debts/service/debt.api';
-import type { DebtDetailsFormatted } from '@/commons/models/debt';
+import {
+  DEBT_INVOICE_COOKIE_PREFIX,
+  DEBT_INVOICE_COOKIE_MAX_AGE_SECONDS,
+} from '@/commons/constants';
+import {
+  signSecureCookie,
+  getDebtInvoiceCookieSecret,
+} from '@/commons/lib/crypto/secure-cookie';
+import type {
+  DebtDetailsFormatted,
+  PublicDebtInvoiceViewData,
+} from '@/commons/models/debt';
 
 /**
  * Consulta os detalhes completos de uma dívida
@@ -168,4 +185,143 @@ export async function registerDebtExcuseAction(
     return { success: false, error: 'Ocorreu um erro ao salvar o caô.' };
   }
 }
+
+/**
+ * Configura o Link Público da Fatura (/fatura/[id]) e o Código de Acesso pelo Tubarão
+ */
+export async function updateDebtPortalConfigAction(
+  rawData: unknown
+): Promise<{
+  success: boolean;
+  data?: { publicLinkEnabled: boolean; publicAccessCode: string };
+  message?: string;
+  error?: string;
+}> {
+  try {
+    const userRes = await getUserLoggedApi();
+    const userId = userRes.data?.user?.id;
+    if (!userId) {
+      return { success: false, error: 'Acesso não autorizado. Faça login novamente.' };
+    }
+
+    const validation = updateDebtPortalConfigSchema.safeParse(rawData);
+    if (!validation.success) {
+      return {
+        success: false,
+        error: validation.error.issues[0]?.message || 'Dados inválidos para configurar o link da fatura.',
+      };
+    }
+
+    const result = await updateDebtPortalConfigApi({
+      debtId: validation.data.debtId,
+      userId,
+      publicLinkEnabled: validation.data.publicLinkEnabled,
+      publicAccessCode: validation.data.publicAccessCode,
+      regenerateCode: validation.data.regenerateCode,
+    });
+
+    if (!result.data) {
+      return {
+        success: false,
+        error: result.message || 'Não foi possível atualizar a configuração da fatura.',
+      };
+    }
+
+    revalidatePath(`/painel/dividas/${validation.data.debtId}`);
+    revalidatePath(`/fatura/${validation.data.debtId}`);
+
+    return {
+      success: true,
+      data: result.data,
+      message: result.message,
+    };
+  } catch (error) {
+    console.error('[updateDebtPortalConfigAction] Erro inesperado:', error);
+    return { success: false, error: 'Ocorreu um erro ao atualizar o link da fatura.' };
+  }
+}
+
+/**
+ * Valida o código de acesso informado pelo devedor e libera a visualização da fatura (/fatura/[id])
+ */
+export async function verifyDebtInvoiceAccessAction(
+  rawData: unknown
+): Promise<{
+  success: boolean;
+  data?: PublicDebtInvoiceViewData;
+  error?: string;
+}> {
+  try {
+    const validation = verifyDebtInvoiceAccessSchema.safeParse(rawData);
+    if (!validation.success) {
+      return {
+        success: false,
+        error: validation.error.issues[0]?.message || 'Informe um código de acesso válido.',
+      };
+    }
+
+    const { debtId, accessCode } = validation.data;
+    const normalizedCode = accessCode.trim().toUpperCase();
+
+    const result = await getPublicDebtInvoiceDataApi({
+      debtId,
+      accessCode: normalizedCode,
+    });
+
+    if (result.status !== 200 || !result.data) {
+      return {
+        success: false,
+        error: result.message || 'Código de acesso incorreto.',
+      };
+    }
+
+    // Assina e grava cookie temporário httpOnly para manter a sessão da fatura destrancada por 2h
+    try {
+      const secret = getDebtInvoiceCookieSecret(debtId);
+      const token = await signSecureCookie(
+        { debtId, accessCode: normalizedCode },
+        secret
+      );
+      const cookieStore = await cookies();
+      cookieStore.set(`${DEBT_INVOICE_COOKIE_PREFIX}${debtId}`, token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: DEBT_INVOICE_COOKIE_MAX_AGE_SECONDS,
+        path: `/fatura/${debtId}`,
+      });
+    } catch (cookieErr) {
+      console.error('[verifyDebtInvoiceAccessAction] Aviso ao gravar cookie:', cookieErr);
+    }
+
+    return {
+      success: true,
+      data: result.data,
+    };
+  } catch (error) {
+    console.error('[verifyDebtInvoiceAccessAction] Erro inesperado:', error);
+    return { success: false, error: 'Ocorreu um erro ao validar o código de acesso.' };
+  }
+}
+
+/**
+ * Tranca novamente a fatura pública removendo o cookie temporário de acesso
+ */
+export async function lockDebtInvoiceAction(
+  debtId: string
+): Promise<{ success: boolean }> {
+  try {
+    if (debtId && typeof debtId === 'string') {
+      const cookieStore = await cookies();
+      cookieStore.delete({
+        name: `${DEBT_INVOICE_COOKIE_PREFIX}${debtId}`,
+        path: `/fatura/${debtId}`,
+      });
+    }
+    return { success: true };
+  } catch {
+    return { success: false };
+  }
+}
+
 

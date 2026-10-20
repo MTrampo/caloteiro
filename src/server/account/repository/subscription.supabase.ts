@@ -25,7 +25,7 @@ async function getClient() {
 export const getSubscriptionByUserIdSupabase = async (
   userId: string
 ): Promise<Subscription | null> => {
-  const supabase = await serverSupabase();
+  const supabase = await getClient();
 
   const { data, error } = await supabase
     .from("subscriptions")

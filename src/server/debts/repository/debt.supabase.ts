@@ -1,6 +1,7 @@
 import "server-only";
 
 import { serverSupabase } from "@/commons/lib/supabase/server";
+import { internalSupabase } from "@/commons/lib/supabase/internal";
 import type {
   DebtRow,
   InstallmentRow,
@@ -19,7 +20,7 @@ import type {
  */
 export const createDebtSupabase = async (
   userId: string,
-  payload: CreateDebtPayload
+  payload: CreateDebtPayload & { public_access_code?: string; public_link_enabled?: boolean }
 ): Promise<{ data: DebtRow | null; error: string | null }> => {
   const supabase = await serverSupabase();
 
@@ -40,6 +41,8 @@ export const createDebtSupabase = async (
       total_amount: payload.total_amount || payload.original_amount,
       notes: payload.notes || null,
       status: "pending",
+      public_link_enabled: payload.public_link_enabled ?? false,
+      ...(payload.public_access_code ? { public_access_code: payload.public_access_code } : {}),
     })
     .select("*")
     .single();
@@ -333,3 +336,124 @@ export const countActiveDebtsByUserIdSupabase = async (
 
   return count || 0;
 };
+
+/**
+ * Atualiza a configuração do link público e código de acesso de uma dívida
+ */
+export const updateDebtPortalConfigSupabase = async (payload: {
+  debtId: string;
+  userId: string;
+  publicLinkEnabled: boolean;
+  publicAccessCode: string;
+}): Promise<{ data: DebtRow | null; error: string | null }> => {
+  const supabase = await serverSupabase();
+
+  const { data, error } = await supabase
+    .from("debts")
+    .update({
+      public_link_enabled: payload.publicLinkEnabled,
+      public_access_code: payload.publicAccessCode,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", payload.debtId)
+    .eq("user_id", payload.userId)
+    .select("*")
+    .single();
+
+  if (error || !data) {
+    console.error("[updateDebtPortalConfigSupabase] Erro ao atualizar link da fatura:", error);
+    return { data: null, error: error?.message || "Erro ao atualizar configuração da fatura." };
+  }
+
+  return { data: data as DebtRow, error: null };
+};
+
+/**
+ * Busca os dados básicos da dívida pelo ID (para validação de portão da fatura pública)
+ */
+export const getPublicDebtByIdSupabase = async (
+  debtId: string
+): Promise<DebtRow | null> => {
+  const supabase = internalSupabase();
+
+  const { data, error } = await supabase
+    .from("debts")
+    .select("*")
+    .eq("id", debtId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data as DebtRow;
+};
+
+/**
+ * Busca os dados relacionados da fatura pública apenas após validação do código de acesso
+ */
+export const getPublicDebtContextByIdSupabase = async (
+  debt: DebtRow
+): Promise<{
+  debtorName: string;
+  debtorNickname: string | null;
+  creditorName: string | null;
+  creditorNickname: string | null;
+  creditorPhone: string | null;
+  pixKey: string | null;
+  pixKeyType: string | null;
+  pixHolderName: string | null;
+  pixBankName: string | null;
+  installments: InstallmentRow[];
+  payments: Pick<DebtPaymentRow, "id" | "amount" | "paid_at" | "created_at">[];
+} | null> => {
+  const supabase = internalSupabase();
+
+  const [debtorRes, profileRes, settingsRes, installmentsRes, paymentsRes] =
+    await Promise.all([
+      supabase
+        .from("debtors")
+        .select("name, nickname")
+        .eq("id", debt.debtor_id)
+        .maybeSingle(),
+      supabase
+        .from("profiles")
+        .select("name, nickname, phone")
+        .eq("id", debt.user_id)
+        .maybeSingle(),
+      supabase
+        .from("creditor_settings")
+        .select("pix_key, pix_key_type, pix_holder_name, pix_bank_name")
+        .eq("user_id", debt.user_id)
+        .maybeSingle(),
+      supabase
+        .from("installments")
+        .select("*")
+        .eq("debt_id", debt.id)
+        .order("installment_number", { ascending: true }),
+      supabase
+        .from("debt_payments")
+        .select("id, amount, paid_at, created_at")
+        .eq("debt_id", debt.id)
+        .order("paid_at", { ascending: false }),
+    ]);
+
+  if (debtorRes.error || !debtorRes.data) {
+    return null;
+  }
+
+  return {
+    debtorName: debtorRes.data.name,
+    debtorNickname: debtorRes.data.nickname,
+    creditorName: profileRes.data?.name || null,
+    creditorNickname: profileRes.data?.nickname || null,
+    creditorPhone: profileRes.data?.phone || null,
+    pixKey: settingsRes.data?.pix_key || null,
+    pixKeyType: settingsRes.data?.pix_key_type || null,
+    pixHolderName: settingsRes.data?.pix_holder_name || null,
+    pixBankName: settingsRes.data?.pix_bank_name || null,
+    installments: (installmentsRes.data as InstallmentRow[]) || [],
+    payments: paymentsRes.data || [],
+  };
+};
+

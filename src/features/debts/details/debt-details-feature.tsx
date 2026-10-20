@@ -11,6 +11,7 @@ import { InstallmentsList } from "./installments-list";
 import { PaymentsHistory } from "./payments-history";
 import { PaymentModal } from "./payment-modal";
 import { ExcuseModal } from "./excuse-modal";
+import { DebtPortalMenu } from "./debt-portal-menu";
 import { FaArrowLeft, FaHandHoldingDollar, FaCalendarDays, FaReceipt } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -35,19 +36,14 @@ export function DebtDetailsFeature({
   },
 }: DebtDetailsFeatureProps) {
   const router = useRouter();
+  const debt = initialDebt;
 
-  const [debt, setDebt] = React.useState<DebtDetailsFormatted>(initialDebt);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = React.useState(false);
   const [isExcuseModalOpen, setIsExcuseModalOpen] = React.useState(false);
   const [selectedInstallmentForPayment, setSelectedInstallmentForPayment] =
     React.useState<InstallmentFormatted | null>(null);
   const [selectedInstallmentForExcuse, setSelectedInstallmentForExcuse] =
     React.useState<InstallmentFormatted | null>(null);
-
-  // Sincroniza se o Server Component atualizar initialDebt
-  React.useEffect(() => {
-    setDebt(initialDebt);
-  }, [initialDebt]);
 
   const handleOpenGeneralPayment = () => {
     setSelectedInstallmentForPayment(null);
@@ -104,18 +100,30 @@ export function DebtDetailsFeature({
           </p>
         </div>
 
-        {/* Botão de Ação CTA Principal (Shadcn Button) */}
-        {!debt.isFullySettled && (
-          <Button
-            type="button"
-            variant="default"
-            size="lg"
-            onClick={handleOpenGeneralPayment}
-          >
-            <FaHandHoldingDollar className="size-3.5" />
-            <span>Pingou o Pix!</span>
-          </Button>
-        )}
+        {/* Menu do Link da Fatura + Botão de Ação CTA Principal */}
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <DebtPortalMenu
+            debtId={debt.id}
+            debtTitle={debt.title}
+            debtorName={debt.debtor.formattedName}
+            initialEnabled={debt.publicLinkEnabled}
+            initialAccessCode={debt.publicAccessCode}
+            canDebtorPortal={permissions.canDebtorPortal}
+            onUpdated={handleDataRefresh}
+          />
+
+          {!debt.isFullySettled && (
+            <Button
+              type="button"
+              variant="default"
+              size="lg"
+              onClick={handleOpenGeneralPayment}
+            >
+              <FaHandHoldingDollar className="size-3.5" />
+              <span>Pingou o Pix!</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* 4 Cards de Métricas e KPIs Financeiros */}

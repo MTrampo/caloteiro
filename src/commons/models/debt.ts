@@ -132,6 +132,19 @@ export interface RegisterExcusePayload {
   promised_date: string;
 }
 
+export interface UpdateDebtPortalConfigPayload {
+  debtId: string;
+  userId: string;
+  publicLinkEnabled: boolean;
+  publicAccessCode?: string;
+  regenerateCode?: boolean;
+}
+
+export interface VerifyDebtInvoiceAccessPayload {
+  debtId: string;
+  accessCode: string;
+}
+
 // ==============================================================================
 // Contratos Tratados para a UI (*Formatted)
 // ==============================================================================
@@ -160,6 +173,8 @@ export interface DebtPaymentFormatted extends DebtPaymentRow {
 }
 
 export interface DebtDetailsFormatted extends DebtRow {
+  publicLinkEnabled: boolean;
+  publicAccessCode: string;
   formattedOriginalAmount: string;
   formattedTotalAmount: string;
   formattedPaidAmount: string;
@@ -184,4 +199,75 @@ export interface DebtDetailsFormatted extends DebtRow {
   installments: InstallmentFormatted[];
   payments: DebtPaymentFormatted[];
 }
+
+// ==============================================================================
+// Contratos Públicos Sanitizados (Fatura Externa /fatura/[id] — Zero Leak)
+// ==============================================================================
+
+export interface PublicInstallmentItem {
+  id: string;
+  installmentNumber: number;
+  nominalAmount: number;
+  paidAmount: number;
+  remainingAmount: number;
+  formattedNominalAmount: string;
+  formattedPaidAmount: string;
+  formattedRemainingAmount: string;
+  dueDate: string;
+  formattedDueDate: string;
+  relativeDueDateLabel: string;
+  status: InstallmentStatus;
+  statusLabel: string;
+  statusBadgeClass: string;
+  isLate: boolean;
+  lateDays: number;
+}
+
+export interface PublicDebtPaymentItem {
+  id: string;
+  amount: number;
+  formattedAmount: string;
+  paidAt: string;
+  formattedPaidAt: string;
+}
+
+export interface PublicDebtInvoiceViewData {
+  debtId: string;
+  title: string;
+  categoryLabel: string;
+  debtorFirstName: string;
+  creditorDisplayName: string;
+  creditorPhone: string | null;
+  creditorWhatsAppUrl: string | null;
+  pixKey: string | null;
+  pixKeyType: string | null;
+  pixHolderName: string | null;
+  pixBankName: string | null;
+  originalAmount: number;
+  totalAmount: number;
+  paidAmount: number;
+  remainingAmount: number;
+  totalInterestAmount: number;
+  formattedOriginalAmount: string;
+  formattedTotalAmount: string;
+  formattedPaidAmount: string;
+  formattedRemainingAmount: string;
+  formattedTotalInterestAmount: string;
+  hasInterest: boolean;
+  interestLabel: string;
+  progressPercentage: number;
+  formattedLoanDate: string;
+  formattedFirstDueDate: string;
+  paymentMethodLabel: string;
+  status: DebtStatus;
+  statusLabel: string;
+  isFullySettled: boolean;
+  paidInstallmentsCount: number;
+  totalInstallmentsCount: number;
+  remainingInstallmentsCount: number;
+  nextInstallment: PublicInstallmentItem | null;
+  installments: PublicInstallmentItem[];
+  payments: PublicDebtPaymentItem[];
+}
+
 

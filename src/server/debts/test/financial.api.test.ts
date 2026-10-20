@@ -4,6 +4,7 @@ import * as financialSupabase from "../repository/financial.supabase";
 import type { FinancialDebtWithRelationsRow } from "../repository/financial.supabase";
 import type { InstallmentRow } from "@/commons/models/debt";
 import type { DebtorRow } from "@/commons/models/debtor";
+import { formatRelativeDueDate, parseDateOnly } from "@/commons/utils/date-formatter";
 
 vi.mock("../repository/financial.supabase");
 
@@ -127,7 +128,65 @@ describe("financial.api - Inteligência Financeira do Tubarão", () => {
     expect(result.priorityDebtor).not.toBeNull();
     expect(result.priorityDebtor?.debtorName).toBe("Carlos Caloteiro");
     expect(result.priorityDebtor?.urgency).toBe("CRITICO");
-    expect(result.priorityDebtor?.pixKey).toBe("tubarao@pix.com"); // Pix do credor!
+    expect(result.priorityDebtor?.debtorPixKey).toBe("carlos@pix.com"); // Pix da presa!
+    expect(result.priorityDebtor?.pixKey).toBe("carlos@pix.com"); // Chave copiada no card
+    expect(result.priorityDebtor?.creditorPixKey).toBe("tubarao@pix.com"); // Pix do Tubarão para cobrança
+    expect(result.priorityDebtor?.debtId).toBe("debt-1");
+    expect(result.priorityDebtor?.remainingAmount).toBe(500);
+  });
+
+  it("REGRESSÃO: deve priorizar a chave Pix da presa e calcular o saldo restante em parcelas parcialmente pagas", async () => {
+    const mockDebts: FinancialDebtWithRelationsRow[] = [
+      {
+        id: "debt-partial",
+        user_id: userId,
+        debtor_id: "debtor-partial-1",
+        title: "Empréstimo Parcial",
+        total_amount: 1000,
+        original_amount: 1000,
+        installments_count: 1,
+        interest_type: "none",
+        interest_rate: 0,
+        status: "active",
+        loan_date: "2026-10-01",
+        first_due_date: "2026-11-05",
+        category: "other",
+        payment_method: "pix",
+        settled_at: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        debtor: createMockDebtor({
+          id: "debtor-partial-1",
+          name: "Cleiton Lopes",
+          pix_key: "11973642456",
+          pix_key_type: "phone",
+        }),
+        installments: [
+          createMockInstallment({
+            id: "inst-partial-1",
+            nominal_amount: 896.33,
+            paid_amount: 725.65, // Parcialmente paga
+            due_date: "2026-11-05",
+            status: "open",
+          }),
+        ],
+      },
+    ];
+
+    vi.mocked(financialSupabase.getFinancialDebtsWithRelationsSupabase).mockResolvedValue(mockDebts);
+    vi.mocked(financialSupabase.getFinancialPaymentsSupabase).mockResolvedValue([]);
+    vi.mocked(financialSupabase.getCreditorPixKeySupabase).mockResolvedValue("tubarao@meupix.com");
+
+    const result = await getFinancialAnalyticsApi(userId, "month");
+
+    expect(result.priorityDebtor).not.toBeNull();
+    expect(result.priorityDebtor?.debtorName).toBe("Cleiton Lopes");
+    expect(result.priorityDebtor?.debtorPixKey).toBe("11973642456");
+    expect(result.priorityDebtor?.pixKey).toBe("11973642456");
+    expect(result.priorityDebtor?.installmentAmount).toBe(896.33);
+    expect(result.priorityDebtor?.remainingAmount).toBeCloseTo(170.68, 2);
+    expect(result.priorityDebtor?.debtId).toBe("debt-partial");
   });
 
   it("deve selecionar devedor de vencimento próximo caso nenhum esteja em atraso", async () => {
@@ -201,5 +260,15 @@ describe("financial.api - Inteligência Financeira do Tubarão", () => {
 
     const yearResult = await getFinancialAnalyticsApi(userId, "year");
     expect(yearResult.efficiency.series).toHaveLength(12);
+  });
+
+  it("REGRESSÃO: formatRelativeDueDate e parseDateOnly devem interpretar '2026-11-05' sem recuo de fuso e exibir 05/11", () => {
+    const parsed = parseDateOnly("2026-11-05");
+    expect(parsed.getFullYear()).toBe(2026);
+    expect(parsed.getMonth()).toBe(10); // Novembro
+    expect(parsed.getDate()).toBe(5);
+
+    const relative = formatRelativeDueDate("2026-11-05");
+    expect(relative.detail).toContain("05/11");
   });
 });

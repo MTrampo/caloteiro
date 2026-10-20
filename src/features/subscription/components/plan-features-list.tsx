@@ -84,7 +84,7 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
               : "text-zinc-500 line-through"
           }
         >
-          Link da dívida para a presa {config?.can_debtor_portal && <span className="text-[10px] text-amber-400 font-mono font-normal">(Em breve)</span>}
+          Link da dívida para a presa
         </span>
       </div>
 

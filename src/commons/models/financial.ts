@@ -14,6 +14,8 @@ export interface FinancialKpiItem {
 
 export interface PriorityDebtorData {
   id: string;
+  debtId?: string;
+  installmentId?: string;
   debtorId: string;
   debtorName: string;
   debtorInitials?: string;
@@ -22,8 +24,12 @@ export interface PriorityDebtorData {
   currentInstallment: number;
   totalInstallments: number;
   installmentAmount: number;
+  remainingAmount?: number;
   totalDebtAmount: number;
   pixKey?: string;
+  debtorPixKey?: string | null;
+  debtorPixKeyType?: string | null;
+  creditorPixKey?: string | null;
   dueDate: string;
   urgency: "CRITICO" | "ATRASO_LEVE" | "VENCE_HOJE" | "PROXIMO";
   reasonText: string;

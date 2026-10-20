@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
+import Header from "@/components/header/dashboard";
 import {
   getUserLoggedApi,
   getCurrentUserSessionProfileApi,
@@ -11,15 +12,10 @@ interface DebtDetailsPageProps {
   params: Promise<{ id: string }>;
 }
 
-export async function generateMetadata({
-  params,
-}: DebtDetailsPageProps): Promise<Metadata> {
-  const { id } = await params;
-  return {
-    title: `Detalhes da Dívida — Caloteiro`,
-    description: "Acompanhamento minucioso de parcelas, amortizações e desculpas registradas.",
-  };
-}
+export const metadata: Metadata = {
+  title: "Detalhes da Dívida — Caloteiro",
+  description: "Acompanhamento minucioso de parcelas, amortizações e desculpas registradas.",
+};
 
 export default async function DebtDetailsPage({ params }: DebtDetailsPageProps) {
   const { id } = await params;
@@ -40,10 +36,13 @@ export default async function DebtDetailsPage({ params }: DebtDetailsPageProps) 
   }
 
   return (
-    <DebtDetailsFeature
-      initialDebt={response.data}
-      permissions={sessionProfile.permissions}
-    />
+    <>
+      <Header title="Detalhes da Dívida" />
+      <DebtDetailsFeature
+        initialDebt={response.data}
+        permissions={sessionProfile.permissions}
+      />
+    </>
   );
 }
 

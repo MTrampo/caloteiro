@@ -18,11 +18,30 @@ export interface RelativeDueDate {
 }
 
 /**
+ * Normaliza datas (especialmente strings YYYY-MM-DD vindas do banco) para o fuso local,
+ * prevenindo o recuo de 3 horas em UTC-3 que transforma 05/11 em 04/11.
+ */
+export function parseDateOnly(targetDate: Date | string): Date {
+  if (targetDate instanceof Date) return targetDate
+  if (typeof targetDate === "string") {
+    const match = targetDate.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (match) {
+      const year = parseInt(match[1], 10)
+      const month = parseInt(match[2], 10) - 1
+      const day = parseInt(match[3], 10)
+      return new Date(year, month, day)
+    }
+    return new Date(targetDate)
+  }
+  return new Date()
+}
+
+/**
  * Formata datas de vencimento relativas para a linguagem humana do sistema.
  * Ex: "Hoje", "Ontem", "Amanhã", "Segunda-feira", "23/11/2026"
  */
 export function formatRelativeDueDate(targetDate: Date | string): RelativeDueDate {
-  const date = typeof targetDate === "string" ? new Date(targetDate) : targetDate
+  const date = parseDateOnly(targetDate)
   const today = startOfDay(new Date())
   const targetDay = startOfDay(date)
   const diffDays = differenceInCalendarDays(targetDay, today)

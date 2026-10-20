@@ -8,7 +8,6 @@ import {
 } from "../repository/financial.supabase";
 import type {
   FinancialPeriod,
-  FinancialKpiItem,
   PriorityDebtorData,
   PortfolioDistributionData,
   DebtEfficiencyData,
@@ -263,9 +262,13 @@ export const getFinancialAnalyticsApi = async (
     const top = overdueCandidates[0];
     const debtor = top.debt.debtor;
     const isCritical = top.lateDays > 15;
+    const debtorPixKey = debtor?.pix_key || null;
+    const debtorPixKeyType = debtor?.pix_key_type || null;
 
     priorityDebtor = {
-      id: top.installment.id,
+      id: top.debt.id,
+      debtId: top.debt.id,
+      installmentId: top.installment.id,
       debtorId: top.debt.debtor_id,
       debtorName: debtor?.name || "Devedor",
       debtorInitials: getNameInitials(debtor?.name || "D"),
@@ -274,8 +277,12 @@ export const getFinancialAnalyticsApi = async (
       currentInstallment: top.installment.installment_number,
       totalInstallments: top.debt.installments_count || top.debt.installments?.length || 1,
       installmentAmount: Number(top.installment.nominal_amount) || 0,
+      remainingAmount: top.remainingAmount,
       totalDebtAmount: Number(top.debt.total_amount) || 0,
-      pixKey: creditorPixKey || "",
+      pixKey: debtorPixKey || "",
+      debtorPixKey,
+      debtorPixKeyType,
+      creditorPixKey: creditorPixKey || null,
       dueDate: top.installment.due_date,
       urgency: isCritical ? "CRITICO" : "ATRASO_LEVE",
       reasonText: isCritical
@@ -283,14 +290,21 @@ export const getFinancialAnalyticsApi = async (
         : `${top.lateDays} dias de atraso. Hora de enviar o lembrete de cobrança.`,
     };
   } else if (upcomingCandidates.length > 0) {
-    // Vencimentos mais próximos
-    upcomingCandidates.sort((a, b) => a.diffDays - b.diffDays);
+    // Vencimentos mais próximos (desempate por maior valor pendente)
+    upcomingCandidates.sort((a, b) => {
+      if (a.diffDays !== b.diffDays) return a.diffDays - b.diffDays;
+      return b.remainingAmount - a.remainingAmount;
+    });
     const top = upcomingCandidates[0];
     const debtor = top.debt.debtor;
     const isDueToday = top.diffDays === 0;
+    const debtorPixKey = debtor?.pix_key || null;
+    const debtorPixKeyType = debtor?.pix_key_type || null;
 
     priorityDebtor = {
-      id: top.installment.id,
+      id: top.debt.id,
+      debtId: top.debt.id,
+      installmentId: top.installment.id,
       debtorId: top.debt.debtor_id,
       debtorName: debtor?.name || "Devedor",
       debtorInitials: getNameInitials(debtor?.name || "D"),
@@ -299,8 +313,12 @@ export const getFinancialAnalyticsApi = async (
       currentInstallment: top.installment.installment_number,
       totalInstallments: top.debt.installments_count || top.debt.installments?.length || 1,
       installmentAmount: Number(top.installment.nominal_amount) || 0,
+      remainingAmount: top.remainingAmount,
       totalDebtAmount: Number(top.debt.total_amount) || 0,
-      pixKey: creditorPixKey || "",
+      pixKey: debtorPixKey || "",
+      debtorPixKey,
+      debtorPixKeyType,
+      creditorPixKey: creditorPixKey || null,
       dueDate: top.installment.due_date,
       urgency: isDueToday ? "VENCE_HOJE" : "PROXIMO",
       reasonText: isDueToday

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import type { DebtPaymentFormatted } from "@/commons/models/debt";
-import { FaReceipt, FaCheckDouble, FaMoneyBillWave } from "react-icons/fa6";
+import { FaReceipt, FaMoneyBillWave } from "react-icons/fa6";
 
 interface PaymentsHistoryProps {
   payments: DebtPaymentFormatted[];
@@ -55,7 +55,7 @@ export function PaymentsHistory({ payments }: PaymentsHistoryProps) {
 
               {payment.notes && (
                 <div className="text-xs font-mono text-zinc-300 bg-background/60 px-3 py-1.5 rounded-xl border border-border/50 max-w-sm">
-                  <span className="text-zinc-500">Nota:</span> "{payment.notes}"
+                  <span className="text-zinc-500">Nota:</span> &ldquo;{payment.notes}&rdquo;
                 </div>
               )}
             </div>

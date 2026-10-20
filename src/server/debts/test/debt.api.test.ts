@@ -15,6 +15,11 @@ import {
   registerDebtPaymentApi,
   registerDebtExcuseApi,
   getDebtDetailsApi,
+  generateRandomAccessCode,
+  updateDebtPortalConfigApi,
+  checkPublicDebtGateApi,
+  verifyPublicDebtInvoiceAccessApi,
+  getPublicDebtInvoiceDataApi,
 } from "../service/debt.api";
 import * as debtSupabase from "../repository/debt.supabase";
 import * as debtorSupabase from "@/server/debtors/repository/debtor.supabase";
@@ -809,6 +814,204 @@ describe("Serviço de Dívidas (debt.api.ts)", () => {
       expect(data.formattedRemainingAmount).toBe(formatBRL(300));
       expect(data.progressPercentage).toBe(40);
       expect(data.remainingInstallmentsCount).toBe(1);
+    });
+  });
+
+  describe("Link Público da Fatura (/fatura/[id]) e Segurança por Código", () => {
+    const debtId = "debt-fatura-publica-1";
+
+    const mockDebtEnabled: DebtRow = {
+      id: debtId,
+      user_id: userId,
+      debtor_id: "debtor-1",
+      title: "Acordo Amigável",
+      status: "pending",
+      original_amount: 1000,
+      total_amount: 1200,
+      installments_count: 2,
+      loan_date: "2026-10-01",
+      first_due_date: "2026-11-05",
+      interest_type: "total_percentage",
+      interest_rate: 20,
+      category: "personal_loan",
+      payment_method: "pix",
+      settled_at: null,
+      notes: "SEGREDO INTERNO DO TUBARAO NAO VAZAR",
+      public_link_enabled: true,
+      public_access_code: "7K9M2P",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    it("deve gerar código de acesso aleatório com 6 caracteres sem caracteres ambíguos (0, O, 1, I)", () => {
+      const code = generateRandomAccessCode();
+      expect(code).toHaveLength(6);
+      expect(code).toMatch(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/);
+    });
+
+    it("deve bloquear configuração do Link da Fatura para usuários no plano gratuito Tubarão Lixa (canDebtorPortal = false)", async () => {
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        freePermissions
+      );
+
+      const response = await updateDebtPortalConfigApi({
+        debtId,
+        userId,
+        publicLinkEnabled: true,
+      });
+
+      expect(response.status).toBe(HttpStatusEnum.Forbidden);
+      expect(response.error).toBe("PLAN_NOT_ALLOWED");
+      expect(debtSupabase.updateDebtPortalConfigSupabase).not.toHaveBeenCalled();
+    });
+
+    it("deve permitir habilitar o link e personalizar ou regenerar o código nos planos Tubarão Branco e Cabeça Chato", async () => {
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        unlimitedPermissions
+      );
+      vi.mocked(debtSupabase.getDebtByIdSupabase).mockResolvedValue({
+        ...mockDebtEnabled,
+        public_link_enabled: false,
+      });
+      vi.mocked(debtSupabase.updateDebtPortalConfigSupabase).mockImplementation(
+        async (payload) => ({
+          data: {
+            ...mockDebtEnabled,
+            public_link_enabled: payload.publicLinkEnabled,
+            public_access_code: payload.publicAccessCode,
+          },
+          error: null,
+        })
+      );
+
+      const response = await updateDebtPortalConfigApi({
+        debtId,
+        userId,
+        publicLinkEnabled: true,
+        publicAccessCode: "pix2026",
+      });
+
+      expect(response.status).toBe(HttpStatusEnum.Ok);
+      expect(response.data?.publicLinkEnabled).toBe(true);
+      expect(response.data?.publicAccessCode).toBe("PIX2026");
+    });
+
+    it("deve rejeitar acesso à fatura pública quando public_link_enabled for false (default desativado)", async () => {
+      vi.mocked(debtSupabase.getPublicDebtByIdSupabase).mockResolvedValue({
+        ...mockDebtEnabled,
+        public_link_enabled: false,
+      });
+
+      const gateRes = await checkPublicDebtGateApi(debtId);
+      expect(gateRes.status).toBe(HttpStatusEnum.NotFound);
+
+      const verifyRes = await verifyPublicDebtInvoiceAccessApi({
+        debtId,
+        accessCode: "7K9M2P",
+      });
+      expect(verifyRes.status).toBe(HttpStatusEnum.NotFound);
+    });
+
+    it("deve rejeitar acesso com 401 Unauthorized quando o código informado estiver incorreto", async () => {
+      vi.mocked(debtSupabase.getPublicDebtByIdSupabase).mockResolvedValue(
+        mockDebtEnabled
+      );
+      vi.mocked(subscriptionService.getUserPermissionsApi).mockResolvedValue(
+        unlimitedPermissions
+      );
+
+      const response = await verifyPublicDebtInvoiceAccessApi({
+        debtId,
+        accessCode: "ERRADO",
+      });
+
+      expect(response.status).toBe(HttpStatusEnum.Unauthorized);
+      expect(response.message).toContain("Código de acesso incorreto");
+    });
+
+    it("deve retornar os dados da fatura pública com juros, pago, restante e Pix, garantindo ZERO vazamento de notas ou caôs", async () => {
+      vi.mocked(debtSupabase.getPublicDebtByIdSupabase).mockResolvedValue(
+        mockDebtEnabled
+      );
+      vi.mocked(subscriptionService.getUserPermissionsApi).mockResolvedValue(
+        unlimitedPermissions
+      );
+      vi.mocked(debtSupabase.getPublicDebtContextByIdSupabase).mockResolvedValue({
+        debtorName: "Carlos Eduardo Mendes",
+        debtorNickname: "Carlinhos",
+        creditorName: "Vinicius",
+        creditorNickname: "Tubarão",
+        creditorPhone: "11988887777",
+        pixKey: "pix@tubarao.com",
+        pixKeyType: "email",
+        pixHolderName: "Vinicius",
+        pixBankName: "Nubank",
+        installments: [
+          {
+            id: "inst-pub-1",
+            debt_id: debtId,
+            debtor_id: "debtor-1",
+            user_id: userId,
+            installment_number: 1,
+            nominal_amount: 600,
+            paid_amount: 600,
+            due_date: "2026-11-05",
+            status: "paid",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          {
+            id: "inst-pub-2",
+            debt_id: debtId,
+            debtor_id: "debtor-1",
+            user_id: userId,
+            installment_number: 2,
+            nominal_amount: 600,
+            paid_amount: 150,
+            due_date: "2026-12-05",
+            status: "partially_paid",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+        ],
+        payments: [
+          {
+            id: "pay-pub-1",
+            amount: 750,
+            paid_at: "2026-10-19T14:00:00Z",
+            created_at: "2026-10-19T14:00:00Z",
+          },
+        ],
+      });
+
+      const response = await getPublicDebtInvoiceDataApi({
+        debtId,
+        accessCode: "7k9m2p", // case-insensitive
+      });
+
+      expect(response.status).toBe(HttpStatusEnum.Ok);
+      const invoice = response.data!;
+
+      // Verifica cálculos financeiros
+      expect(invoice.debtorFirstName).toBe("Carlos");
+      expect(invoice.originalAmount).toBe(1000);
+      expect(invoice.totalAmount).toBe(1200);
+      expect(invoice.totalInterestAmount).toBe(200);
+      expect(invoice.paidAmount).toBe(750);
+      expect(invoice.remainingAmount).toBe(450);
+      expect(invoice.progressPercentage).toBe(63);
+      expect(invoice.pixKey).toBe("pix@tubarao.com");
+      expect(invoice.pixBankName).toBe("Nubank");
+      expect(invoice.nextInstallment?.installmentNumber).toBe(2);
+      expect(invoice.nextInstallment?.remainingAmount).toBe(450);
+
+      // GARANTIA ZERO LEAK: segredos internos não devem existir no payload serializado
+      const serialized = JSON.stringify(invoice);
+      expect(serialized).not.toContain("SEGREDO INTERNO DO TUBARAO NAO VAZAR");
+      expect(invoice).not.toHaveProperty("notes");
+      expect(invoice).not.toHaveProperty("excuses");
+      expect(invoice).not.toHaveProperty("document");
+      expect(invoice).not.toHaveProperty("address");
     });
   });
 });

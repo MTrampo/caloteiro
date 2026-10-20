@@ -22,10 +22,10 @@ export function DebtsHeader({ period, onPeriodChange, onNewDebtClick, planLimits
       {/* Bloco de Título */}
       <div className="space-y-1">
         <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white">
-          Gestão de Dívidas
+          Financeiro
         </h2>
         <p className="text-xs sm:text-sm text-zinc-400 font-mono">
-          Central de valores a receber, dinheiro recuperado e alerta de calotes no período.
+          Central de inteligência financeira, valores a receber e fluxo de caixa da gruta.
         </p>
       </div>
 

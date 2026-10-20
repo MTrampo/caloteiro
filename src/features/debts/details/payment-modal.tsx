@@ -38,11 +38,11 @@ export function PaymentModal({
   const [notes, setNotes] = React.useState<string>("");
   const [isPending, startTransition] = React.useTransition();
 
-  React.useEffect(() => {
-    if (defaultAmount) {
-      setAmountInput(maskCurrency(defaultAmount));
-    }
-  }, [defaultAmount]);
+  const [prevDefaultAmount, setPrevDefaultAmount] = React.useState<number | undefined>(defaultAmount);
+  if (defaultAmount !== prevDefaultAmount) {
+    setPrevDefaultAmount(defaultAmount);
+    setAmountInput(defaultAmount ? maskCurrency(defaultAmount) : "");
+  }
 
   if (!isOpen) return null;
 

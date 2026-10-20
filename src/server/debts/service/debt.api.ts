@@ -2,21 +2,32 @@ import "server-only";
 
 import { ApiResponse } from "@/commons/lib/http/responses";
 import type { ResponseProps } from "@/commons/models/api";
-import { formatBRL, formatDate, formatDateTime } from "@/commons/utils/format";
-import { presentDebtorItem } from "@/commons/utils/format";
+import {
+  formatBRL,
+  formatDate,
+  formatDateTime,
+  formatProperName,
+  presentDebtorItem,
+} from "@/commons/utils/format";
+import { formatRelativeDueDate } from "@/commons/utils/date-formatter";
 import { getDebtorByIdSupabase } from "@/server/debtors/repository/debtor.supabase";
 import type {
   CreateDebtPayload,
   RegisterPaymentPayload,
   RegisterExcusePayload,
+  UpdateDebtPortalConfigPayload,
+  VerifyDebtInvoiceAccessPayload,
   DebtDetailsFormatted,
   InstallmentFormatted,
   DebtPaymentFormatted,
   DebtExcuseFormatted,
   InstallmentInsert,
   InstallmentStatus,
-  DebtCategory,
+  DebtStatus,
   InterestType,
+  PublicDebtInvoiceViewData,
+  PublicInstallmentItem,
+  PublicDebtPaymentItem,
 } from "@/commons/models/debt";
 import { DEBT_CATEGORY_LABELS } from "@/commons/models/debt";
 import {
@@ -32,8 +43,28 @@ import {
   getExcusesByInstallmentIdsSupabase,
   getInstallmentByIdSupabase,
   countActiveDebtsByUserIdSupabase,
+  updateDebtPortalConfigSupabase,
+  getPublicDebtByIdSupabase,
+  getPublicDebtContextByIdSupabase,
 } from "../repository/debt.supabase";
-import { getUserPermissionsOrCacheApi } from "@/server/account/service/subscription.api";
+import {
+  getUserPermissionsOrCacheApi,
+  getUserPermissionsApi,
+} from "@/server/account/service/subscription.api";
+
+const ACCESS_CODE_CHARS = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+
+/**
+ * Gera um código de acesso aleatório legível de 6 caracteres (sem caracteres ambíguos como 0/O ou 1/I)
+ */
+export function generateRandomAccessCode(length = 6): string {
+  let code = "";
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * ACCESS_CODE_CHARS.length);
+    code += ACCESS_CODE_CHARS[randomIndex];
+  }
+  return code;
+}
 
 /**
  * Incrementa meses preservando o dia do mês sem desvios de timezone
@@ -138,8 +169,13 @@ export const createDebtApi = async (
     });
   }
 
-  // 4. Persistência do cabeçalho da dívida
-  const { data: debt, error: debtError } = await createDebtSupabase(userId, payload);
+  // 4. Persistência do cabeçalho da dívida (com código de acesso aleatório e link desabilitado por padrão)
+  const initialAccessCode = generateRandomAccessCode();
+  const { data: debt, error: debtError } = await createDebtSupabase(userId, {
+    ...payload,
+    public_link_enabled: false,
+    public_access_code: initialAccessCode,
+  });
   if (debtError || !debt) {
     return ApiResponse.BadRequest({
       message: "Não foi possível registrar o acordo de dívida.",
@@ -334,6 +370,8 @@ export const getDebtDetailsApi = async (
 
   const formattedData: DebtDetailsFormatted = {
     ...debt,
+    publicLinkEnabled: Boolean(debt.public_link_enabled),
+    publicAccessCode: debt.public_access_code || "",
     formattedOriginalAmount: formatBRL(originalAmount),
     formattedTotalAmount: formatBRL(totalDebtAmount),
     formattedPaidAmount: formatBRL(totalAmortized),
@@ -490,3 +528,331 @@ export const registerDebtExcuseApi = async (
     message: "Caô devidamente registrado! A contagem da nova promessa começou.",
   });
 };
+
+/**
+ * Configura o Link Público da Fatura (/fatura/[id]) e o Código de Acesso pelo Tubarão
+ * Exclusivo para planos Tubarão Branco e Tubarão Cabeça Chato (canDebtorPortal)
+ */
+export const updateDebtPortalConfigApi = async (
+  payload: UpdateDebtPortalConfigPayload
+): Promise<ResponseProps<{ publicLinkEnabled: boolean; publicAccessCode: string }>> => {
+  const permissions = await getUserPermissionsOrCacheApi(payload.userId);
+  if (!permissions.canDebtorPortal) {
+    return ApiResponse.Forbidden({
+      message:
+        "O Link da Fatura para a presa é exclusivo a partir do plano Tubarão Branco! Faça o upgrade para liberar o acompanhamento externo.",
+      error: "PLAN_NOT_ALLOWED",
+    });
+  }
+
+  const debt = await getDebtByIdSupabase(payload.debtId, payload.userId);
+  if (!debt) {
+    return ApiResponse.NotFound({
+      message: "Dívida não encontrada na gruta deste Tubarão.",
+    });
+  }
+
+  let finalCode = (debt.public_access_code || "").trim().toUpperCase();
+  if (payload.regenerateCode) {
+    finalCode = generateRandomAccessCode();
+  } else if (payload.publicAccessCode !== undefined) {
+    finalCode = payload.publicAccessCode.trim().toUpperCase();
+  }
+
+  if (!finalCode || finalCode.length < 4 || finalCode.length > 16) {
+    finalCode = generateRandomAccessCode();
+  }
+
+  const { data: updated, error } = await updateDebtPortalConfigSupabase({
+    debtId: payload.debtId,
+    userId: payload.userId,
+    publicLinkEnabled: payload.publicLinkEnabled,
+    publicAccessCode: finalCode,
+  });
+
+  if (error || !updated) {
+    return ApiResponse.BadRequest({
+      message: "Não foi possível atualizar a configuração do link da fatura.",
+      error: error || undefined,
+    });
+  }
+
+  return ApiResponse.Ok({
+    data: {
+      publicLinkEnabled: Boolean(updated.public_link_enabled),
+      publicAccessCode: updated.public_access_code || finalCode,
+    },
+    message: payload.regenerateCode
+      ? "Novo código de acesso gerado com sucesso!"
+      : updated.public_link_enabled
+      ? "Link da fatura habilitado e atualizado!"
+      : "Link da fatura desabilitado.",
+  });
+};
+
+/**
+ * Verifica se o link público da fatura existe e está habilitado (sem expor nenhum dado sensível)
+ */
+export const checkPublicDebtGateApi = async (
+  debtId: string
+): Promise<ResponseProps<{ available: boolean }>> => {
+  const debt = await getPublicDebtByIdSupabase(debtId);
+  if (!debt || !debt.public_link_enabled) {
+    return ApiResponse.NotFound({
+      message: "Esta fatura está desativada ou não existe.",
+    });
+  }
+
+  const permissions = await getUserPermissionsApi(debt.user_id);
+  if (!permissions.canDebtorPortal) {
+    return ApiResponse.Forbidden({
+      message: "Este link de fatura não está ativo no momento.",
+    });
+  }
+
+  return ApiResponse.Ok({
+    data: { available: true },
+    message: "Fatura protegida disponível para desbloqueio.",
+  });
+};
+
+/**
+ * Valida o código de acesso informado pelo devedor para liberar a visualização da fatura
+ */
+export const verifyPublicDebtInvoiceAccessApi = async (
+  payload: VerifyDebtInvoiceAccessPayload
+): Promise<ResponseProps<{ verified: boolean; normalizedCode: string }>> => {
+  const debt = await getPublicDebtByIdSupabase(payload.debtId);
+  if (!debt || !debt.public_link_enabled) {
+    return ApiResponse.NotFound({
+      message: "Esta fatura está desativada ou não existe.",
+    });
+  }
+
+  const permissions = await getUserPermissionsApi(debt.user_id);
+  if (!permissions.canDebtorPortal) {
+    return ApiResponse.Forbidden({
+      message: "Este link de fatura não está disponível no plano atual do credor.",
+    });
+  }
+
+  const expectedCode = (debt.public_access_code || "").trim().toUpperCase();
+  const providedCode = (payload.accessCode || "").trim().toUpperCase();
+
+  if (!expectedCode || providedCode !== expectedCode) {
+    return ApiResponse.Unauthorized({
+      message: "Código de acesso incorreto. Confira o código enviado pelo credor.",
+    });
+  }
+
+  return ApiResponse.Ok({
+    data: {
+      verified: true,
+      normalizedCode: expectedCode,
+    },
+    message: "Acesso liberado com sucesso!",
+  });
+};
+
+/**
+ * Carrega os dados públicos sanitizados da fatura após validação do código de acesso
+ * GARANTIA ZERO LEAK: Nunca retorna notes, excuses, document, address ou relacionamento interno.
+ */
+export const getPublicDebtInvoiceDataApi = async (
+  payload: VerifyDebtInvoiceAccessPayload
+): Promise<ResponseProps<PublicDebtInvoiceViewData>> => {
+  const verification = await verifyPublicDebtInvoiceAccessApi(payload);
+  if (verification.status !== 200 || !verification.data?.verified) {
+    return {
+      status: verification.status,
+      message: verification.message,
+      error: verification.error,
+      data: null,
+    };
+  }
+
+  const debt = await getPublicDebtByIdSupabase(payload.debtId);
+  if (!debt) {
+    return ApiResponse.NotFound({
+      message: "Fatura não encontrada.",
+    });
+  }
+
+  const context = await getPublicDebtContextByIdSupabase(debt);
+  if (!context) {
+    return ApiResponse.NotFound({
+      message: "Não foi possível carregar os detalhes desta fatura.",
+    });
+  }
+
+  let paidInstallmentsCount = 0;
+  let totalAmortized = 0;
+
+  const installmentsFormatted: PublicInstallmentItem[] = context.installments.map((inst) => {
+    const nominal = Number(inst.nominal_amount);
+    const paid = Number(inst.paid_amount);
+    const remaining = Math.max(0, Math.round((nominal - paid) * 100) / 100);
+    totalAmortized += paid;
+
+    const { isLate, lateDays } = calculateDaysDifference(inst.due_date);
+    const isPaid = inst.status === "paid" || remaining <= 0;
+
+    let computedStatus: InstallmentStatus = inst.status as InstallmentStatus;
+    if (!isPaid) {
+      if (paid > 0) {
+        computedStatus = "partially_paid";
+      } else if (isLate) {
+        computedStatus = "late";
+      } else {
+        computedStatus = "pending";
+      }
+    } else {
+      computedStatus = "paid";
+    }
+
+    if (computedStatus === "paid") paidInstallmentsCount++;
+
+    const statusMeta = {
+      pending: { label: "A Vencer", badgeClass: "bg-zinc-800 text-zinc-300 border-zinc-700" },
+      late: { label: "Em Atraso", badgeClass: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
+      partially_paid: { label: "Parcialmente Paga", badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
+      paid: { label: "Liquidada", badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+    }[computedStatus];
+
+    const relativeInfo = formatRelativeDueDate(inst.due_date);
+    let relativeDueDateLabel = relativeInfo.formatted;
+    if (isPaid) {
+      relativeDueDateLabel = "Parcela quitada";
+    } else if (relativeInfo.isToday) {
+      relativeDueDateLabel = "Vence hoje";
+    } else if (relativeInfo.isPast) {
+      relativeDueDateLabel =
+        Math.abs(relativeInfo.daysDifference) === 1
+          ? "Venceu ontem"
+          : `Venceu há ${Math.abs(relativeInfo.daysDifference)} dias`;
+    } else {
+      relativeDueDateLabel =
+        relativeInfo.daysDifference === 1
+          ? "Vence amanhã"
+          : `Faltam ${relativeInfo.daysDifference} dias`;
+    }
+
+    return {
+      id: inst.id,
+      installmentNumber: inst.installment_number,
+      nominalAmount: nominal,
+      paidAmount: paid,
+      remainingAmount: remaining,
+      formattedNominalAmount: formatBRL(nominal),
+      formattedPaidAmount: formatBRL(paid),
+      formattedRemainingAmount: formatBRL(remaining),
+      dueDate: inst.due_date,
+      formattedDueDate: formatDate(inst.due_date),
+      relativeDueDateLabel,
+      status: computedStatus,
+      statusLabel: statusMeta.label,
+      statusBadgeClass: statusMeta.badgeClass,
+      isLate: isLate && !isPaid,
+      lateDays: isLate && !isPaid ? lateDays : 0,
+    };
+  });
+
+  const nextInstallment =
+    installmentsFormatted.find((inst) => inst.status !== "paid" && inst.remainingAmount > 0) || null;
+
+  const paymentsFormatted: PublicDebtPaymentItem[] = context.payments.map((payment) => ({
+    id: payment.id,
+    amount: Number(payment.amount),
+    formattedAmount: formatBRL(Number(payment.amount)),
+    paidAt: payment.paid_at,
+    formattedPaidAt: formatDateTime(payment.paid_at),
+  }));
+
+  const originalAmount = Number(debt.original_amount) || 0;
+  const totalDebtAmount = Number(debt.total_amount || debt.original_amount) || 0;
+  const totalInterestAmount = Math.max(0, Math.round((totalDebtAmount - originalAmount) * 100) / 100);
+  const hasInterest = totalInterestAmount > 0;
+  const remainingAmount = Math.max(0, Math.round((totalDebtAmount - totalAmortized) * 100) / 100);
+  const progressPercentage =
+    totalDebtAmount > 0 ? Math.min(100, Math.round((totalAmortized / totalDebtAmount) * 100)) : 0;
+
+  const isFullySettled = remainingAmount <= 0 || debt.status === "settled";
+  const remainingInstallmentsCount = Math.max(0, installmentsFormatted.length - paidInstallmentsCount);
+
+  const interestType = (debt.interest_type || "none") as InterestType;
+  let interestLabel = "Sem juros (na parceria)";
+  if (interestType === "fixed") {
+    interestLabel = `Taxa Fixa (+${formatBRL(Number(debt.interest_rate || 0))})`;
+  } else if (interestType === "total_percentage") {
+    interestLabel = `${Number(debt.interest_rate || 0)}% sobre o total`;
+  } else if (interestType === "monthly_percentage") {
+    interestLabel = `${Number(debt.interest_rate || 0)}% ao mês`;
+  }
+
+  const properDebtorName = formatProperName(context.debtorName);
+  const debtorFirstName = properDebtorName.split(" ")[0] || properDebtorName;
+  const creditorDisplayName = formatProperName(
+    context.creditorNickname || context.creditorName || "Credor"
+  );
+
+  const whatsAppMessage = nextInstallment
+    ? `Oi ${creditorDisplayName}! Acabei de fazer o Pix referente à parcela ${nextInstallment.installmentNumber}/${installmentsFormatted.length} (${nextInstallment.formattedRemainingAmount}) do acordo "${debt.title}". Segue o comprovante!`
+    : `Oi ${creditorDisplayName}! Acabei de fazer o Pix referente ao acordo "${debt.title}". Segue o comprovante!`;
+
+  const cleanCreditorPhone = (context.creditorPhone || "").replace(/\D/g, "");
+  const creditorWhatsAppUrl = cleanCreditorPhone
+    ? `https://wa.me/55${cleanCreditorPhone}?text=${encodeURIComponent(whatsAppMessage)}`
+    : null;
+
+  const paymentMethodMap: Record<string, string> = {
+    pix: "Pix",
+    cash: "Dinheiro",
+    transfer: "Transferência Bancária",
+    card: "Cartão",
+  };
+
+  const viewData: PublicDebtInvoiceViewData = {
+    debtId: debt.id,
+    title: debt.title,
+    categoryLabel: (DEBT_CATEGORY_LABELS as Record<string, string>)[debt.category] || "Acordo",
+    debtorFirstName,
+    creditorDisplayName,
+    creditorPhone: context.creditorPhone,
+    creditorWhatsAppUrl,
+    pixKey: context.pixKey,
+    pixKeyType: context.pixKeyType,
+    pixHolderName: context.pixHolderName,
+    pixBankName: context.pixBankName,
+    originalAmount,
+    totalAmount: totalDebtAmount,
+    paidAmount: Math.round(totalAmortized * 100) / 100,
+    remainingAmount,
+    totalInterestAmount,
+    formattedOriginalAmount: formatBRL(originalAmount),
+    formattedTotalAmount: formatBRL(totalDebtAmount),
+    formattedPaidAmount: formatBRL(totalAmortized),
+    formattedRemainingAmount: formatBRL(remainingAmount),
+    formattedTotalInterestAmount: hasInterest ? `+ ${formatBRL(totalInterestAmount)}` : "R$ 0,00",
+    hasInterest,
+    interestLabel,
+    progressPercentage,
+    formattedLoanDate: formatDate(debt.loan_date),
+    formattedFirstDueDate: formatDate(debt.first_due_date),
+    paymentMethodLabel: paymentMethodMap[debt.payment_method] || "Pix",
+    status: (isFullySettled ? "settled" : debt.status) as DebtStatus,
+    statusLabel: isFullySettled ? "Acordo Quitado" : "Acordo em Andamento",
+    isFullySettled,
+    paidInstallmentsCount,
+    totalInstallmentsCount: installmentsFormatted.length,
+    remainingInstallmentsCount,
+    nextInstallment,
+    installments: installmentsFormatted,
+    payments: paymentsFormatted,
+  };
+
+  return ApiResponse.Ok({
+    data: viewData,
+    message: "Fatura carregada com sucesso.",
+  });
+};
+

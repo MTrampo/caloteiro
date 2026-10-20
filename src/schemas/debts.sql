@@ -64,6 +64,8 @@ create table if not exists public.debts (
   status text not null default 'pending' check (status in ('pending', 'settled', 'defaulted')),
   settled_at timestamptz,
   notes text,
+  public_link_enabled boolean not null default false,
+  public_access_code text not null default upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 6)),
   
   created_at timestamptz default now(),
   updated_at timestamptz default now()

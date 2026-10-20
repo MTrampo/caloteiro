@@ -89,11 +89,6 @@ export function InstallmentsList({
     return list;
   }, [installments, sortBy]);
 
-  // Resetar paginação ao trocar ordenação
-  React.useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
-  }, [sortBy]);
-
   const hasMore = visibleCount < processedInstallments.length;
   const visibleInstallments = processedInstallments.slice(0, visibleCount);
 
@@ -142,7 +137,10 @@ export function InstallmentsList({
           <Select
             value={sortBy}
             onValueChange={(val) => {
-              if (val) setSortBy(val as InstallmentSortOption);
+              if (val) {
+                setSortBy(val as InstallmentSortOption);
+                setVisibleCount(PAGE_SIZE);
+              }
             }}
           >
             <SelectTrigger

@@ -14,6 +14,16 @@ export function getUserCookieSecret(userId?: string | null): string {
   return `${COOKIE_SIGNING_SECRET}:uid:${userId.trim()}`
 }
 
+/**
+ * Gera a chave secreta dinâmica para assinar o cookie temporário de acesso à fatura pública (/fatura/[id])
+ */
+export function getDebtInvoiceCookieSecret(debtId: string): string {
+  if (!debtId || typeof debtId !== 'string' || !debtId.trim()) {
+    throw new Error('[SECURITY_ERROR] Identificador da dívida (debtId) obrigatório para derivação do segredo de fatura.')
+  }
+  return `${COOKIE_SIGNING_SECRET}:invoice:${debtId.trim()}`
+}
+
 
 
 function base64UrlEncode(buffer: ArrayBuffer | Uint8Array): string {
