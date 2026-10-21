@@ -28,7 +28,7 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h3 className="font-heading text-base sm:text-lg font-bold text-white tracking-tight">
-              Próxima Cobrança (Alvo Imediato)
+              Próxima Cobrança
             </h3>
           </div>
           <span className="text-xs font-mono font-bold text-zinc-500">
@@ -81,7 +81,7 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="font-heading text-base sm:text-lg font-bold text-white tracking-tight">
-            Próxima Cobrança (Alvo Imediato)
+            Próxima Cobrança
           </h3>
         </div>
         <span className="text-xs font-mono font-bold text-zinc-400">

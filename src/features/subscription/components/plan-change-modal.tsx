@@ -13,8 +13,8 @@ import {
   FaTriangleExclamation,
   FaInfo,
   FaXmark,
+  FaSpinner,
 } from "react-icons/fa6";
-import { Loader2 } from "lucide-react";
 
 interface PlanChangeModalProps {
   isOpen: boolean;
@@ -154,12 +154,18 @@ export function PlanChangeModal({
                   <span>Link da Dívida para a Presa: página exclusiva para o caloteiro ver o estrago</span>
                 </li>
               )}
+              {!isFreePlan && (
+                <li className="flex items-start gap-2">
+                  <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>Cláusulas do acordo, limite de tolerância e alerta automático de quebra</span>
+                </li>
+              )}
             </ul>
           </div>
         ) : (
           <div className="space-y-3">
             <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider block">
-              ⚠️ O que você PERDE ao confirmar o downgrade:
+              O que você PERDE ao confirmar o downgrade:
             </span>
             <ul className="space-y-2 text-xs font-mono text-zinc-300">
               <li className="flex items-start gap-2">
@@ -216,7 +222,7 @@ export function PlanChangeModal({
           >
             {isPending ? (
               <div className="flex items-center gap-2">
-                <Loader2 className="size-3.5 animate-spin" />
+                <FaSpinner className="size-3.5 animate-spin" />
                 <span>Atualizando Plano...</span>
               </div>
             ) : isUpgrade ? (

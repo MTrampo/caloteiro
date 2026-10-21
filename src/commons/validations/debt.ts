@@ -20,6 +20,7 @@ export const createDebtSchema = z.object({
       "emergency",
       "service",
       "formal_agreement",
+      "judicial_agreement",
       "other",
     ])
     .default("personal_loan"),
@@ -41,6 +42,14 @@ export const createDebtSchema = z.object({
   interest_rate: z.number().min(0).default(0),
   total_amount: z.number().positive().optional(),
   notes: z.string().max(1000, "As observações devem ter no máximo 1000 caracteres.").optional().nullable(),
+  max_late_installments: z
+    .number()
+    .int("O limite de parcelas em atraso deve ser inteiro.")
+    .min(1, "O gatilho de quebra deve ser de pelo menos 1 parcela.")
+    .max(120, "Limite inválido.")
+    .optional()
+    .nullable(),
+  show_notes_on_invoice: z.boolean().optional().default(false),
 });
 
 /**
@@ -91,5 +100,33 @@ export const verifyDebtInvoiceAccessSchema = z.object({
     .trim()
     .min(1, "Informe o código de acesso para visualizar a fatura.")
     .max(20, "Código de acesso inválido."),
+});
+
+/**
+ * Esquema de validação para atualização das cláusulas e gatilho de quebra do acordo
+ */
+export const updateDebtAgreementRulesSchema = z.object({
+  debtId: z.string().uuid("Identificador da dívida inválido."),
+  notes: z
+    .string()
+    .max(1000, "As regras e cláusulas devem ter no máximo 1000 caracteres.")
+    .optional()
+    .nullable(),
+  maxLateInstallments: z
+    .number()
+    .int("O limite de parcelas em atraso deve ser inteiro.")
+    .min(1, "O gatilho de quebra deve ser de pelo menos 1 parcela.")
+    .max(120, "Limite inválido.")
+    .optional()
+    .nullable(),
+  showNotesOnInvoice: z.boolean().default(false),
+});
+
+/**
+ * Esquema de validação para declarar ou reverter Quebra de Acordo (status 'defaulted' / 'pending')
+ */
+export const updateDebtBreachStatusSchema = z.object({
+  debtId: z.string().uuid("Identificador da dívida inválido."),
+  isBreached: z.boolean(),
 });
 

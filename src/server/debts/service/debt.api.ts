@@ -16,6 +16,8 @@ import type {
   RegisterPaymentPayload,
   RegisterExcusePayload,
   UpdateDebtPortalConfigPayload,
+  UpdateDebtAgreementRulesPayload,
+  UpdateDebtBreachStatusPayload,
   VerifyDebtInvoiceAccessPayload,
   DebtDetailsFormatted,
   InstallmentFormatted,
@@ -24,6 +26,7 @@ import type {
   InstallmentInsert,
   InstallmentStatus,
   DebtStatus,
+  DebtBreachStatus,
   InterestType,
   PublicDebtInvoiceViewData,
   PublicInstallmentItem,
@@ -44,6 +47,7 @@ import {
   getInstallmentByIdSupabase,
   countActiveDebtsByUserIdSupabase,
   updateDebtPortalConfigSupabase,
+  updateDebtAgreementRulesSupabase,
   getPublicDebtByIdSupabase,
   getPublicDebtContextByIdSupabase,
 } from "../repository/debt.supabase";
@@ -110,6 +114,33 @@ function calculateDaysDifference(dueDateStr: string): { isLate: boolean; lateDay
 }
 
 /**
+ * Calcula o estado de quebra/tolerância do acordo com base no limite de parcelas atrasadas
+ */
+export function computeBreachStatus(params: {
+  status: string;
+  isFullySettled: boolean;
+  maxLateInstallments: number | null;
+  lateInstallmentsCount: number;
+}): DebtBreachStatus {
+  if (params.isFullySettled) return "none";
+  if (params.status === "defaulted") return "breached";
+
+  if (params.maxLateInstallments !== null && params.maxLateInstallments > 0) {
+    if (params.lateInstallmentsCount >= params.maxLateInstallments) {
+      return "breached";
+    }
+    if (
+      params.maxLateInstallments > 1 &&
+      params.lateInstallmentsCount === params.maxLateInstallments - 1
+    ) {
+      return "warning";
+    }
+  }
+
+  return "none";
+}
+
+/**
  * Criação da dívida e projeção precisa das parcelas em cêntimos inteiros
  */
 export const createDebtApi = async (
@@ -170,9 +201,19 @@ export const createDebtApi = async (
   }
 
   // 4. Persistência do cabeçalho da dívida (com código de acesso aleatório e link desabilitado por padrão)
+  // No plano grátis (Tubarão Lixa), gatilho de quebra e exibição externa de cláusulas são higienizados (Zero Trust)
+  const sanitizedMaxLateInstallments = permissions.isFreePlan
+    ? null
+    : payload.max_late_installments ?? null;
+  const sanitizedShowNotesOnInvoice = permissions.isFreePlan
+    ? false
+    : Boolean(payload.show_notes_on_invoice);
+
   const initialAccessCode = generateRandomAccessCode();
   const { data: debt, error: debtError } = await createDebtSupabase(userId, {
     ...payload,
+    max_late_installments: sanitizedMaxLateInstallments,
+    show_notes_on_invoice: sanitizedShowNotesOnInvoice,
     public_link_enabled: false,
     public_access_code: initialAccessCode,
   });
@@ -354,7 +395,7 @@ export const getDebtDetailsApi = async (
   const debtStatusMeta = {
     pending: { label: "Em Aberto", badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
     settled: { label: "Quitada (Honrada)", badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
-    defaulted: { label: "Calote Confirmado", badgeClass: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
+    defaulted: { label: "Quebra de Acordo / Calote", badgeClass: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
   }[debt.status] || { label: debt.status, badgeClass: "bg-zinc-800 text-zinc-300 border-zinc-700" };
 
   const categoryLabels = DEBT_CATEGORY_LABELS;
@@ -368,10 +409,25 @@ export const getDebtDetailsApi = async (
     interestLabel = `${Number(debt.interest_rate || 0)}% ao mês`;
   }
 
+  const maxLateInstallments =
+    debt.max_late_installments !== undefined && debt.max_late_installments !== null
+      ? Number(debt.max_late_installments)
+      : null;
+  const showNotesOnInvoice = Boolean(debt.show_notes_on_invoice);
+  const breachStatus = computeBreachStatus({
+    status: debt.status,
+    isFullySettled,
+    maxLateInstallments,
+    lateInstallmentsCount,
+  });
+
   const formattedData: DebtDetailsFormatted = {
     ...debt,
     publicLinkEnabled: Boolean(debt.public_link_enabled),
     publicAccessCode: debt.public_access_code || "",
+    maxLateInstallments,
+    showNotesOnInvoice,
+    breachStatus,
     formattedOriginalAmount: formatBRL(originalAmount),
     formattedTotalAmount: formatBRL(totalDebtAmount),
     formattedPaidAmount: formatBRL(totalAmortized),
@@ -686,6 +742,7 @@ export const getPublicDebtInvoiceDataApi = async (
   }
 
   let paidInstallmentsCount = 0;
+  let lateInstallmentsCount = 0;
   let totalAmortized = 0;
 
   const installmentsFormatted: PublicInstallmentItem[] = context.installments.map((inst) => {
@@ -711,6 +768,7 @@ export const getPublicDebtInvoiceDataApi = async (
     }
 
     if (computedStatus === "paid") paidInstallmentsCount++;
+    if (computedStatus === "late" || (isLate && !isPaid)) lateInstallmentsCount++;
 
     const statusMeta = {
       pending: { label: "A Vencer", badgeClass: "bg-zinc-800 text-zinc-300 border-zinc-700" },
@@ -811,6 +869,21 @@ export const getPublicDebtInvoiceDataApi = async (
     card: "Cartão",
   };
 
+  const maxLateInstallments =
+    debt.max_late_installments !== undefined && debt.max_late_installments !== null
+      ? Number(debt.max_late_installments)
+      : null;
+  const breachStatus = computeBreachStatus({
+    status: debt.status,
+    isFullySettled,
+    maxLateInstallments,
+    lateInstallmentsCount,
+  });
+  const publicNotes =
+    Boolean(debt.show_notes_on_invoice) && debt.notes && debt.notes.trim().length > 0
+      ? debt.notes.trim()
+      : null;
+
   const viewData: PublicDebtInvoiceViewData = {
     debtId: debt.id,
     title: debt.title,
@@ -840,11 +913,19 @@ export const getPublicDebtInvoiceDataApi = async (
     formattedFirstDueDate: formatDate(debt.first_due_date),
     paymentMethodLabel: paymentMethodMap[debt.payment_method] || "Pix",
     status: (isFullySettled ? "settled" : debt.status) as DebtStatus,
-    statusLabel: isFullySettled ? "Acordo Quitado" : "Acordo em Andamento",
+    statusLabel: isFullySettled
+      ? "Acordo Quitado"
+      : debt.status === "defaulted"
+      ? "Acordo em Quebra"
+      : "Acordo em Andamento",
     isFullySettled,
     paidInstallmentsCount,
     totalInstallmentsCount: installmentsFormatted.length,
     remainingInstallmentsCount,
+    lateInstallmentsCount,
+    maxLateInstallments,
+    breachStatus,
+    publicNotes,
     nextInstallment,
     installments: installmentsFormatted,
     payments: paymentsFormatted,
@@ -853,6 +934,120 @@ export const getPublicDebtInvoiceDataApi = async (
   return ApiResponse.Ok({
     data: viewData,
     message: "Fatura carregada com sucesso.",
+  });
+};
+
+/**
+ * Atualiza as cláusulas/regras do acordo (notes), o gatilho de tolerância de atraso e a visibilidade na fatura pública
+ * Exclusivo para planos pagos (Tubarão Branco e Tubarão Cabeça Chato)
+ */
+export const updateDebtAgreementRulesApi = async (
+  payload: UpdateDebtAgreementRulesPayload
+): Promise<
+  ResponseProps<{
+    notes: string | null;
+    maxLateInstallments: number | null;
+    showNotesOnInvoice: boolean;
+  }>
+> => {
+  const permissions = await getUserPermissionsOrCacheApi(payload.userId);
+  if (permissions.isFreePlan) {
+    return ApiResponse.Forbidden({
+      message:
+        "Cláusulas do acordo e gatilho de quebra são exclusivos dos planos Tubarão Branco e Tubarão Cabeça Chato! Faça o upgrade para blindar seus combinados.",
+      error: "PLAN_NOT_ALLOWED",
+    });
+  }
+
+  const debt = await getDebtByIdSupabase(payload.debtId, payload.userId);
+  if (!debt) {
+    return ApiResponse.NotFound({
+      message: "Dívida não encontrada na gruta deste Tubarão.",
+    });
+  }
+
+  const cleanNotes = payload.notes ? payload.notes.trim() || null : null;
+  const maxLate =
+    payload.maxLateInstallments && payload.maxLateInstallments >= 1
+      ? Math.min(debt.installments_count, payload.maxLateInstallments)
+      : null;
+
+  const { data: updated, error } = await updateDebtAgreementRulesSupabase({
+    debtId: payload.debtId,
+    userId: payload.userId,
+    notes: cleanNotes,
+    maxLateInstallments: maxLate,
+    showNotesOnInvoice: Boolean(payload.showNotesOnInvoice),
+  });
+
+  if (error || !updated) {
+    return ApiResponse.BadRequest({
+      message: "Não foi possível atualizar as cláusulas e o gatilho de quebra do acordo.",
+      error: error || undefined,
+    });
+  }
+
+  return ApiResponse.Ok({
+    data: {
+      notes: updated.notes || null,
+      maxLateInstallments:
+        updated.max_late_installments !== undefined && updated.max_late_installments !== null
+          ? Number(updated.max_late_installments)
+          : null,
+      showNotesOnInvoice: Boolean(updated.show_notes_on_invoice),
+    },
+    message: "Cláusulas e gatilho de quebra do acordo atualizados com sucesso!",
+  });
+};
+
+/**
+ * Declara ou reverte a Quebra de Acordo (status 'defaulted' <-> 'pending')
+ * Exclusivo para planos pagos (Tubarão Branco e Tubarão Cabeça Chato)
+ */
+export const updateDebtBreachStatusApi = async (
+  payload: UpdateDebtBreachStatusPayload
+): Promise<ResponseProps<{ status: DebtStatus }>> => {
+  const permissions = await getUserPermissionsOrCacheApi(payload.userId);
+  if (permissions.isFreePlan) {
+    return ApiResponse.Forbidden({
+      message:
+        "A declaração formal de Quebra de Acordo é exclusiva dos planos Tubarão Branco e Tubarão Cabeça Chato!",
+      error: "PLAN_NOT_ALLOWED",
+    });
+  }
+
+  const debt = await getDebtByIdSupabase(payload.debtId, payload.userId);
+  if (!debt) {
+    return ApiResponse.NotFound({
+      message: "Dívida não encontrada na gruta deste Tubarão.",
+    });
+  }
+
+  if (debt.status === "settled") {
+    return ApiResponse.BadRequest({
+      message: "Esta dívida já foi quitada e honrada.",
+    });
+  }
+
+  const targetStatus: DebtStatus = payload.isBreached ? "defaulted" : "pending";
+  const { success, error } = await updateDebtStatusSupabase(
+    payload.debtId,
+    payload.userId,
+    targetStatus
+  );
+
+  if (!success || error) {
+    return ApiResponse.BadRequest({
+      message: "Não foi possível alterar o status de quebra do acordo.",
+      error: error || undefined,
+    });
+  }
+
+  return ApiResponse.Ok({
+    data: { status: targetStatus },
+    message: payload.isBreached
+      ? "Quebra de acordo declarada! Dívida marcada como Quebra de Acordo / Calote."
+      : "Acordo reaberto e retornado para acompanhamento normal.",
   });
 };
 

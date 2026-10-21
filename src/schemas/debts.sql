@@ -64,6 +64,8 @@ create table if not exists public.debts (
   status text not null default 'pending' check (status in ('pending', 'settled', 'defaulted')),
   settled_at timestamptz,
   notes text,
+  max_late_installments int4 default null check (max_late_installments is null or max_late_installments >= 1),
+  show_notes_on_invoice boolean not null default false,
   public_link_enabled boolean not null default false,
   public_access_code text not null default upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 6)),
   

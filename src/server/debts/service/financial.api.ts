@@ -169,16 +169,21 @@ export const getFinancialAnalyticsApi = async (
     return createEmptyFinancialResult(period);
   }
 
-  // Agregações de parcelas
+  // Agregações de parcelas e contratos
   let totalPendingAmount = 0;
   let totalPaidAmount = 0;
+  let onTimePendingAmount = 0;
   let overdueLightAmount = 0;
   let overdueCriticalAmount = 0;
+  let totalOriginalAmount = 0;
+  let totalContractedAmount = 0;
 
   let paidInstallmentsCount = 0;
+  let onTimePendingCount = 0;
   let overdueLightCount = 0;
   let overdueCriticalCount = 0;
   let totalInstallmentsCount = 0;
+  let totalOverdueDaysSum = 0;
 
   const uniqueDebtorsSet = new Set<string>();
 
@@ -188,6 +193,7 @@ export const getFinancialAnalyticsApi = async (
     debt: FinancialDebtWithRelationsRow;
     lateDays: number;
     diffDays: number;
+    nominalAmount: number;
     remainingAmount: number;
   }
 
@@ -199,8 +205,16 @@ export const getFinancialAnalyticsApi = async (
       uniqueDebtorsSet.add(debt.debtor_id);
     }
 
+    const debtOriginal = Number(debt.original_amount) || 0;
+    const debtTotal = Number(debt.total_amount) || debtOriginal;
+    totalOriginalAmount += debtOriginal;
+    totalContractedAmount += debtTotal;
+
     const installments = debt.installments || [];
     totalInstallmentsCount += installments.length;
+
+    // Para cada dívida, identifica as parcelas em atraso e apenas a próxima parcela a vencer
+    let earliestUpcomingForDebt: PriorityCandidate | null = null;
 
     for (const inst of installments) {
       const nominal = Number(inst.nominal_amount) || 0;
@@ -210,13 +224,17 @@ export const getFinancialAnalyticsApi = async (
 
       if (isPaid) {
         paidInstallmentsCount++;
-        totalPaidAmount += nominal;
+        totalPaidAmount += Math.max(nominal, paid);
       } else {
+        if (paid > 0) {
+          totalPaidAmount += paid;
+        }
         totalPendingAmount += remaining;
 
         const { isLate, lateDays, diffDays } = calculateDaysDifference(inst.due_date);
 
         if (isLate && lateDays > 0) {
+          totalOverdueDaysSum += lateDays;
           if (lateDays > 30) {
             overdueCriticalAmount += remaining;
             overdueCriticalCount++;
@@ -230,18 +248,37 @@ export const getFinancialAnalyticsApi = async (
             debt,
             lateDays,
             diffDays,
+            nominalAmount: nominal,
             remainingAmount: remaining,
           });
         } else {
-          upcomingCandidates.push({
+          onTimePendingAmount += remaining;
+          onTimePendingCount++;
+
+          const candidate: PriorityCandidate = {
             installment: inst,
             debt,
             lateDays: 0,
             diffDays,
+            nominalAmount: nominal,
             remainingAmount: remaining,
-          });
+          };
+
+          if (
+            !earliestUpcomingForDebt ||
+            candidate.diffDays < earliestUpcomingForDebt.diffDays ||
+            (candidate.diffDays === earliestUpcomingForDebt.diffDays &&
+              candidate.installment.installment_number <
+                earliestUpcomingForDebt.installment.installment_number)
+          ) {
+            earliestUpcomingForDebt = candidate;
+          }
         }
       }
+    }
+
+    if (earliestUpcomingForDebt) {
+      upcomingCandidates.push(earliestUpcomingForDebt);
     }
   }
 
@@ -249,57 +286,46 @@ export const getFinancialAnalyticsApi = async (
   const periodPaymentsTotal = payments.reduce((acc, p) => acc + Number(p.amount || 0), 0);
   const effectivePaid = Math.max(totalPaidAmount, periodPaymentsTotal);
 
-  // Determina o Alvo Imediato (PriorityDebtor)
+  // Determina o Alvo Imediato (PriorityDebtor):
+  // Prioriza o vencimento mais próximo/atrasado (data); em caso de mesma data, usa o maior saldo a receber (remainingAmount) como desempate.
   let priorityDebtor: PriorityDebtorData | null = null;
 
-  if (overdueCandidates.length > 0) {
-    // Ordena os mais atrasados primeiro e, em empate, pelo maior saldo pendente
-    overdueCandidates.sort((a, b) => {
-      if (b.lateDays !== a.lateDays) return b.lateDays - a.lateDays;
+  const nearUpcomingCandidates = upcomingCandidates.filter((c) => c.diffDays <= 30);
+  const priorityPool =
+    overdueCandidates.length > 0 || nearUpcomingCandidates.length > 0
+      ? [...overdueCandidates, ...nearUpcomingCandidates]
+      : [...upcomingCandidates];
+
+  if (priorityPool.length > 0) {
+    // 1º critério: Data de vencimento mais urgente/próxima (menor diffDays)
+    // 2º critério (desempate na mesma data): Maior saldo restante a receber (remainingAmount)
+    priorityPool.sort((a, b) => {
+      if (a.diffDays !== b.diffDays) {
+        return a.diffDays - b.diffDays;
+      }
       return b.remainingAmount - a.remainingAmount;
     });
 
-    const top = overdueCandidates[0];
+    const top = priorityPool[0];
     const debtor = top.debt.debtor;
+    const debtorPixKey = debtor?.pix_key || null;
+    const debtorPixKeyType = debtor?.pix_key_type || null;
+    const isOverdue = top.lateDays > 0;
     const isCritical = top.lateDays > 15;
-    const debtorPixKey = debtor?.pix_key || null;
-    const debtorPixKeyType = debtor?.pix_key_type || null;
+    const isDueToday = !isOverdue && top.diffDays === 0;
 
-    priorityDebtor = {
-      id: top.debt.id,
-      debtId: top.debt.id,
-      installmentId: top.installment.id,
-      debtorId: top.debt.debtor_id,
-      debtorName: debtor?.name || "Devedor",
-      debtorInitials: getNameInitials(debtor?.name || "D"),
-      debtorPhone: debtor?.phone || "",
-      debtTitle: top.debt.title,
-      currentInstallment: top.installment.installment_number,
-      totalInstallments: top.debt.installments_count || top.debt.installments?.length || 1,
-      installmentAmount: Number(top.installment.nominal_amount) || 0,
-      remainingAmount: top.remainingAmount,
-      totalDebtAmount: Number(top.debt.total_amount) || 0,
-      pixKey: debtorPixKey || "",
-      debtorPixKey,
-      debtorPixKeyType,
-      creditorPixKey: creditorPixKey || null,
-      dueDate: top.installment.due_date,
-      urgency: isCritical ? "CRITICO" : "ATRASO_LEVE",
-      reasonText: isCritical
+    let urgency: PriorityDebtorData["urgency"] = "PROXIMO";
+    let reasonText = `Vencimento programado em ${top.diffDays} dias.`;
+
+    if (isOverdue) {
+      urgency = isCritical ? "CRITICO" : "ATRASO_LEVE";
+      reasonText = isCritical
         ? `${top.lateDays} dias em atraso. Alerta vermelho acionado para intervenção do Tubarão.`
-        : `${top.lateDays} dias de atraso. Hora de enviar o lembrete de cobrança.`,
-    };
-  } else if (upcomingCandidates.length > 0) {
-    // Vencimentos mais próximos (desempate por maior valor pendente)
-    upcomingCandidates.sort((a, b) => {
-      if (a.diffDays !== b.diffDays) return a.diffDays - b.diffDays;
-      return b.remainingAmount - a.remainingAmount;
-    });
-    const top = upcomingCandidates[0];
-    const debtor = top.debt.debtor;
-    const isDueToday = top.diffDays === 0;
-    const debtorPixKey = debtor?.pix_key || null;
-    const debtorPixKeyType = debtor?.pix_key_type || null;
+        : `${top.lateDays} dias de atraso. Hora de enviar o lembrete de cobrança.`;
+    } else if (isDueToday) {
+      urgency = "VENCE_HOJE";
+      reasonText = "Vence hoje! Acompanhe o Pix ou cobre logo pela manhã.";
+    }
 
     priorityDebtor = {
       id: top.debt.id,
@@ -320,15 +346,18 @@ export const getFinancialAnalyticsApi = async (
       debtorPixKeyType,
       creditorPixKey: creditorPixKey || null,
       dueDate: top.installment.due_date,
-      urgency: isDueToday ? "VENCE_HOJE" : "PROXIMO",
-      reasonText: isDueToday
-        ? "Vence hoje! Acompanhe o Pix ou cobre logo pela manhã."
-        : `Vencimento programado em ${top.diffDays} dias.`,
+      urgency,
+      reasonText,
     };
   }
 
-  // KPIs
-  const activeDebtsCount = debts.filter((d) => d.status === "active").length;
+  // KPIs: No banco public.debts, dívidas ativas têm status 'pending' (ou diferente de 'settled')
+  const activeDebtsCount = debts.filter((d) => d.status !== "settled").length;
+  const totalVolume = effectivePaid + totalPendingAmount;
+  const pendingVolumePercent =
+    totalVolume > 0 ? Math.round((totalPendingAmount / totalVolume) * 100) : 0;
+  const paidVolumePercent =
+    totalVolume > 0 ? Math.round((effectivePaid / totalVolume) * 100) : 0;
 
   const kpis = {
     emAberto: {
@@ -337,7 +366,7 @@ export const getFinancialAnalyticsApi = async (
       natureLabel: "Total a Receber na Pista",
       description: "Promessas e pendências ativas nos prazos",
       footnote: `${activeDebtsCount} ${activeDebtsCount === 1 ? "acordo ativo" : "acordos ativos"} na gruta`,
-      changePercent: 100,
+      changePercent: pendingVolumePercent,
       isGainOrLoss: "neutral" as const,
     },
     emDia: {
@@ -346,7 +375,7 @@ export const getFinancialAnalyticsApi = async (
       natureLabel: "Já no Bolso (Você Ganhou)",
       description: "Milagres confirmados sem drama nem desculpa",
       footnote: `+ R$ ${effectivePaid.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} garantidos na conta`,
-      changePercent: totalPendingAmount > 0 ? Math.round((effectivePaid / (effectivePaid + totalPendingAmount)) * 100) : 100,
+      changePercent: paidVolumePercent,
       isGainOrLoss: "positive" as const,
     },
     emAtraso: {
@@ -354,7 +383,10 @@ export const getFinancialAnalyticsApi = async (
       title: "Em Atraso",
       natureLabel: "Travado (Falta Receber)",
       description: "Passou do prazo há menos de 30 dias",
-      footnote: overdueLightCount > 0 ? `${overdueLightCount} parcelas em atraso leve` : "Nenhum atraso leve",
+      footnote:
+        overdueLightCount > 0
+          ? `${overdueLightCount} ${overdueLightCount === 1 ? "parcela em atraso leve" : "parcelas em atraso leve"}`
+          : "Nenhum atraso leve",
       changePercent: totalPendingAmount > 0 ? Math.round((overdueLightAmount / totalPendingAmount) * 100) : 0,
       isGainOrLoss: "negative" as const,
     },
@@ -363,17 +395,22 @@ export const getFinancialAnalyticsApi = async (
       title: "Caloteiros",
       natureLabel: "Prejuízo (Deixou de Receber)",
       description: "Mais de 30 dias de sumiço ou quebra total",
-      footnote: overdueCriticalCount > 0 ? `${overdueCriticalCount} parcelas em alerta vermelho` : "Nenhum caloteiro crítico",
+      footnote:
+        overdueCriticalCount > 0
+          ? `${overdueCriticalCount} ${overdueCriticalCount === 1 ? "parcela em alerta vermelho" : "parcelas em alerta vermelho"}`
+          : "Nenhum caloteiro crítico",
       changePercent: totalPendingAmount > 0 ? Math.round((overdueCriticalAmount / totalPendingAmount) * 100) : 0,
       isGainOrLoss: "negative" as const,
     },
   };
 
-  // Carteira
-  const totalVolume = effectivePaid + totalPendingAmount;
-  const onTimePercentage = totalVolume > 0 ? Math.round((effectivePaid / totalVolume) * 100) : 0;
+  // Carteira: Em Dia (Recebido + A Vencer no Prazo) vs Em Atraso (<30d) vs Crítico (>30d)
+  const portfolioOnTimeAmount = effectivePaid + onTimePendingAmount;
+  const portfolioOnTimeCount = paidInstallmentsCount + onTimePendingCount;
   const overduePercentage = totalVolume > 0 ? Math.round((overdueLightAmount / totalVolume) * 100) : 0;
   const criticalPercentage = totalVolume > 0 ? Math.round((overdueCriticalAmount / totalVolume) * 100) : 0;
+  const portfolioOnTimePercentage =
+    totalVolume > 0 ? Math.max(0, 100 - overduePercentage - criticalPercentage) : 0;
 
   const resolutionRate = totalInstallmentsCount > 0
     ? Math.round((paidInstallmentsCount / totalInstallmentsCount) * 100)
@@ -387,9 +424,9 @@ export const getFinancialAnalyticsApi = async (
     totalAmount: totalVolume,
     totalDebtors: uniqueDebtorsSet.size,
     emDia: {
-      amount: effectivePaid,
-      count: paidInstallmentsCount,
-      percentage: onTimePercentage,
+      amount: portfolioOnTimeAmount,
+      count: portfolioOnTimeCount,
+      percentage: portfolioOnTimePercentage,
     },
     emAtraso: {
       amount: overdueLightAmount,
@@ -402,7 +439,7 @@ export const getFinancialAnalyticsApi = async (
       percentage: criticalPercentage,
     },
     healthMetrics: {
-      immediateLiquidity: onTimePercentage,
+      immediateLiquidity: paidVolumePercent,
       immediateLiquidityLabel: "Liquidez Imediata",
       immediateLiquidityDesc: "Percentual recuperado em relação ao montante total contratado",
       resolutionRate,
@@ -418,7 +455,7 @@ export const getFinancialAnalyticsApi = async (
   const pointsCount = windowConfig.pointsCount;
   const series: EfficiencyTimePoint[] = [];
 
-  const intervalPrevisto = totalPendingAmount / Math.max(1, pointsCount);
+  const intervalPrevisto = totalVolume / Math.max(1, pointsCount);
   const intervalRecebido = effectivePaid / Math.max(1, pointsCount);
 
   for (let i = 0; i < pointsCount; i++) {
@@ -439,18 +476,34 @@ export const getFinancialAnalyticsApi = async (
     ? Math.min(100, Math.round((effectivePaid / totalVolume) * 100))
     : 100;
 
+  const totalOverdueCount = overdueLightCount + overdueCriticalCount;
+  const averageTimeToPixDays =
+    totalOverdueCount > 0 ? Math.round(totalOverdueDaysSum / totalOverdueCount) : 0;
+
+  const totalInterestAmount = Math.max(0, totalContractedAmount - totalOriginalAmount);
+  const returnRatePercent =
+    totalOriginalAmount > 0
+      ? Math.round((totalInterestAmount / totalOriginalAmount) * 100)
+      : 0;
+
   const efficiency: DebtEfficiencyData = {
     globalEfficiencyScore,
     totalPrevisto: totalVolume,
     totalRecebido: effectivePaid,
     series,
     metrics: {
-      averageTimeToPixDays: 3,
-      averageTimeToPixDesc: "Média estimada para compensação após o vencimento",
+      averageTimeToPixDays,
+      averageTimeToPixDesc:
+        totalOverdueCount > 0
+          ? "Média de dias em atraso nas parcelas vencidas"
+          : "Pagamentos realizados dentro do prazo combinado",
       agreementsHonoredPercent: resolutionRate,
-      agreementsHonoredDesc: "Parcelas honradas sem necessidade de cobrança judicial",
-      returnRatePercent: Math.round(Math.min(100, onTimePercentage)),
-      returnRateDesc: "Taxa de recuperação sobre o capital na pista",
+      agreementsHonoredDesc: `${paidInstallmentsCount} de ${totalInstallmentsCount} parcelas quitadas integralmente`,
+      returnRatePercent,
+      returnRateDesc:
+        totalInterestAmount > 0
+          ? `+ R$ ${totalInterestAmount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} de juros sobre o capital`
+          : "Acordos firmados sem cobrança de juros",
       bestPeriodNote: effectivePaid > 0 ? "Fluxo regular de recebimentos identificado." : "Aguardando primeiras amortizações.",
     },
   };

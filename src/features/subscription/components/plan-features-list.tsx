@@ -88,6 +88,24 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
         </span>
       </div>
 
+      {/* 7. Cláusulas do Acordo e Alerta de Quebra (Planos Pagos) */}
+      <div className="flex items-center gap-2 text-zinc-300">
+        <FaCheck
+          className={`size-3 shrink-0 ${
+            !isFree ? "text-emerald-400" : "text-zinc-600"
+          }`}
+        />
+        <span
+          className={
+            !isFree
+              ? "text-zinc-300"
+              : "text-zinc-500 line-through"
+          }
+        >
+          Cláusulas do acordo e alerta de quebra
+        </span>
+      </div>
+
       {/* 7. Nível de Cara de Pau (Score de Risco) - Exclusivo Tubarão Cabeça Chato */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck

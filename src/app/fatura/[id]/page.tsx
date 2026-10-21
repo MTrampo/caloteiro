@@ -37,13 +37,13 @@ export default async function PublicDebtInvoicePage({
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center border-b border-border bg-background/90 backdrop-blur-md">
-          <div className="flex w-full items-center justify-between px-4 sm:px-6 max-w-6xl mx-auto">
+          <div className="flex w-full items-center justify-between mx-auto px-6 max-w-5xl md:max-w-7xl">
             <Logo size="md" showText />
           </div>
         </header>
 
-        <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
-          <div className="py-16 sm:py-24 text-center space-y-3 max-w-md mx-auto">
+        <main className="flex-1 w-full mx-auto px-6 py-12 sm:py-24 max-w-5xl md:max-w-7xl flex items-center justify-center">
+          <div className="text-center space-y-3 max-w-md mx-auto">
             <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white">
               Link de Fatura Indisponível
             </h2>
@@ -54,7 +54,7 @@ export default async function PublicDebtInvoicePage({
         </main>
 
         <footer className="border-t border-border/40 py-6 text-center text-xs font-mono text-zinc-500">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="mx-auto px-6 max-w-5xl md:max-w-7xl">
             Caloteiro • Ambiente privado de acompanhamento
           </div>
         </footer>

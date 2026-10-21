@@ -16,7 +16,10 @@ import {
   registerDebtExcuseApi,
   getDebtDetailsApi,
   generateRandomAccessCode,
+  computeBreachStatus,
   updateDebtPortalConfigApi,
+  updateDebtAgreementRulesApi,
+  updateDebtBreachStatusApi,
   checkPublicDebtGateApi,
   verifyPublicDebtInvoiceAccessApi,
   getPublicDebtInvoiceDataApi,
@@ -1008,10 +1011,323 @@ describe("Serviço de Dívidas (debt.api.ts)", () => {
       // GARANTIA ZERO LEAK: segredos internos não devem existir no payload serializado
       const serialized = JSON.stringify(invoice);
       expect(serialized).not.toContain("SEGREDO INTERNO DO TUBARAO NAO VAZAR");
+      expect(invoice.publicNotes).toBeNull();
       expect(invoice).not.toHaveProperty("notes");
       expect(invoice).not.toHaveProperty("excuses");
       expect(invoice).not.toHaveProperty("document");
       expect(invoice).not.toHaveProperty("address");
+    });
+
+    it("deve exibir publicNotes e breachStatus na fatura pública quando show_notes_on_invoice estiver habilitado", async () => {
+      vi.mocked(debtSupabase.getPublicDebtByIdSupabase).mockResolvedValue({
+        ...mockDebtEnabled,
+        notes: "Acordo Judicial Processo nº 9988 — Quebra após 2 parcelas vencidas",
+        max_late_installments: 2,
+        show_notes_on_invoice: true,
+      });
+      vi.mocked(subscriptionService.getUserPermissionsApi).mockResolvedValue(
+        unlimitedPermissions
+      );
+      vi.mocked(debtSupabase.getPublicDebtContextByIdSupabase).mockResolvedValue({
+        debtorName: "Carlos Eduardo Mendes",
+        debtorNickname: "Carlinhos",
+        creditorName: "Vinicius",
+        creditorNickname: "Tubarão",
+        creditorPhone: "11988887777",
+        pixKey: "pix@tubarao.com",
+        pixKeyType: "email",
+        pixHolderName: "Vinicius",
+        pixBankName: "Nubank",
+        installments: [
+          {
+            id: "inst-late-1",
+            debt_id: debtId,
+            debtor_id: "debtor-1",
+            user_id: userId,
+            installment_number: 1,
+            nominal_amount: 600,
+            paid_amount: 0,
+            due_date: "2020-01-05",
+            status: "late",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          {
+            id: "inst-late-2",
+            debt_id: debtId,
+            debtor_id: "debtor-1",
+            user_id: userId,
+            installment_number: 2,
+            nominal_amount: 600,
+            paid_amount: 0,
+            due_date: "2020-02-05",
+            status: "late",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+        ],
+        payments: [],
+      });
+
+      const response = await getPublicDebtInvoiceDataApi({
+        debtId,
+        accessCode: "7K9M2P",
+      });
+
+      expect(response.status).toBe(HttpStatusEnum.Ok);
+      expect(response.data?.publicNotes).toBe(
+        "Acordo Judicial Processo nº 9988 — Quebra após 2 parcelas vencidas"
+      );
+      expect(response.data?.maxLateInstallments).toBe(2);
+      expect(response.data?.lateInstallmentsCount).toBe(2);
+      expect(response.data?.breachStatus).toBe("breached");
+    });
+  });
+
+  describe("Cláusulas do Acordo e Gatilho de Quebra (Planos Pagos)", () => {
+    it("computeBreachStatus deve calcular corretamente 'none', 'warning' e 'breached'", () => {
+      // Sem gatilho e em aberto -> none
+      expect(
+        computeBreachStatus({
+          status: "pending",
+          isFullySettled: false,
+          maxLateInstallments: null,
+          lateInstallmentsCount: 3,
+        })
+      ).toBe("none");
+
+      // Com gatilho de 3 parcelas e 1 atrasada -> none
+      expect(
+        computeBreachStatus({
+          status: "pending",
+          isFullySettled: false,
+          maxLateInstallments: 3,
+          lateInstallmentsCount: 1,
+        })
+      ).toBe("none");
+
+      // Com gatilho de 3 parcelas e 2 atrasadas (a 1 parcela da quebra) -> warning
+      expect(
+        computeBreachStatus({
+          status: "pending",
+          isFullySettled: false,
+          maxLateInstallments: 3,
+          lateInstallmentsCount: 2,
+        })
+      ).toBe("warning");
+
+      // Com gatilho de 3 parcelas e 3 atrasadas -> breached
+      expect(
+        computeBreachStatus({
+          status: "pending",
+          isFullySettled: false,
+          maxLateInstallments: 3,
+          lateInstallmentsCount: 3,
+        })
+      ).toBe("breached");
+
+      // Status 'defaulted' manual -> breached mesmo sem gatilho
+      expect(
+        computeBreachStatus({
+          status: "defaulted",
+          isFullySettled: false,
+          maxLateInstallments: null,
+          lateInstallmentsCount: 0,
+        })
+      ).toBe("breached");
+
+      // Dívida já quitada -> sempre 'none'
+      expect(
+        computeBreachStatus({
+          status: "settled",
+          isFullySettled: true,
+          maxLateInstallments: 2,
+          lateInstallmentsCount: 2,
+        })
+      ).toBe("none");
+    });
+
+    it("createDebtApi deve higienizar max_late_installments e show_notes_on_invoice no plano gratuito (Zero Trust)", async () => {
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        freePermissions
+      );
+      vi.mocked(debtSupabase.countActiveDebtsByUserIdSupabase).mockResolvedValue(0);
+      vi.mocked(debtorSupabase.getDebtorByIdSupabase).mockResolvedValue(baseDebtor);
+
+      let capturedDebtPayload: Record<string, unknown> | null = null;
+      vi.mocked(debtSupabase.createDebtSupabase).mockImplementation(
+        async (_uid, payload) => {
+          capturedDebtPayload = payload as unknown as Record<string, unknown>;
+          return {
+            data: {
+              id: "debt-free-1",
+              user_id: userId,
+              debtor_id: "debtor-1",
+              title: "Acordo",
+              original_amount: 500,
+              total_amount: 500,
+              installments_count: 5,
+              loan_date: "2026-01-01",
+              first_due_date: "2026-02-01",
+              interest_type: "none",
+              interest_rate: 0,
+              category: "judicial_agreement",
+              payment_method: "pix",
+              status: "pending",
+              settled_at: null,
+              notes: "Tentativa de regra no plano grátis",
+              max_late_installments: null,
+              show_notes_on_invoice: false,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+            error: null,
+          };
+        }
+      );
+      vi.mocked(debtSupabase.createInstallmentsSupabase).mockResolvedValue({
+        data: [],
+        error: null,
+      });
+
+      const res = await createDebtApi(userId, {
+        debtor_id: "debtor-1",
+        title: "Acordo",
+        category: "judicial_agreement",
+        original_amount: 500,
+        installments_count: 5,
+        first_due_date: "2026-02-01",
+        max_late_installments: 3,
+        show_notes_on_invoice: true,
+      });
+
+      expect(res.status).toBe(HttpStatusEnum.Created);
+      expect(capturedDebtPayload?.max_late_installments).toBeNull();
+      expect(capturedDebtPayload?.show_notes_on_invoice).toBe(false);
+    });
+
+    it("updateDebtAgreementRulesApi deve bloquear plano gratuito e atualizar com sucesso em planos pagos", async () => {
+      // 1. Bloqueio no plano gratuito
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        freePermissions
+      );
+
+      const forbiddenRes = await updateDebtAgreementRulesApi({
+        debtId: "debt-123",
+        userId,
+        notes: "Regra de 3 parcelas",
+        maxLateInstallments: 3,
+        showNotesOnInvoice: true,
+      });
+
+      expect(forbiddenRes.status).toBe(HttpStatusEnum.Forbidden);
+      expect(forbiddenRes.error).toBe("PLAN_NOT_ALLOWED");
+
+      // 2. Sucesso em plano pago
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        unlimitedPermissions
+      );
+      vi.mocked(debtSupabase.getDebtByIdSupabase).mockResolvedValue({
+        id: "debt-123",
+        user_id: userId,
+        debtor_id: "debtor-1",
+        title: "Acordo Judicial",
+        original_amount: 3000,
+        total_amount: 3000,
+        installments_count: 6,
+        loan_date: "2026-01-01",
+        first_due_date: "2026-02-01",
+        interest_type: "none",
+        interest_rate: 0,
+        category: "judicial_agreement",
+        payment_method: "pix",
+        status: "pending",
+        settled_at: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      vi.mocked(debtSupabase.updateDebtAgreementRulesSupabase).mockResolvedValue({
+        data: {
+          id: "debt-123",
+          user_id: userId,
+          debtor_id: "debtor-1",
+          title: "Acordo Judicial",
+          original_amount: 3000,
+          total_amount: 3000,
+          installments_count: 6,
+          loan_date: "2026-01-01",
+          first_due_date: "2026-02-01",
+          interest_type: "none",
+          interest_rate: 0,
+          category: "judicial_agreement",
+          payment_method: "pix",
+          status: "pending",
+          settled_at: null,
+          notes: "Regra de 3 parcelas",
+          max_late_installments: 3,
+          show_notes_on_invoice: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        error: null,
+      });
+
+      const okRes = await updateDebtAgreementRulesApi({
+        debtId: "debt-123",
+        userId,
+        notes: "Regra de 3 parcelas",
+        maxLateInstallments: 3,
+        showNotesOnInvoice: true,
+      });
+
+      expect(okRes.status).toBe(HttpStatusEnum.Ok);
+      expect(okRes.data?.maxLateInstallments).toBe(3);
+      expect(okRes.data?.showNotesOnInvoice).toBe(true);
+    });
+
+    it("updateDebtBreachStatusApi deve declarar e reverter quebra de acordo em planos pagos", async () => {
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        unlimitedPermissions
+      );
+      vi.mocked(debtSupabase.getDebtByIdSupabase).mockResolvedValue({
+        id: "debt-123",
+        user_id: userId,
+        debtor_id: "debtor-1",
+        title: "Acordo Judicial",
+        original_amount: 3000,
+        total_amount: 3000,
+        installments_count: 6,
+        loan_date: "2026-01-01",
+        first_due_date: "2026-02-01",
+        interest_type: "none",
+        interest_rate: 0,
+        category: "judicial_agreement",
+        payment_method: "pix",
+        status: "pending",
+        settled_at: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      vi.mocked(debtSupabase.updateDebtStatusSupabase).mockResolvedValue({
+        success: true,
+        error: null,
+      });
+
+      const breachRes = await updateDebtBreachStatusApi({
+        debtId: "debt-123",
+        userId,
+        isBreached: true,
+      });
+
+      expect(breachRes.status).toBe(HttpStatusEnum.Ok);
+      expect(breachRes.data?.status).toBe("defaulted");
+      expect(debtSupabase.updateDebtStatusSupabase).toHaveBeenCalledWith(
+        "debt-123",
+        userId,
+        "defaulted"
+      );
     });
   });
 });

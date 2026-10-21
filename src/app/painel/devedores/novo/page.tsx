@@ -32,7 +32,7 @@ export default async function NovoDevedorPage() {
               Cadastrar Devedor
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 font-mono">
-              Fiche quem pegou seu dinheiro antes que ele invente que perdeu o celular.
+              Marque na sua gruta quem pegou seu dinheiro antes que ele invente que perdeu o celular.
             </p>
           </div>
         </div>
@@ -61,7 +61,7 @@ export default async function NovoDevedorPage() {
                 Voltar aos Devedores
               </Link>
               <Link
-                href="/painel/conta/assinatura"
+                href="/painel/assinatura"
                 className="w-full sm:w-auto inline-flex items-center justify-center h-10 px-6 text-xs sm:text-sm font-bold font-heading rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 shadow-md"
               >
                 Fazer Upgrade

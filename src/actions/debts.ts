@@ -8,6 +8,8 @@ import {
   registerPaymentSchema,
   registerExcuseSchema,
   updateDebtPortalConfigSchema,
+  updateDebtAgreementRulesSchema,
+  updateDebtBreachStatusSchema,
   verifyDebtInvoiceAccessSchema,
 } from '@/commons/validations/debt';
 import {
@@ -16,6 +18,8 @@ import {
   registerDebtPaymentApi,
   registerDebtExcuseApi,
   updateDebtPortalConfigApi,
+  updateDebtAgreementRulesApi,
+  updateDebtBreachStatusApi,
   getPublicDebtInvoiceDataApi,
 } from '@/server/debts/service/debt.api';
 import {
@@ -89,6 +93,10 @@ export async function createDebtAction(
       };
     }
 
+    revalidatePath('/painel/dividas');
+    revalidatePath('/painel/dividas/acompanhamento');
+    revalidatePath('/painel');
+
     return { success: true, data: result.data };
   } catch (error) {
     console.error('[createDebtAction] Erro inesperado:', error);
@@ -134,6 +142,12 @@ export async function registerDebtPaymentAction(
         error: result.message || 'Não foi possível registrar o pagamento.',
       };
     }
+
+    revalidatePath(`/painel/dividas/${debtId}`);
+    revalidatePath('/painel/dividas');
+    revalidatePath('/painel/dividas/acompanhamento');
+    revalidatePath('/painel');
+    revalidatePath(`/fatura/${debtId}`);
 
     return {
       success: true,
@@ -321,6 +335,124 @@ export async function lockDebtInvoiceAction(
     return { success: true };
   } catch {
     return { success: false };
+  }
+}
+
+/**
+ * Atualiza as cláusulas/regras do acordo (notes), gatilho de tolerância e visibilidade na fatura pública
+ */
+export async function updateDebtAgreementRulesAction(
+  rawData: unknown
+): Promise<{
+  success: boolean;
+  data?: {
+    notes: string | null;
+    maxLateInstallments: number | null;
+    showNotesOnInvoice: boolean;
+  };
+  message?: string;
+  error?: string;
+}> {
+  try {
+    const userRes = await getUserLoggedApi();
+    const userId = userRes.data?.user?.id;
+    if (!userId) {
+      return { success: false, error: 'Acesso não autorizado. Faça login novamente.' };
+    }
+
+    const validation = updateDebtAgreementRulesSchema.safeParse(rawData);
+    if (!validation.success) {
+      return {
+        success: false,
+        error:
+          validation.error.issues[0]?.message ||
+          'Dados inválidos para atualizar as cláusulas do acordo.',
+      };
+    }
+
+    const result = await updateDebtAgreementRulesApi({
+      debtId: validation.data.debtId,
+      userId,
+      notes: validation.data.notes ?? null,
+      maxLateInstallments: validation.data.maxLateInstallments ?? null,
+      showNotesOnInvoice: validation.data.showNotesOnInvoice,
+    });
+
+    if (!result.data) {
+      return {
+        success: false,
+        error: result.message || 'Não foi possível salvar as cláusulas do acordo.',
+      };
+    }
+
+    revalidatePath(`/painel/dividas/${validation.data.debtId}`);
+    revalidatePath(`/fatura/${validation.data.debtId}`);
+
+    return {
+      success: true,
+      data: result.data,
+      message: result.message,
+    };
+  } catch (error) {
+    console.error('[updateDebtAgreementRulesAction] Erro inesperado:', error);
+    return { success: false, error: 'Ocorreu um erro ao atualizar as regras do acordo.' };
+  }
+}
+
+/**
+ * Declara ou reverte a Quebra de Acordo (status 'defaulted' <-> 'pending')
+ */
+export async function updateDebtBreachStatusAction(
+  rawData: unknown
+): Promise<{
+  success: boolean;
+  data?: { status: string };
+  message?: string;
+  error?: string;
+}> {
+  try {
+    const userRes = await getUserLoggedApi();
+    const userId = userRes.data?.user?.id;
+    if (!userId) {
+      return { success: false, error: 'Acesso não autorizado. Faça login novamente.' };
+    }
+
+    const validation = updateDebtBreachStatusSchema.safeParse(rawData);
+    if (!validation.success) {
+      return {
+        success: false,
+        error:
+          validation.error.issues[0]?.message ||
+          'Dados inválidos para atualizar o status do acordo.',
+      };
+    }
+
+    const result = await updateDebtBreachStatusApi({
+      debtId: validation.data.debtId,
+      userId,
+      isBreached: validation.data.isBreached,
+    });
+
+    if (!result.data) {
+      return {
+        success: false,
+        error: result.message || 'Não foi possível alterar o status de quebra do acordo.',
+      };
+    }
+
+    revalidatePath(`/painel/dividas/${validation.data.debtId}`);
+    revalidatePath('/painel/dividas');
+    revalidatePath('/painel');
+    revalidatePath(`/fatura/${validation.data.debtId}`);
+
+    return {
+      success: true,
+      data: result.data,
+      message: result.message,
+    };
+  } catch (error) {
+    console.error('[updateDebtBreachStatusAction] Erro inesperado:', error);
+    return { success: false, error: 'Ocorreu um erro ao atualizar o status de quebra do acordo.' };
   }
 }
 

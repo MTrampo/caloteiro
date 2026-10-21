@@ -295,12 +295,14 @@ export type Database = {
           interest_rate: number | null
           interest_type: string | null
           loan_date: string
+          max_late_installments?: number | null
           notes: string | null
           original_amount: number
           payment_method: string
           public_access_code?: string
           public_link_enabled?: boolean
           settled_at: string | null
+          show_notes_on_invoice?: boolean
           status: string
           title: string
           total_amount: number | null
@@ -317,12 +319,14 @@ export type Database = {
           interest_rate?: number | null
           interest_type?: string | null
           loan_date?: string
+          max_late_installments?: number | null
           notes?: string | null
           original_amount: number
           payment_method?: string
           public_access_code?: string
           public_link_enabled?: boolean
           settled_at?: string | null
+          show_notes_on_invoice?: boolean
           status?: string
           title: string
           total_amount?: number | null
@@ -339,12 +343,14 @@ export type Database = {
           interest_rate?: number | null
           interest_type?: string | null
           loan_date?: string
+          max_late_installments?: number | null
           notes?: string | null
           original_amount?: number
           payment_method?: string
           public_access_code?: string
           public_link_enabled?: boolean
           settled_at?: string | null
+          show_notes_on_invoice?: boolean
           status?: string
           title?: string
           total_amount?: number | null

@@ -6,14 +6,7 @@ import {
   FaCheck,
   FaXmark,
   FaCrown,
-  FaShieldHalved,
-  FaCoins,
-  FaFileInvoiceDollar,
-  FaPercent,
-  FaCalendarDays,
-  FaFolderOpen,
   FaArrowRight,
-  FaCircleQuestion,
 } from "react-icons/fa6";
 
 const PLANS_DATA = [
@@ -151,6 +144,13 @@ const COMPARISON_ROWS = [
   {
     label: "Link da Dívida para a Presa",
     description: "Link exclusivo para a presa acompanhar as próprias parcelas e pagar no Pix",
+    lixa: false,
+    branco: true,
+    chato: true,
+  },
+  {
+    label: "Cláusulas e Alerta de Quebra de Acordo",
+    description: "Regras do acordo visíveis na fatura e gatilho automático por parcelas vencidas",
     lixa: false,
     branco: true,
     chato: true,
@@ -413,9 +413,8 @@ export function PlansDocFeature() {
       {/* 4. Perguntas Frequentes (FAQ) */}
       <div className="space-y-4 pt-4">
         <div>
-          <h3 className="font-heading text-base sm:text-lg font-bold text-white flex items-center gap-2">
-            <FaCircleQuestion className="size-4 text-emerald-400" />
-            <span>Perguntas Frequentes sobre Assinatura</span>
+          <h3 className="font-heading text-base sm:text-lg font-bold text-white">
+            Perguntas Frequentes sobre Assinatura
           </h3>
           <p className="text-xs text-zinc-400 font-mono">
             Tire suas dúvidas sobre faturas, cancelamentos e segurança de dados.

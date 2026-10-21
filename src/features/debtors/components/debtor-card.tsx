@@ -2,14 +2,13 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
   FaWhatsapp,
   FaCopy,
+  FaCheck,
   FaArrowRight,
-  FaLocationDot,
-  FaIdCard,
-  FaNoteSticky,
   FaEye,
 } from "react-icons/fa6"
 import type { DebtorItemFormatted } from "../types"
@@ -27,71 +26,41 @@ export function DebtorCard({ debtor }: DebtorCardProps) {
     if (debtor.pix_key) {
       navigator.clipboard.writeText(debtor.pix_key)
       setCopied(true)
+      toast.success("Chave Pix copiada para a área de transferência!")
       setTimeout(() => setCopied(false), 2000)
     }
   }
 
-
   return (
     <div className="rounded-2xl border border-border bg-card p-5 shadow-xs hover:border-zinc-700 transition-all flex flex-col justify-between gap-4">
-      {/* Cabeçalho do Card */}
-      <div className="space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1 min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-heading text-base font-bold text-white truncate" title={debtor.formattedName}>
-                {debtor.formattedName}
-              </h3>
-              {debtor.formattedNickname && (
-                <span className="text-xs font-mono text-zinc-300 bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-700 truncate max-w-[160px]" title={debtor.formattedNickname}>
-                  {debtor.formattedNickname}
-                </span>
-              )}
-            </div>
-
-            <p className="text-xs font-mono text-zinc-400">
-              {debtor.displayPhone}
-            </p>
+      {/* Cabeçalho do Card (Apenas Nome, Apelido, Telefone e Relacionamento) */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1 min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-heading text-base font-bold text-white truncate" title={debtor.formattedName}>
+              {debtor.formattedName}
+            </h3>
+            {debtor.formattedNickname && (
+              <span className="text-xs font-mono text-zinc-300 bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-700 truncate max-w-[160px]" title={debtor.formattedNickname}>
+                {debtor.formattedNickname}
+              </span>
+            )}
           </div>
 
-          {/* Tag de Relacionamento */}
-          <div className="shrink-0">
-            <span
-              className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-md bg-zinc-800/80 border border-zinc-700 text-zinc-300"
-              title={debtor.relationshipDesc}
-            >
-              {debtor.relationshipLabel}
-            </span>
-          </div>
+          <p className="text-xs font-mono text-zinc-400">
+            {debtor.displayPhone}
+          </p>
         </div>
 
-        {/* Informações Complementares (Documento / Endereço) */}
-        {(debtor.document || debtor.address) && (
-          <div className="text-[11px] font-mono text-zinc-400 space-y-1 pt-1 border-t border-zinc-800/60">
-            {debtor.document && (
-              <div className="flex items-center gap-1.5 text-zinc-400">
-                <FaIdCard className="size-3 text-zinc-500 shrink-0" />
-                <span>CPF: {debtor.document}</span>
-              </div>
-            )}
-            {debtor.address && (
-              <div className="flex items-center gap-1.5 text-zinc-400 truncate" title={debtor.address}>
-                <FaLocationDot className="size-3 text-zinc-500 shrink-0" />
-                <span className="truncate">{debtor.address}</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Observações / Anotações do Tubarão */}
-        {debtor.notes && (
-          <div className="rounded-xl bg-zinc-950/60 border border-zinc-800/80 p-2.5 text-xs font-mono text-zinc-400 flex items-start gap-2">
-            <FaNoteSticky className="size-3 text-emerald-500/80 shrink-0 mt-0.5" />
-            <p className="line-clamp-2 leading-relaxed text-zinc-400">
-              {debtor.notes}
-            </p>
-          </div>
-        )}
+        {/* Tag de Relacionamento */}
+        <div className="shrink-0">
+          <span
+            className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-md bg-zinc-800/80 border border-zinc-700 text-zinc-300"
+            title={debtor.relationshipDesc}
+          >
+            {debtor.relationshipLabel}
+          </span>
+        </div>
       </div>
 
       {/* Ações Rápidas no Rodapé */}
@@ -127,12 +96,17 @@ export function DebtorCard({ debtor }: DebtorCardProps) {
 
           {debtor.pix_key && (
             <Button
+              type="button"
               size="sm"
               variant="outline"
               onClick={handleCopyPix}
               className="h-8 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 cursor-pointer"
             >
-              <FaCopy className="size-3 mr-1" />
+              {copied ? (
+                <FaCheck className="size-3 mr-1 text-emerald-400" />
+              ) : (
+                <FaCopy className="size-3 mr-1" />
+              )}
               <span>{copied ? "Copiado!" : "Pix"}</span>
             </Button>
           )}

@@ -123,7 +123,7 @@ export function formatRelativeDueDate(targetDate: Date | string): RelativeDueDat
 
   return {
     formatted: format(date, "dd/MM/yyyy"),
-    detail: `Vence em ${diffDays} dias (${format(date, "dd/MM")})`,
+    detail: `Vence em ${diffDays} dias`,
     isPast: false,
     isToday: false,
     daysDifference: diffDays,

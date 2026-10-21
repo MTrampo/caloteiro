@@ -17,16 +17,12 @@ import type { DebtTermsFormData } from "./step-terms-and-interest";
 import {
   FaArrowLeft,
   FaCheck,
-  FaCoins,
-  FaCalendarDays,
-  FaUser,
   FaWhatsapp,
   FaCopy,
   FaHandshake,
-  FaShieldHalved,
-  FaBolt,
+  FaScaleBalanced,
+  FaSpinner,
 } from "react-icons/fa6";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface StepReviewAndConfirmProps {
@@ -69,7 +65,17 @@ export function StepReviewAndConfirm({
         ? `em parcela única de ${formatBRL(calculation.totalAmount)} com vencimento em ${formatDate(formData.first_due_date)}`
         : `em ${formData.installments_count}x de aprox. ${formatBRL(calculation.baseInstallmentNominal)}, com a 1ª parcela vencendo em ${formatDate(formData.first_due_date)}`;
 
-    return `Fala ${debtor.formattedName}! Passei pra confirmar nosso combinado sobre "${formData.title}": valor total de ${formatBRL(calculation.totalAmount)} ${installmentsText}. Segue o combinado! Valeu!`;
+    const tolerancePart = formData.max_late_installments
+      ? ` Lembrando que o limite de tolerância deste acordo é de ${formData.max_late_installments} ${
+          formData.max_late_installments === 1 ? "parcela em atraso" : "parcelas em atraso"
+        }.`
+      : "";
+
+    const notesPart = formData.notes.trim()
+      ? ` Condições do acordo: "${formData.notes.trim()}".`
+      : "";
+
+    return `Fala ${debtor.formattedName}! Passei pra confirmar nosso combinado sobre "${formData.title}": valor total de ${formatBRL(calculation.totalAmount)} ${installmentsText}.${tolerancePart}${notesPart} Segue o combinado! Valeu!`;
   }, [debtor.formattedName, formData, calculation]);
 
   const cleanPhone = (debtor.phone || "").replace(/\D/g, "");
@@ -109,7 +115,7 @@ export function StepReviewAndConfirm({
               </h4>
               {debtor.formattedNickname && (
                 <p className="text-xs font-mono text-zinc-400 truncate">
-                  Conhecido como: "{debtor.formattedNickname}"
+                  Conhecido como: &ldquo;{debtor.formattedNickname}&rdquo;
                 </p>
               )}
               <p className="text-[11px] font-mono text-zinc-500 truncate">
@@ -193,6 +199,40 @@ export function StepReviewAndConfirm({
         </div>
       </div>
 
+      {/* 2.5 Cláusulas e Gatilho de Quebra Configurados (se houver) */}
+      {(formData.notes.trim().length > 0 || formData.max_late_installments !== null) && (
+        <div className="rounded-2xl border border-amber-500/30 bg-card p-4 sm:p-5 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/50">
+            <div className="flex items-center gap-2">
+              <FaScaleBalanced className="size-4 text-amber-400 shrink-0" />
+              <h4 className="font-heading text-sm font-bold text-white">
+                Cláusulas e Gatilho de Quebra do Acordo
+              </h4>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {formData.max_late_installments !== null && (
+                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold">
+                  Quebra com {formData.max_late_installments}{" "}
+                  {formData.max_late_installments === 1 ? "parcela vencida" : "parcelas vencidas"}
+                </span>
+              )}
+              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
+                {formData.show_notes_on_invoice
+                  ? "Visível na Fatura da Presa"
+                  : "Apenas Controle Interno"}
+              </span>
+            </div>
+          </div>
+
+          {formData.notes.trim().length > 0 && (
+            <p className="text-xs font-mono text-zinc-300 leading-relaxed whitespace-pre-line">
+              {formData.notes.trim()}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* 3. Termo do Acordo & Envio do WhatsApp */}
       <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-3">
         <div className="flex items-center gap-2 text-zinc-300">
@@ -207,7 +247,7 @@ export function StepReviewAndConfirm({
         </p>
 
         <div className="bg-background/80 border border-border rounded-xl p-3 text-xs font-mono text-zinc-300 italic">
-          "{whatsAppMessage}"
+          &ldquo;{whatsAppMessage}&rdquo;
         </div>
 
         <div className="flex items-center gap-2 pt-1">
@@ -260,7 +300,7 @@ export function StepReviewAndConfirm({
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="size-4 animate-spin" />
+              <FaSpinner className="size-4 animate-spin" />
               <span>Registrando Acordo...</span>
             </>
           ) : (

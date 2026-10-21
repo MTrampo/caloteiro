@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { getUserLoggedApi } from '@/server/account/service/auth.api';
 import {
   createDebtorSchema,
@@ -121,6 +122,10 @@ export async function createDebtorAction(
       return { success: false, error: res.message || 'Falha ao cadastrar devedor.' };
     }
 
+    revalidatePath('/painel/devedores');
+    revalidatePath('/painel/dividas/nova');
+    revalidatePath('/painel');
+
     return { success: true, data: presentDebtorItem(res.data) };
   } catch (error) {
     console.error('[createDebtorAction] Erro inesperado:', error);
@@ -169,6 +174,9 @@ export async function updateDebtorAction(
       return { success: false, error: res.message || 'Falha ao atualizar devedor.' };
     }
 
+    revalidatePath('/painel/devedores');
+    revalidatePath('/painel');
+
     return { success: true, data: presentDebtorItem(res.data) };
   } catch (error) {
     console.error('[updateDebtorAction] Erro inesperado:', error);
@@ -194,6 +202,9 @@ export async function deleteDebtorAction(
     if (res.error) {
       return { success: false, error: res.message || 'Falha ao excluir devedor.' };
     }
+
+    revalidatePath('/painel/devedores');
+    revalidatePath('/painel');
 
     return { success: true };
   } catch (error) {

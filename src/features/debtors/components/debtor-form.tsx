@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useForm, Controller } from "react-hook-form"
+import { useForm, Controller, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -35,8 +35,8 @@ import {
   FaKey,
   FaArrowLeft,
   FaCheck,
+  FaSpinner,
 } from "react-icons/fa6"
-import { Loader2 } from "lucide-react"
 import {
   maskPhone,
   maskCpf,
@@ -61,14 +61,13 @@ export function DebtorForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const returnTo = searchParams.get("returnTo")
-  const [isPending, startTransition] = React.useTransition()
+  const [isPending, setIsPending] = React.useState(false)
 
   const {
     register,
     control,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors },
   } = useForm<DebtorFormInputs>({
     resolver: zodResolver(createDebtorSchema),
@@ -85,43 +84,45 @@ export function DebtorForm() {
     },
   })
 
-  const currentPixKeyType = watch("pix_key_type")
+  const currentPixKeyType = useWatch({ control, name: "pix_key_type" })
 
-  const onSubmit = (data: DebtorFormInputs) => {
-    startTransition(async () => {
-      try {
-        const payload: DebtorFormInputs = {
-          ...data,
-          name: formatProperName(data.name),
-          nickname: data.nickname ? formatProperName(data.nickname) : data.nickname,
-          phone: unmaskDigits(data.phone),
-          document: data.document ? unmaskDigits(data.document) : data.document,
-        }
-
-        const res = await createDebtorAction(payload)
-        if (res.success && res.data) {
-          toast.success("Devedor cadastrado com sucesso!")
-          if (returnTo) {
-            router.push(`${returnTo}?debtorId=${res.data.id}`)
-          } else {
-            router.push("/painel/devedores")
-          }
-          router.refresh()
-        } else if (res.code === "LIMIT_REACHED" || res.isLimitReached) {
-          toast.warning(res.error || "Sua gruta atingiu a capacidade máxima de presas!", {
-            action: {
-              label: "Fazer Upgrade",
-              onClick: () => router.push("/painel/conta/assinatura"),
-            },
-            duration: 8000,
-          })
-        } else {
-          toast.error(res.error || "Não foi possível cadastrar o devedor.")
-        }
-      } catch {
-        toast.error("Erro inesperado ao cadastrar devedor.")
+  const onSubmit = async (data: DebtorFormInputs) => {
+    setIsPending(true)
+    try {
+      const payload: DebtorFormInputs = {
+        ...data,
+        name: formatProperName(data.name),
+        nickname: data.nickname ? formatProperName(data.nickname) : data.nickname,
+        phone: unmaskDigits(data.phone),
+        document: data.document ? unmaskDigits(data.document) : data.document,
       }
-    })
+
+      const res = await createDebtorAction(payload)
+      if (res.success && res.data) {
+        toast.success("Devedor cadastrado com sucesso!")
+        const targetUrl = returnTo
+          ? `${returnTo}?debtorId=${res.data.id}`
+          : "/painel/devedores"
+        router.push(targetUrl)
+        return
+      }
+
+      if (res.code === "LIMIT_REACHED" || res.isLimitReached) {
+        toast.warning(res.error || "Sua gruta atingiu a capacidade máxima de presas!", {
+          action: {
+            label: "Fazer Upgrade",
+            onClick: () => router.push("/painel/assinatura"),
+          },
+          duration: 8000,
+        })
+      } else {
+        toast.error(res.error || "Não foi possível cadastrar o devedor.")
+      }
+      setIsPending(false)
+    } catch {
+      toast.error("Erro inesperado ao cadastrar devedor.")
+      setIsPending(false)
+    }
   }
 
   // Opções do enum para o select
@@ -464,7 +465,7 @@ export function DebtorForm() {
         >
           {isPending ? (
             <>
-              <Loader2 className="size-4 animate-spin" />
+              <FaSpinner className="size-4 animate-spin" />
               <span>Cadastrando Devedor...</span>
             </>
           ) : (

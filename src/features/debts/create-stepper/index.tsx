@@ -69,6 +69,8 @@ export function CreateDebtStepperFeature({
     first_due_date: defaultDueDateStr,
     payment_method: "pix",
     notes: "",
+    max_late_installments: null,
+    show_notes_on_invoice: false,
   });
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -78,7 +80,7 @@ export function CreateDebtStepperFeature({
     if (preselectedDebtorId && selectedDebtor && stepper.current.id === "target") {
       stepper.next();
     }
-  }, [preselectedDebtorId, selectedDebtor]);
+  }, [preselectedDebtorId, selectedDebtor, stepper]);
 
   const handleUpdateFormData = (updated: Partial<DebtTermsFormData>) => {
     setFormData((prev) => ({ ...prev, ...updated }));
@@ -120,6 +122,8 @@ export function CreateDebtStepperFeature({
         interest_rate: formData.interest_rate,
         total_amount: totalAmount,
         notes: formData.notes.trim() || null,
+        max_late_installments: formData.max_late_installments,
+        show_notes_on_invoice: formData.show_notes_on_invoice,
       });
 
       if (!res.success || !res.data) {

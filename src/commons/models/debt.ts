@@ -15,6 +15,7 @@ export type DebtCategory =
   | "emergency"
   | "service"
   | "formal_agreement"
+  | "judicial_agreement"
   | "other";
 
 export const DEBT_CATEGORY_LABELS: Record<DebtCategory, string> = {
@@ -27,8 +28,11 @@ export const DEBT_CATEGORY_LABELS: Record<DebtCategory, string> = {
   emergency: "Socorro / Emergência",
   service: "Prestação de Serviço",
   formal_agreement: "Acordo / Negociação",
+  judicial_agreement: "Acordo Judicial / Processo",
   other: "Outro",
 };
+
+export type DebtBreachStatus = "none" | "warning" | "breached";
 
 export type InterestType = "none" | "fixed" | "total_percentage" | "monthly_percentage";
 
@@ -54,7 +58,7 @@ export const DEBT_STATUS_METADATA: Record<
     badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   },
   defaulted: {
-    label: "Calote Confirmado",
+    label: "Quebra de Acordo / Calote",
     badgeClass: "bg-rose-500/10 text-rose-400 border-rose-500/20",
   },
 };
@@ -118,6 +122,22 @@ export interface CreateDebtPayload {
   interest_rate?: number;
   total_amount?: number;
   notes?: string | null;
+  max_late_installments?: number | null;
+  show_notes_on_invoice?: boolean;
+}
+
+export interface UpdateDebtAgreementRulesPayload {
+  debtId: string;
+  userId: string;
+  notes: string | null;
+  maxLateInstallments: number | null;
+  showNotesOnInvoice: boolean;
+}
+
+export interface UpdateDebtBreachStatusPayload {
+  debtId: string;
+  userId: string;
+  isBreached: boolean;
 }
 
 export interface RegisterPaymentPayload {
@@ -175,6 +195,9 @@ export interface DebtPaymentFormatted extends DebtPaymentRow {
 export interface DebtDetailsFormatted extends DebtRow {
   publicLinkEnabled: boolean;
   publicAccessCode: string;
+  maxLateInstallments: number | null;
+  showNotesOnInvoice: boolean;
+  breachStatus: DebtBreachStatus;
   formattedOriginalAmount: string;
   formattedTotalAmount: string;
   formattedPaidAmount: string;
@@ -265,6 +288,10 @@ export interface PublicDebtInvoiceViewData {
   paidInstallmentsCount: number;
   totalInstallmentsCount: number;
   remainingInstallmentsCount: number;
+  lateInstallmentsCount: number;
+  maxLateInstallments: number | null;
+  breachStatus: DebtBreachStatus;
+  publicNotes: string | null;
   nextInstallment: PublicInstallmentItem | null;
   installments: PublicInstallmentItem[];
   payments: PublicDebtPaymentItem[];

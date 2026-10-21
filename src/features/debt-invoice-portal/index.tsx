@@ -22,6 +22,9 @@ import {
   FaArrowTrendUp,
   FaArrowRight,
   FaMoneyBillWave,
+  FaScaleBalanced,
+  FaTriangleExclamation,
+  FaGavel,
 } from "react-icons/fa6";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
@@ -106,7 +109,7 @@ export function DebtInvoicePortalFeature({
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         {/* Cabeçalho Padronizado da Plataforma (idêntico a /assinatura e /painel) */}
         <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center border-b border-border bg-background/90 backdrop-blur-md">
-          <div className="flex w-full items-center justify-between px-4 sm:px-6 max-w-6xl mx-auto">
+          <div className="flex w-full items-center justify-between mx-auto px-6 max-w-5xl md:max-w-7xl">
             <div className="select-none">
               <Logo size="md" showText />
             </div>
@@ -119,7 +122,7 @@ export function DebtInvoicePortalFeature({
         </header>
 
         {/* Card Central de Desbloqueio (Padronizado com SignInFlow / Auth Forms) */}
-        <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
+        <main className="flex-1 w-full mx-auto px-6 py-12 sm:py-24 max-w-5xl md:max-w-7xl flex items-center justify-center">
           <div className="w-full max-w-md space-y-6">
             <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-2xl space-y-6">
               {/* Cabeçalho do Card (Sem ícones flutuantes no topo — Regra #7) */}
@@ -198,7 +201,7 @@ export function DebtInvoicePortalFeature({
         </main>
 
         <footer className="border-t border-border/40 py-6 text-center text-xs font-mono text-zinc-500">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="mx-auto px-6 max-w-5xl md:max-w-7xl">
             Caloteiro • O combinado não sai caro: transparência e parceria nas contas.
           </div>
         </footer>
@@ -213,7 +216,7 @@ export function DebtInvoicePortalFeature({
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Cabeçalho Padronizado da Plataforma */}
       <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center border-b border-border bg-background/90 backdrop-blur-md">
-        <div className="flex w-full items-center justify-between px-4 sm:px-6 max-w-6xl mx-auto">
+        <div className="flex w-full items-center justify-between mx-auto px-6 max-w-5xl md:max-w-7xl">
           <div className="select-none">
             <Logo size="md" showText />
           </div>
@@ -232,7 +235,7 @@ export function DebtInvoicePortalFeature({
         </div>
       </header>
 
-      <main className="flex-1 p-4 sm:p-6 space-y-6 w-full max-w-6xl mx-auto">
+      <main className="flex-1 w-full mx-auto px-6 py-12 sm:py-24 max-w-5xl md:max-w-7xl space-y-6">
         {/* Cabeçalho Solto da Fatura (Idêntico a /painel/dividas/[id] — Regra #7) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
           <div className="space-y-1">
@@ -255,6 +258,61 @@ export function DebtInvoicePortalFeature({
             </p>
           </div>
         </div>
+
+        {/* Alerta de Limite de Tolerância / Quebra de Acordo na Fatura Pública (quando configurado) */}
+        {!invoice.isFullySettled &&
+          (invoice.breachStatus === "breached" ||
+            invoice.breachStatus === "warning") && (
+            <div
+              className={`rounded-2xl border p-4 sm:p-5 flex items-start gap-3 ${
+                invoice.breachStatus === "breached"
+                  ? "border-rose-500/40 bg-rose-950/20"
+                  : "border-amber-500/40 bg-amber-950/20"
+              }`}
+            >
+              <div
+                className={`size-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 border ${
+                  invoice.breachStatus === "breached"
+                    ? "bg-rose-500/15 border-rose-500/30 text-rose-400"
+                    : "bg-amber-500/15 border-amber-500/30 text-amber-400"
+                }`}
+              >
+                {invoice.breachStatus === "breached" ? (
+                  <FaGavel className="size-4" />
+                ) : (
+                  <FaTriangleExclamation className="size-4" />
+                )}
+              </div>
+              <div className="space-y-1 text-xs font-mono">
+                <h3
+                  className={`font-heading text-sm sm:text-base font-bold ${
+                    invoice.breachStatus === "breached"
+                      ? "text-rose-400"
+                      : "text-amber-400"
+                  }`}
+                >
+                  {invoice.breachStatus === "breached"
+                    ? "Atenção: Limite de Tolerância do Acordo Atingido"
+                    : "Aviso Importante: Acordo Próximo do Limite de Tolerância"}
+                </h3>
+                <p className="text-zinc-300 leading-relaxed">
+                  {invoice.breachStatus === "breached"
+                    ? invoice.maxLateInstallments !== null
+                      ? `Este acordo possui limite máximo de ${invoice.maxLateInstallments} ${
+                          invoice.maxLateInstallments === 1
+                            ? "parcela em atraso"
+                            : "parcelas em atraso"
+                        } e consta atualmente com ${invoice.lateInstallmentsCount} ${
+                          invoice.lateInstallmentsCount === 1
+                            ? "parcela vencida"
+                            : "parcelas vencidas"
+                        }. Regularize via Pix ou entre em contato com ${invoice.creditorDisplayName} imediatamente.`
+                      : `Este acordo encontra-se em situação de descumprimento. Entre em contato com ${invoice.creditorDisplayName} para regularização.`
+                    : `Este acordo permite no máximo ${invoice.maxLateInstallments} parcelas em atraso e já existem ${invoice.lateInstallmentsCount} vencidas. Evite a quebra do acordo realizando o pagamento da parcela pendente.`}
+                </p>
+              </div>
+            </div>
+          )}
 
         {/* 4 KPIs de Resumo Transparente (Idênticos ao padrão visual de DebtKpis) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -519,6 +577,42 @@ export function DebtInvoicePortalFeature({
           </div>
         </div>
 
+        {/* Card de Termos e Condições do Acordo (quando habilitado pelo Tubarão) */}
+        {(invoice.publicNotes || invoice.maxLateInstallments !== null) && (
+          <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-zinc-800 text-amber-400">
+                  <FaScaleBalanced className="size-4" />
+                </div>
+                <div>
+                  <h3 className="font-heading text-base font-bold text-white">
+                    Termos e Condições deste Acordo
+                  </h3>
+                  <p className="text-xs font-mono text-zinc-400">
+                    Regras estabelecidas e registradas para o cumprimento do acordo.
+                  </p>
+                </div>
+              </div>
+
+              {invoice.maxLateInstallments !== null && (
+                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold">
+                  Limite de tolerância: {invoice.maxLateInstallments}{" "}
+                  {invoice.maxLateInstallments === 1
+                    ? "parcela em atraso"
+                    : "parcelas em atraso"}
+                </span>
+              )}
+            </div>
+
+            {invoice.publicNotes && (
+              <div className="rounded-xl bg-zinc-950/70 border border-zinc-800 p-4 text-xs font-mono text-zinc-200 leading-relaxed whitespace-pre-line">
+                {invoice.publicNotes}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Abas: Cronograma Completo de Parcelas e Recibos de Pagamentos Registrados */}
         <Tabs defaultValue="installments" className="w-full space-y-4">
           <TabsList>
@@ -674,7 +768,7 @@ export function DebtInvoicePortalFeature({
       </main>
 
       <footer className="border-t border-border/40 py-6 text-center text-xs font-mono text-zinc-500">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="mx-auto px-6 max-w-5xl md:max-w-7xl">
           Caloteiro • O combinado não sai caro: transparência e parceria nas contas.
         </div>
       </footer>

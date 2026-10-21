@@ -12,6 +12,7 @@ import { PaymentsHistory } from "./payments-history";
 import { PaymentModal } from "./payment-modal";
 import { ExcuseModal } from "./excuse-modal";
 import { DebtPortalMenu } from "./debt-portal-menu";
+import { AgreementRulesCard } from "./agreement-rules-card";
 import { FaArrowLeft, FaHandHoldingDollar, FaCalendarDays, FaReceipt } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -128,6 +129,13 @@ export function DebtDetailsFeature({
 
       {/* 4 Cards de Métricas e KPIs Financeiros */}
       <DebtKpis debt={debt} />
+
+      {/* Alerta de Quebra de Acordo + Cláusulas e Gatilho de Tolerância */}
+      <AgreementRulesCard
+        debt={debt}
+        isFreePlan={permissions.isFreePlan}
+        onUpdated={handleDataRefresh}
+      />
 
       {/* Resumo da Presa Marcada */}
       <DebtorSummaryCard debtor={debt.debtor} />

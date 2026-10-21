@@ -12,6 +12,7 @@ import type {
   DebtExcuseRow,
   DebtExcuseInsert,
   CreateDebtPayload,
+  UpdateDebtAgreementRulesPayload,
   DebtStatus,
 } from "@/commons/models/debt";
 
@@ -40,6 +41,8 @@ export const createDebtSupabase = async (
       interest_rate: payload.interest_rate || 0,
       total_amount: payload.total_amount || payload.original_amount,
       notes: payload.notes || null,
+      max_late_installments: payload.max_late_installments ?? null,
+      show_notes_on_invoice: payload.show_notes_on_invoice ?? false,
       status: "pending",
       public_link_enabled: payload.public_link_enabled ?? false,
       ...(payload.public_access_code ? { public_access_code: payload.public_access_code } : {}),
@@ -363,6 +366,35 @@ export const updateDebtPortalConfigSupabase = async (payload: {
   if (error || !data) {
     console.error("[updateDebtPortalConfigSupabase] Erro ao atualizar link da fatura:", error);
     return { data: null, error: error?.message || "Erro ao atualizar configuração da fatura." };
+  }
+
+  return { data: data as DebtRow, error: null };
+};
+
+/**
+ * Atualiza as cláusulas/regras do acordo (notes), o gatilho de tolerância (max_late_installments) e visibilidade na fatura
+ */
+export const updateDebtAgreementRulesSupabase = async (
+  payload: UpdateDebtAgreementRulesPayload
+): Promise<{ data: DebtRow | null; error: string | null }> => {
+  const supabase = await serverSupabase();
+
+  const { data, error } = await supabase
+    .from("debts")
+    .update({
+      notes: payload.notes,
+      max_late_installments: payload.maxLateInstallments,
+      show_notes_on_invoice: payload.showNotesOnInvoice,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", payload.debtId)
+    .eq("user_id", payload.userId)
+    .select("*")
+    .single();
+
+  if (error || !data) {
+    console.error("[updateDebtAgreementRulesSupabase] Erro ao atualizar regras do acordo:", error);
+    return { data: null, error: error?.message || "Erro ao salvar regras do acordo." };
   }
 
   return { data: data as DebtRow, error: null };

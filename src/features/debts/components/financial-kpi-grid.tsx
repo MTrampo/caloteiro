@@ -105,11 +105,21 @@ export function FinancialKpiGrid({ kpis }: FinancialKpiGridProps) {
           <CardFooter className="flex-col items-start gap-1 p-3 px-3.5 sm:p-3.5 sm:px-4 bg-zinc-950/40 border-t border-border mt-1">
             <div className="text-[11px] sm:text-xs font-semibold text-zinc-400 font-mono flex items-center justify-between w-full">
               <span>{data.footnote}</span>
-              <span className={cn(
-                "font-mono font-bold text-[11px]",
-                data.changePercent > 0 ? "text-emerald-400" : "text-zinc-500"
-              )}>
-                {data.changePercent > 0 ? `+${data.changePercent}%` : `${data.changePercent}%`}
+              <span
+                className={cn(
+                  "font-mono font-bold text-[11px]",
+                  data.changePercent === 0
+                    ? "text-zinc-500"
+                    : data.isGainOrLoss === "positive"
+                    ? "text-emerald-400"
+                    : data.isGainOrLoss === "negative"
+                    ? "text-rose-400"
+                    : "text-zinc-300"
+                )}
+              >
+                {data.isGainOrLoss === "positive" && data.changePercent > 0
+                  ? `+${data.changePercent}%`
+                  : `${data.changePercent}%`}
               </span>
             </div>
           </CardFooter>

@@ -262,13 +262,198 @@ describe("financial.api - Inteligência Financeira do Tubarão", () => {
     expect(yearResult.efficiency.series).toHaveLength(12);
   });
 
-  it("REGRESSÃO: formatRelativeDueDate e parseDateOnly devem interpretar '2026-11-05' sem recuo de fuso e exibir 05/11", () => {
+  it("REGRESSÃO: formatRelativeDueDate e parseDateOnly devem interpretar '2026-11-05' sem recuo de fuso e sem repetir a data entre parênteses", () => {
     const parsed = parseDateOnly("2026-11-05");
     expect(parsed.getFullYear()).toBe(2026);
     expect(parsed.getMonth()).toBe(10); // Novembro
     expect(parsed.getDate()).toBe(5);
 
     const relative = formatRelativeDueDate("2026-11-05");
-    expect(relative.detail).toContain("05/11");
+    expect(relative.formatted).toBe("05/11/2026");
+    expect(relative.detail).not.toContain("(05/11)");
+  });
+
+  it("REGRESSÃO: deve priorizar a data de vencimento mais próxima (ex: 30/10 antes de 05/11) mesmo que o valor seja menor", async () => {
+    const earlierDate = new Date();
+    earlierDate.setDate(earlierDate.getDate() + 4); // Ex: 30/10
+
+    const laterDate = new Date();
+    laterDate.setDate(laterDate.getDate() + 10); // Ex: 05/11
+
+    const mockDebts: FinancialDebtWithRelationsRow[] = [
+      {
+        id: "debt-karen-later",
+        user_id: userId,
+        debtor_id: "debtor-karen",
+        title: "Empréstimo Pessoal",
+        total_amount: 4781.38,
+        original_amount: 4000,
+        installments_count: 9,
+        interest_type: "none",
+        interest_rate: 0,
+        status: "pending",
+        loan_date: "2026-05-05",
+        first_due_date: laterDate.toISOString().split("T")[0],
+        category: "other",
+        payment_method: "pix",
+        settled_at: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        debtor: createMockDebtor({
+          id: "debtor-karen",
+          name: "Karen Cristina",
+        }),
+        installments: [
+          createMockInstallment({
+            id: "inst-karen-later",
+            debt_id: "debt-karen-later",
+            debtor_id: "debtor-karen",
+            nominal_amount: 531.26,
+            paid_amount: 0,
+            due_date: laterDate.toISOString().split("T")[0],
+            status: "pending",
+          }),
+        ],
+      },
+      {
+        id: "debt-cleide-earlier",
+        user_id: userId,
+        debtor_id: "debtor-cleide",
+        title: "Acordo Judicial",
+        total_amount: 6900,
+        original_amount: 6900,
+        installments_count: 23,
+        interest_type: "none",
+        interest_rate: 0,
+        status: "pending",
+        loan_date: "2026-06-30",
+        first_due_date: earlierDate.toISOString().split("T")[0],
+        category: "judicial_agreement",
+        payment_method: "pix",
+        settled_at: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        debtor: createMockDebtor({
+          id: "debtor-cleide",
+          name: "Cleide Ferreira Silva",
+        }),
+        installments: [
+          createMockInstallment({
+            id: "inst-cleide-earlier",
+            debt_id: "debt-cleide-earlier",
+            debtor_id: "debtor-cleide",
+            installment_number: 5,
+            nominal_amount: 300,
+            paid_amount: 0,
+            due_date: earlierDate.toISOString().split("T")[0],
+            status: "pending",
+          }),
+        ],
+      },
+    ];
+
+    vi.mocked(financialSupabase.getFinancialDebtsWithRelationsSupabase).mockResolvedValue(mockDebts);
+    vi.mocked(financialSupabase.getFinancialPaymentsSupabase).mockResolvedValue([]);
+    vi.mocked(financialSupabase.getCreditorPixKeySupabase).mockResolvedValue("tubarao@pix.com");
+
+    const result = await getFinancialAnalyticsApi(userId, "month");
+
+    expect(result.priorityDebtor).not.toBeNull();
+    expect(result.priorityDebtor?.debtorName).toBe("Cleide Ferreira Silva");
+    expect(result.priorityDebtor?.remainingAmount).toBe(300);
+    expect(result.priorityDebtor?.debtId).toBe("debt-cleide-earlier");
+  });
+
+  it("REGRESSÃO: deve priorizar Karen (saldo restante R$ 531,26) sobre Cleiton (saldo restante R$ 170,68 após amortização parcial de R$ 725,65) no mesmo vencimento", async () => {
+    const mockDebts: FinancialDebtWithRelationsRow[] = [
+      {
+        id: "debt-karen",
+        user_id: userId,
+        debtor_id: "debtor-karen",
+        title: "Empréstimo Pessoal",
+        total_amount: 4781.38,
+        original_amount: 4000,
+        installments_count: 9,
+        interest_type: "fixed",
+        interest_rate: 19.53,
+        status: "active",
+        loan_date: "2026-05-05",
+        first_due_date: "2026-06-05",
+        category: "other",
+        payment_method: "pix",
+        settled_at: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        debtor: createMockDebtor({
+          id: "debtor-karen",
+          name: "Karen Cristina",
+        }),
+        installments: [
+          createMockInstallment({
+            id: "inst-karen-6",
+            debt_id: "debt-karen",
+            debtor_id: "debtor-karen",
+            installment_number: 6,
+            nominal_amount: 531.26,
+            paid_amount: 0,
+            due_date: "2026-11-05",
+            status: "open",
+          }),
+        ],
+      },
+      {
+        id: "debt-cleiton",
+        user_id: userId,
+        debtor_id: "debtor-cleiton",
+        title: "Ajuda Familiar",
+        total_amount: 10756,
+        original_amount: 10000,
+        installments_count: 12,
+        interest_type: "fixed",
+        interest_rate: 7.56,
+        status: "active",
+        loan_date: "2026-03-13",
+        first_due_date: "2026-04-05",
+        category: "other",
+        payment_method: "pix",
+        settled_at: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        debtor: createMockDebtor({
+          id: "debtor-cleiton",
+          name: "Cleiton Lopes",
+        }),
+        installments: [
+          createMockInstallment({
+            id: "inst-cleiton-8",
+            debt_id: "debt-cleiton",
+            debtor_id: "debtor-cleiton",
+            installment_number: 8,
+            nominal_amount: 896.33,
+            paid_amount: 725.65,
+            due_date: "2026-11-05",
+            status: "open",
+          }),
+        ],
+      },
+    ];
+
+    vi.mocked(financialSupabase.getFinancialDebtsWithRelationsSupabase).mockResolvedValue(mockDebts);
+    vi.mocked(financialSupabase.getFinancialPaymentsSupabase).mockResolvedValue([]);
+    vi.mocked(financialSupabase.getCreditorPixKeySupabase).mockResolvedValue("tubarao@pix.com");
+
+    const result = await getFinancialAnalyticsApi(userId, "month");
+
+    expect(result.priorityDebtor).not.toBeNull();
+    expect(result.priorityDebtor?.debtorName).toBe("Karen Cristina");
+    expect(result.priorityDebtor?.remainingAmount).toBe(531.26);
+    expect(result.priorityDebtor?.debtId).toBe("debt-karen");
+
+    // Deve contabilizar os 2 acordos ativos com status 'pending' do banco (e não 'active')
+    expect(result.kpis.emAberto.footnote).toBe("2 acordos ativos na gruta");
   });
 });

@@ -101,6 +101,12 @@ export function PlanChangeManager({
                       <span>Link da Dívida para a Presa incluso</span>
                     </div>
                   )}
+                  {planPrice > 0 && (
+                    <div className="flex items-center gap-2">
+                      <FaCheck className="size-3 text-emerald-400 shrink-0" />
+                      <span>Cláusulas e alerta de quebra de acordo</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
