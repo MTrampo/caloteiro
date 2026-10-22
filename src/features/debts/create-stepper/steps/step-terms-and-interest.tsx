@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { DatePicker } from "@/components/ui/date-picker";
+import { ReceiptAttachmentField } from "@/components/forms/receipt-attachment-field";
 import { maskCurrency, parseCurrencyToNumber } from "@/commons/utils/masks";
 
 export interface DebtTermsFormData {
@@ -39,6 +40,7 @@ export interface DebtTermsFormData {
   notes: string;
   max_late_installments: number | null;
   show_notes_on_invoice: boolean;
+  loan_receipt_path?: string | null;
 }
 
 interface StepTermsAndInterestProps {
@@ -420,6 +422,18 @@ export function StepTermsAndInterest({
           <p className="text-[11px] leading-relaxed">
             <strong className="text-zinc-200">Aviso do Tanque:</strong> Os demais vencimentos seguirão rigorosamente o mesmo dia do mês subsequente (ex: se escolher dia 15, as próximas parcelas vencerão dia 15 de cada mês).
           </p>
+        </div>
+
+        {/* Anexo de Comprovante de Empréstimo / Transferência Inicial */}
+        <div className="pt-2 border-t border-zinc-800/60">
+          <ReceiptAttachmentField
+            label="Comprovante de Transferência do Empréstimo (Opcional)"
+            description="Guarde a prova do Pix/transferência enviada para o devedor."
+            folder="loan"
+            isLocked={permissions.isFreePlan}
+            value={formData.loan_receipt_path || null}
+            onChange={(path) => onChange({ loan_receipt_path: path })}
+          />
         </div>
       </div>
 

@@ -6,6 +6,8 @@ import {
   FaHandHoldingDollar,
   FaCommentDots,
   FaCalendarDays,
+  FaEye,
+  FaPaperclip,
 } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 
@@ -14,6 +16,8 @@ interface InstallmentCardProps {
   totalInstallments: number;
   onPayInstallment: (installment: InstallmentFormatted) => void;
   onAddExcuse: (installment: InstallmentFormatted) => void;
+  onViewReceipt?: (url: string) => void;
+  onAttachReceipt?: (installment: InstallmentFormatted) => void;
 }
 
 export function InstallmentCard({
@@ -21,6 +25,8 @@ export function InstallmentCard({
   totalInstallments,
   onPayInstallment,
   onAddExcuse,
+  onViewReceipt,
+  onAttachReceipt,
 }: InstallmentCardProps) {
   const isPaid = installment.status === "paid";
   const isLate = installment.isLate;
@@ -75,7 +81,7 @@ export function InstallmentCard({
         </div>
 
         {/* Botões de Ação da Parcela */}
-        {!isPaid && (
+        {!isPaid ? (
           <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
             <Button
               type="button"
@@ -96,6 +102,32 @@ export function InstallmentCard({
               <FaHandHoldingDollar className="size-3" />
               <span>Baixar Parcela</span>
             </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            {installment.receiptUrl ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onViewReceipt?.(installment.receiptUrl!)}
+                className="border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 cursor-pointer"
+              >
+                <FaEye className="size-3" />
+                <span>Ver Comprovante</span>
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onAttachReceipt?.(installment)}
+                className="border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 cursor-pointer"
+              >
+                <FaPaperclip className="size-3 text-zinc-400" />
+                <span>Anexar Comprovante</span>
+              </Button>
+            )}
           </div>
         )}
       </div>

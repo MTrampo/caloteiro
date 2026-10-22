@@ -124,21 +124,21 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
         </span>
       </div>
 
-      {/* 8. Arquivo de Provas (Anexo de Recibos) - Exclusivo Tubarão Cabeça Chato */}
+      {/* 8. Arquivo de Provas (Anexo de Comprovantes) */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck
           className={`size-3 shrink-0 ${
-            config?.can_attach_receipts ? "text-emerald-400" : "text-zinc-600"
+            !isFree ? "text-emerald-400" : "text-zinc-600"
           }`}
         />
         <span
           className={
-            config?.can_attach_receipts
-              ? "text-white font-bold"
+            !isFree
+              ? "text-zinc-300"
               : "text-zinc-500 line-through"
           }
         >
-          Arquivo de Provas (Anexo de Recibos) {config?.can_attach_receipts && <span className="text-[10px] text-amber-400 font-mono font-normal">(Em breve)</span>}
+          Arquivo de Provas (Anexo de Comprovantes Pix)
         </span>
       </div>
     </div>

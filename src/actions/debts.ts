@@ -10,6 +10,7 @@ import {
   updateDebtPortalConfigSchema,
   updateDebtAgreementRulesSchema,
   updateDebtBreachStatusSchema,
+  attachInstallmentReceiptSchema,
   verifyDebtInvoiceAccessSchema,
 } from '@/commons/validations/debt';
 import {
@@ -20,8 +21,10 @@ import {
   updateDebtPortalConfigApi,
   updateDebtAgreementRulesApi,
   updateDebtBreachStatusApi,
+  attachInstallmentReceiptApi,
   getPublicDebtInvoiceDataApi,
 } from '@/server/debts/service/debt.api';
+import { uploadDebtReceiptApi } from '@/server/debts/service/receipt-upload.api';
 import {
   DEBT_INVOICE_COOKIE_PREFIX,
   DEBT_INVOICE_COOKIE_MAX_AGE_SECONDS,
@@ -101,6 +104,61 @@ export async function createDebtAction(
   } catch (error) {
     console.error('[createDebtAction] Erro inesperado:', error);
     return { success: false, error: 'Ocorreu um erro ao criar a dívida.' };
+  }
+}
+
+/**
+ * Upload e compressão automática de comprovante (WebP) para o Storage seguro
+ */
+export async function uploadDebtReceiptAction(
+  formData: FormData
+): Promise<{
+  success: boolean;
+  data?: { receiptPath: string; compressedSize: number };
+  message?: string;
+  error?: string;
+}> {
+  try {
+    const userRes = await getUserLoggedApi();
+    const userId = userRes.data?.user?.id;
+    if (!userId) {
+      return { success: false, error: 'Acesso não autorizado. Faça login novamente.' };
+    }
+
+    const file = formData.get('file');
+    const folder = (formData.get('folder') as string) === 'loan' ? 'loan' : 'payment';
+
+    if (!file || !(file instanceof File)) {
+      return { success: false, error: 'Nenhum arquivo de imagem foi enviado.' };
+    }
+
+    const result = await uploadDebtReceiptApi({
+      userId,
+      folder,
+      file,
+    });
+
+    if (!result.data) {
+      return {
+        success: false,
+        error: result.message || 'Falha ao processar o comprovante.',
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        receiptPath: result.data.receiptPath,
+        compressedSize: result.data.compressedSize,
+      },
+      message: result.message,
+    };
+  } catch (error) {
+    console.error('[uploadDebtReceiptAction] Erro inesperado:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ocorreu um erro ao fazer upload do comprovante.',
+    };
   }
 }
 
@@ -453,6 +511,51 @@ export async function updateDebtBreachStatusAction(
   } catch (error) {
     console.error('[updateDebtBreachStatusAction] Erro inesperado:', error);
     return { success: false, error: 'Ocorreu um erro ao atualizar o status de quebra do acordo.' };
+  }
+}
+
+/**
+ * Anexa ou substitui o comprovante de uma parcela quitada
+ */
+export async function attachInstallmentReceiptAction(
+  rawData: unknown
+): Promise<{ success: boolean; data?: { installmentId: string }; message?: string; error?: string }> {
+  try {
+    const userRes = await getUserLoggedApi();
+    const userId = userRes.data?.user?.id;
+    if (!userId) {
+      return { success: false, error: 'Acesso não autorizado. Faça login novamente.' };
+    }
+
+    const validation = attachInstallmentReceiptSchema.safeParse(rawData);
+    if (!validation.success) {
+      return {
+        success: false,
+        error: validation.error.issues[0]?.message || 'Dados inválidos do comprovante da parcela.',
+      };
+    }
+
+    const result = await attachInstallmentReceiptApi(userId, validation.data);
+    if (!result.data) {
+      return {
+        success: false,
+        error: result.message || 'Não foi possível anexar o comprovante à parcela.',
+      };
+    }
+
+    revalidatePath(`/painel/dividas/${validation.data.debtId}`);
+    revalidatePath('/painel/dividas');
+    revalidatePath('/painel');
+    revalidatePath(`/fatura/${validation.data.debtId}`);
+
+    return {
+      success: true,
+      data: { installmentId: result.data.installmentId },
+      message: result.message,
+    };
+  } catch (error) {
+    console.error('[attachInstallmentReceiptAction] Erro inesperado:', error);
+    return { success: false, error: 'Ocorreu um erro ao anexar o comprovante à parcela.' };
   }
 }
 

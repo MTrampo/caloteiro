@@ -8,14 +8,20 @@ import type { UserPermissions } from "@/commons/models/subscription";
 import { DebtKpis } from "./debt-kpis";
 import { DebtorSummaryCard } from "./debtor-summary-card";
 import { InstallmentsList } from "./installments-list";
-import { PaymentsHistory } from "./payments-history";
 import { PaymentModal } from "./payment-modal";
 import { ExcuseModal } from "./excuse-modal";
 import { DebtPortalMenu } from "./debt-portal-menu";
 import { AgreementRulesCard } from "./agreement-rules-card";
-import { FaArrowLeft, FaHandHoldingDollar, FaCalendarDays, FaReceipt } from "react-icons/fa6";
+import { ReceiptViewerDialog } from "./receipt-viewer-dialog";
+import { AttachInstallmentReceiptModal } from "./attach-installment-receipt-modal";
+import {
+  FaArrowLeft,
+  FaHandHoldingDollar,
+  FaCalendarDays,
+  FaFileInvoiceDollar,
+  FaEye,
+} from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface DebtDetailsFeatureProps {
   initialDebt: DebtDetailsFormatted;
@@ -45,6 +51,10 @@ export function DebtDetailsFeature({
     React.useState<InstallmentFormatted | null>(null);
   const [selectedInstallmentForExcuse, setSelectedInstallmentForExcuse] =
     React.useState<InstallmentFormatted | null>(null);
+  const [selectedInstallmentForReceipt, setSelectedInstallmentForReceipt] =
+    React.useState<InstallmentFormatted | null>(null);
+  const [isAttachReceiptModalOpen, setIsAttachReceiptModalOpen] = React.useState(false);
+  const [viewerImageUrl, setViewerImageUrl] = React.useState<string | null>(null);
 
   const handleOpenGeneralPayment = () => {
     setSelectedInstallmentForPayment(null);
@@ -130,6 +140,39 @@ export function DebtDetailsFeature({
       {/* 4 Cards de Métricas e KPIs Financeiros */}
       <DebtKpis debt={debt} />
 
+      {/* Comprovante do Empréstimo Inicial (se houver) */}
+      {debt.loanReceiptUrl && (
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="size-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
+              <FaFileInvoiceDollar className="size-4" />
+            </div>
+            <div>
+              <h4 className="font-heading text-sm font-bold text-white flex items-center gap-2">
+                <span>Comprovante de Transferência Inicial</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
+                  Prova da Gruta
+                </span>
+              </h4>
+              <p className="text-xs font-mono text-zinc-400 mt-0.5">
+                Comprovante do valor enviado ao devedor na formalização do empréstimo.
+              </p>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setViewerImageUrl(debt.loanReceiptUrl)}
+            className="text-xs font-mono text-zinc-300 hover:text-white border-zinc-800"
+          >
+            <FaEye className="size-3 text-emerald-400" />
+            <span>Ver Comprovante</span>
+          </Button>
+        </div>
+      )}
+
       {/* Alerta de Quebra de Acordo + Cláusulas e Gatilho de Tolerância */}
       <AgreementRulesCard
         debt={debt}
@@ -140,48 +183,17 @@ export function DebtDetailsFeature({
       {/* Resumo da Presa Marcada */}
       <DebtorSummaryCard debtor={debt.debtor} />
 
-      {/* Seção Principal: Cronograma de Parcelas e Extrato de Pix */}
-      {permissions.canAccessFinancial ? (
-        <Tabs defaultValue="installments" className="w-full space-y-4">
-          <TabsList>
-            <TabsTrigger value="installments">
-              <FaCalendarDays className="size-3.5" />
-              <span>Cronograma de Parcelas</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
-                {debt.installments.length}
-              </span>
-            </TabsTrigger>
-
-            <TabsTrigger value="payments">
-              <FaReceipt className="size-3.5" />
-              <span>Extrato de Pix</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
-                {debt.payments.length}
-              </span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="installments">
-            <InstallmentsList
-              installments={debt.installments}
-              onPayInstallment={handleOpenInstallmentPayment}
-              onAddExcuse={handleOpenExcuseModal}
-            />
-          </TabsContent>
-
-          <TabsContent value="payments">
-            <PaymentsHistory payments={debt.payments} />
-          </TabsContent>
-        </Tabs>
-      ) : (
-        <div className="space-y-4">
-          <InstallmentsList
-            installments={debt.installments}
-            onPayInstallment={handleOpenInstallmentPayment}
-            onAddExcuse={handleOpenExcuseModal}
-          />
-        </div>
-      )}
+      {/* Seção Principal: Lista de Parcelas */}
+      <InstallmentsList
+        installments={debt.installments}
+        onPayInstallment={handleOpenInstallmentPayment}
+        onAddExcuse={handleOpenExcuseModal}
+        onViewReceipt={(url) => setViewerImageUrl(url)}
+        onAttachReceipt={(inst) => {
+          setSelectedInstallmentForReceipt(inst);
+          setIsAttachReceiptModalOpen(true);
+        }}
+      />
 
       {/* Modal: Pingou o Pix! */}
       <PaymentModal
@@ -190,7 +202,24 @@ export function DebtDetailsFeature({
         debtId={debt.id}
         defaultAmount={paymentDefaultAmount}
         remainingDebtAmount={debt.formattedRemainingAmount}
+        isReceiptLocked={permissions.isFreePlan}
         onSuccess={handleDataRefresh}
+        onPreviewReceipt={(url) => setViewerImageUrl(url)}
+      />
+
+      {/* Modal: Anexar Comprovante à Parcela */}
+      <AttachInstallmentReceiptModal
+        isOpen={isAttachReceiptModalOpen}
+        onClose={() => {
+          setIsAttachReceiptModalOpen(false);
+          setSelectedInstallmentForReceipt(null);
+        }}
+        debtId={debt.id}
+        installment={selectedInstallmentForReceipt}
+        totalInstallments={debt.installments.length}
+        isReceiptLocked={permissions.isFreePlan}
+        onSuccess={handleDataRefresh}
+        onPreviewReceipt={(url) => setViewerImageUrl(url)}
       />
 
       {/* Modal: Anotar Caô / Desculpa */}
@@ -199,6 +228,13 @@ export function DebtDetailsFeature({
         onClose={() => setIsExcuseModalOpen(false)}
         installment={selectedInstallmentForExcuse}
         onSuccess={handleDataRefresh}
+      />
+
+      {/* Modal: Visualizador de Comprovante em Alta Resolução */}
+      <ReceiptViewerDialog
+        open={Boolean(viewerImageUrl)}
+        onOpenChange={(open) => !open && setViewerImageUrl(null)}
+        imageUrl={viewerImageUrl}
       />
     </div>
   );

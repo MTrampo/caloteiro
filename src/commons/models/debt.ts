@@ -124,6 +124,18 @@ export interface CreateDebtPayload {
   notes?: string | null;
   max_late_installments?: number | null;
   show_notes_on_invoice?: boolean;
+  loan_receipt_path?: string | null;
+}
+
+export interface UploadReceiptStoragePayload {
+  userId: string;
+  folder: "loan" | "payment";
+  buffer: Buffer;
+}
+
+export interface UploadReceiptResult {
+  receiptPath: string;
+  compressedBytes: number;
 }
 
 export interface UpdateDebtAgreementRulesPayload {
@@ -144,12 +156,19 @@ export interface RegisterPaymentPayload {
   amount: number;
   notes?: string | null;
   paid_at?: string;
+  receipt_path?: string | null;
 }
 
 export interface RegisterExcusePayload {
   installment_id: string;
   excuse_text: string;
   promised_date: string;
+}
+
+export interface AttachInstallmentReceiptPayload {
+  debtId: string;
+  installmentId: string;
+  receipt_path: string;
 }
 
 export interface UpdateDebtPortalConfigPayload {
@@ -184,12 +203,14 @@ export interface InstallmentFormatted extends InstallmentRow {
   lateDaysText: string;
   statusLabel: string;
   statusBadgeClass: string;
+  receiptUrl: string | null;
   excuses: DebtExcuseFormatted[];
 }
 
 export interface DebtPaymentFormatted extends DebtPaymentRow {
   formattedAmount: string;
   formattedPaidAt: string;
+  receiptUrl: string | null;
 }
 
 export interface DebtDetailsFormatted extends DebtRow {
@@ -198,6 +219,7 @@ export interface DebtDetailsFormatted extends DebtRow {
   maxLateInstallments: number | null;
   showNotesOnInvoice: boolean;
   breachStatus: DebtBreachStatus;
+  loanReceiptUrl: string | null;
   formattedOriginalAmount: string;
   formattedTotalAmount: string;
   formattedPaidAmount: string;
@@ -244,6 +266,7 @@ export interface PublicInstallmentItem {
   statusBadgeClass: string;
   isLate: boolean;
   lateDays: number;
+  receiptUrl?: string | null;
 }
 
 export interface PublicDebtPaymentItem {

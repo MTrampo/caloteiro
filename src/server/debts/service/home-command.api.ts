@@ -15,7 +15,9 @@ import type {
 } from "@/commons/models/home-command";
 import {
   calculateDaysDifference,
+  calculatePastCalendarDaysDiff,
   formatDisplayPhone,
+  formatRelativePaidText,
 } from "@/commons/utils/format";
 import { getRandomWisdomQuote } from "@/features/home-command/utils/greeting-helper";
 
@@ -70,16 +72,25 @@ export function buildHomeCommandKPIs(
  * Constrói o Feed de ocorrências do dia priorizando:
  * 1. Parcelas Atrasadas (da mais atrasada para a menos atrasada)
  * 2. Próximos Vencimentos (do mais próximo [hoje, amanhã] até 7 dias)
- * 3. Pagamentos Recentes (últimas 48 horas)
+ * 3. Pagamentos Recentes (hoje, ontem e últimos dias)
  */
 export function buildHomeCommandFeed(
   debts: HomeCommandDebtRow[],
   excusesMap: Record<string, string> = {},
-  creditorPixKey?: string
+  creditorPixKey?: string,
+  recentPayments: RecentDebtPaymentRow[] = []
 ): FeedOccurrence[] {
   const overdueItems: FeedOccurrence[] = [];
   const upcomingItems: FeedOccurrence[] = [];
   const paidItems: FeedOccurrence[] = [];
+
+  // Mapeia os pagamentos recentes por dívida para recuperar o paid_at real
+  const paymentsByDebtId = new Map<string, RecentDebtPaymentRow[]>();
+  for (const pay of recentPayments) {
+    const list = paymentsByDebtId.get(pay.debt_id) || [];
+    list.push(pay);
+    paymentsByDebtId.set(pay.debt_id, list);
+  }
 
   for (const debt of debts) {
     if (debt.status === "settled" || debt.status === "cancelled") continue;
@@ -105,28 +116,31 @@ export function buildHomeCommandFeed(
 
       const lastExcuseNote = excusesMap[inst.id] || undefined;
 
-      // Parcela já paga recentemente (últimas 48 horas baseadas na data de atualização)
+      // Parcela já paga recentemente (hoje, ontem ou até 2 dias de calendário no fuso de São Paulo)
       if (isPaid) {
-        const updatedTime = inst.updated_at ? new Date(inst.updated_at).getTime() : 0;
-        const nowTime = Date.now();
-        const diffHours = (nowTime - updatedTime) / (1000 * 60 * 60);
+        const debtPayments = paymentsByDebtId.get(debt.id);
+        const paymentDate = debtPayments?.[0]?.paid_at || inst.updated_at;
 
-        if (diffHours >= 0 && diffHours <= 48) {
-          paidItems.push({
-            id: inst.id,
-            debtId: debt.id,
-            debtorName,
-            debtorNickname,
-            debtorPhone,
-            type: "recently_paid",
-            category: "paid",
-            relativeTimeText: diffHours <= 24 ? "Pagou hoje" : "Pagou ontem",
-            installmentText,
-            pixKey,
-            lastExcuseNote,
-            nominalAmount: nominal,
-            paidAmount: paid,
-          });
+        if (paymentDate) {
+          const diffDays = calculatePastCalendarDaysDiff(paymentDate);
+
+          if (diffDays >= 0 && diffDays <= 2) {
+            paidItems.push({
+              id: inst.id,
+              debtId: debt.id,
+              debtorName,
+              debtorNickname,
+              debtorPhone,
+              type: "recently_paid",
+              category: "paid",
+              relativeTimeText: formatRelativePaidText(diffDays),
+              installmentText,
+              pixKey,
+              lastExcuseNote,
+              nominalAmount: nominal,
+              paidAmount: paid,
+            });
+          }
         }
         continue;
       }
@@ -264,7 +278,7 @@ export const getHomeCommandDataApi = async (
 
   // 5. Calcula KPIs e Feed
   const kpis = buildHomeCommandKPIs(debts, recentPayments);
-  const feed = buildHomeCommandFeed(debts, excusesMap, creditorPixKey);
+  const feed = buildHomeCommandFeed(debts, excusesMap, creditorPixKey, recentPayments);
 
   const wisdomQuote = getRandomWisdomQuote();
 

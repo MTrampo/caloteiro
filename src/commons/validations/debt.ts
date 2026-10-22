@@ -50,6 +50,12 @@ export const createDebtSchema = z.object({
     .optional()
     .nullable(),
   show_notes_on_invoice: z.boolean().optional().default(false),
+  loan_receipt_path: z
+    .string()
+    .trim()
+    .max(500, "Caminho de comprovante inválido.")
+    .optional()
+    .nullable(),
 });
 
 /**
@@ -61,6 +67,12 @@ export const registerPaymentSchema = z.object({
     .positive("O valor recebido deve ser maior que zero."),
   notes: z.string().max(500, "Anotação deve ter no máximo 500 caracteres.").optional().nullable(),
   paid_at: z.string().optional(),
+  receipt_path: z
+    .string()
+    .trim()
+    .max(500, "Caminho de comprovante inválido.")
+    .optional()
+    .nullable(),
 });
 
 /**
@@ -128,5 +140,18 @@ export const updateDebtAgreementRulesSchema = z.object({
 export const updateDebtBreachStatusSchema = z.object({
   debtId: z.string().uuid("Identificador da dívida inválido."),
   isBreached: z.boolean(),
+});
+
+/**
+ * Esquema de validação para anexo de comprovante em parcela existente
+ */
+export const attachInstallmentReceiptSchema = z.object({
+  debtId: z.string().uuid("Identificador da dívida inválido."),
+  installmentId: z.string().uuid("Identificador da parcela inválido."),
+  receipt_path: z
+    .string()
+    .trim()
+    .min(1, "Caminho do comprovante obrigatório.")
+    .max(500, "Caminho de comprovante inválido."),
 });
 

@@ -66,6 +66,7 @@ create table if not exists public.debts (
   notes text,
   max_late_installments int4 default null check (max_late_installments is null or max_late_installments >= 1),
   show_notes_on_invoice boolean not null default false,
+  loan_receipt_path text default null,
   public_link_enabled boolean not null default false,
   public_access_code text not null default upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 6)),
   
@@ -108,6 +109,7 @@ create table if not exists public.installments (
   paid_amount numeric(10,2) not null default 0.00 check (paid_amount >= 0),
   due_date date not null,
   status text not null default 'pending' check (status in ('pending', 'late', 'partially_paid', 'paid')),
+  receipt_path text default null,
   
   created_at timestamptz default now(),
   updated_at timestamptz default now()
@@ -147,6 +149,7 @@ create table if not exists public.debt_payments (
   
   amount numeric(10,2) not null check (amount > 0),
   notes text,
+  receipt_path text default null,
   paid_at timestamptz not null default now(),
   created_at timestamptz default now()
 );

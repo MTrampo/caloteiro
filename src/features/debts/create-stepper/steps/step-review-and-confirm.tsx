@@ -21,6 +21,7 @@ import {
   FaCopy,
   FaHandshake,
   FaScaleBalanced,
+  FaFileInvoiceDollar,
   FaSpinner,
 } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
@@ -200,17 +201,22 @@ export function StepReviewAndConfirm({
       </div>
 
       {/* 2.5 Cláusulas e Gatilho de Quebra Configurados (se houver) */}
-      {(formData.notes.trim().length > 0 || formData.max_late_installments !== null) && (
+      {(formData.notes.trim().length > 0 || formData.max_late_installments !== null || Boolean(formData.loan_receipt_path)) && (
         <div className="rounded-2xl border border-amber-500/30 bg-card p-4 sm:p-5 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/50">
             <div className="flex items-center gap-2">
               <FaScaleBalanced className="size-4 text-amber-400 shrink-0" />
               <h4 className="font-heading text-sm font-bold text-white">
-                Cláusulas e Gatilho de Quebra do Acordo
+                Cláusulas, Provas e Gatilho de Quebra
               </h4>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              {Boolean(formData.loan_receipt_path) && (
+                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold flex items-center gap-1">
+                  <FaFileInvoiceDollar className="size-2.5" /> Comprovante Anexado
+                </span>
+              )}
               {formData.max_late_installments !== null && (
                 <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold">
                   Quebra com {formData.max_late_installments}{" "}

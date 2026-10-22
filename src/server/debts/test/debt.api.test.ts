@@ -20,6 +20,7 @@ import {
   updateDebtPortalConfigApi,
   updateDebtAgreementRulesApi,
   updateDebtBreachStatusApi,
+  attachInstallmentReceiptApi,
   checkPublicDebtGateApi,
   verifyPublicDebtInvoiceAccessApi,
   getPublicDebtInvoiceDataApi,
@@ -30,6 +31,7 @@ import * as subscriptionService from "@/server/account/service/subscription.api"
 
 // Mocks dos Repositories e Serviços externos
 vi.mock("../repository/debt.supabase");
+vi.mock("../repository/receipt-storage.supabase");
 vi.mock("@/server/debtors/repository/debtor.supabase");
 vi.mock("@/server/account/service/subscription.api");
 
@@ -1154,10 +1156,10 @@ describe("Serviço de Dívidas (debt.api.ts)", () => {
       vi.mocked(debtSupabase.countActiveDebtsByUserIdSupabase).mockResolvedValue(0);
       vi.mocked(debtorSupabase.getDebtorByIdSupabase).mockResolvedValue(baseDebtor);
 
-      let capturedDebtPayload: Record<string, unknown> | null = null;
+      let capturedDebtPayload: { max_late_installments?: number | null; show_notes_on_invoice?: boolean } | null = null;
       vi.mocked(debtSupabase.createDebtSupabase).mockImplementation(
         async (_uid, payload) => {
-          capturedDebtPayload = payload as unknown as Record<string, unknown>;
+          capturedDebtPayload = payload;
           return {
             data: {
               id: "debt-free-1",
@@ -1202,8 +1204,8 @@ describe("Serviço de Dívidas (debt.api.ts)", () => {
       });
 
       expect(res.status).toBe(HttpStatusEnum.Created);
-      expect(capturedDebtPayload?.max_late_installments).toBeNull();
-      expect(capturedDebtPayload?.show_notes_on_invoice).toBe(false);
+      expect((capturedDebtPayload as { max_late_installments?: number | null } | null)?.max_late_installments).toBeNull();
+      expect((capturedDebtPayload as { show_notes_on_invoice?: boolean } | null)?.show_notes_on_invoice).toBe(false);
     });
 
     it("updateDebtAgreementRulesApi deve bloquear plano gratuito e atualizar com sucesso em planos pagos", async () => {
@@ -1327,6 +1329,286 @@ describe("Serviço de Dívidas (debt.api.ts)", () => {
         "debt-123",
         userId,
         "defaulted"
+      );
+    });
+  });
+
+  describe("Comprovantes Pix e Provas (Receipt Attachments)", () => {
+    it("deve propagar receipt_path para as parcelas amortizadas e para o pagamento em planos pagos", async () => {
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        unlimitedPermissions
+      );
+      vi.mocked(debtSupabase.getDebtByIdSupabase).mockResolvedValue({
+        id: "debt-receipt-1",
+        user_id: userId,
+        debtor_id: "debtor-1",
+        title: "Acordo com Comprovante",
+        original_amount: 500,
+        total_amount: 500,
+        installments_count: 2,
+        loan_date: "2026-01-01",
+        first_due_date: "2026-02-01",
+        interest_type: "none",
+        interest_rate: 0,
+        category: "personal_loan",
+        payment_method: "pix",
+        status: "pending",
+        settled_at: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      const mockInstallments: InstallmentRow[] = [
+        {
+          id: "inst-1",
+          debt_id: "debt-receipt-1",
+          debtor_id: "debtor-1",
+          user_id: userId,
+          installment_number: 1,
+          nominal_amount: 250,
+          paid_amount: 0,
+          due_date: "2026-02-01",
+          status: "pending",
+          receipt_path: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: "inst-2",
+          debt_id: "debt-receipt-1",
+          debtor_id: "debtor-1",
+          user_id: userId,
+          installment_number: 2,
+          nominal_amount: 250,
+          paid_amount: 0,
+          due_date: "2026-03-01",
+          status: "pending",
+          receipt_path: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ];
+
+      vi.mocked(debtSupabase.getInstallmentsByDebtIdSupabase).mockResolvedValue(
+        mockInstallments
+      );
+      vi.mocked(debtSupabase.updateInstallmentSupabase).mockResolvedValue({
+        success: true,
+        error: null,
+      });
+      vi.mocked(debtSupabase.createPaymentSupabase).mockResolvedValue({
+        data: {
+          id: "payment-1",
+          debt_id: "debt-receipt-1",
+          debtor_id: "debtor-1",
+          user_id: userId,
+          amount: 250,
+          notes: "Pix do Nubank",
+          paid_at: new Date().toISOString(),
+          receipt_path: `${userId}/payment/pix-proof.webp`,
+          created_at: new Date().toISOString(),
+        },
+        error: null,
+      });
+
+      const paymentRes = await registerDebtPaymentApi("debt-receipt-1", userId, {
+        amount: 250,
+        notes: "Pix do Nubank",
+        receipt_path: `${userId}/payment/pix-proof.webp`,
+      });
+
+      expect(paymentRes.status).toBe(HttpStatusEnum.Ok);
+
+      // Parcela 1 amortizada deve receber o receipt_path
+      expect(debtSupabase.updateInstallmentSupabase).toHaveBeenCalledWith(
+        "inst-1",
+        userId,
+        expect.objectContaining({
+          paid_amount: 250,
+          status: "paid",
+          receipt_path: `${userId}/payment/pix-proof.webp`,
+        })
+      );
+
+      // Pagamento gravado com receipt_path
+      expect(debtSupabase.createPaymentSupabase).toHaveBeenCalledWith(
+        expect.objectContaining({
+          receipt_path: `${userId}/payment/pix-proof.webp`,
+        })
+      );
+    });
+
+    it("deve higienizar e ignorar receipt_path se o usuário estiver no plano gratuito (Zero Trust)", async () => {
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        freePermissions
+      );
+      vi.mocked(debtSupabase.getDebtByIdSupabase).mockResolvedValue({
+        id: "debt-receipt-2",
+        user_id: userId,
+        debtor_id: "debtor-1",
+        title: "Tentativa no Free",
+        original_amount: 100,
+        total_amount: 100,
+        installments_count: 1,
+        loan_date: "2026-01-01",
+        first_due_date: "2026-02-01",
+        interest_type: "none",
+        interest_rate: 0,
+        category: "personal_loan",
+        payment_method: "pix",
+        status: "pending",
+        settled_at: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      const mockInst: InstallmentRow = {
+        id: "inst-free-1",
+        debt_id: "debt-receipt-2",
+        debtor_id: "debtor-1",
+        user_id: userId,
+        installment_number: 1,
+        nominal_amount: 100,
+        paid_amount: 0,
+        due_date: "2026-02-01",
+        status: "pending",
+        receipt_path: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      vi.mocked(debtSupabase.getInstallmentsByDebtIdSupabase).mockResolvedValue([
+        mockInst,
+      ]);
+      vi.mocked(debtSupabase.updateInstallmentSupabase).mockResolvedValue({
+        success: true,
+        error: null,
+      });
+      vi.mocked(debtSupabase.createPaymentSupabase).mockResolvedValue({
+        data: null,
+        error: null,
+      });
+
+      await registerDebtPaymentApi("debt-receipt-2", userId, {
+        amount: 100,
+        receipt_path: "hacker/bypassed-receipt.webp",
+      });
+
+      // Deve ter sanitizado para null
+      expect(debtSupabase.updateInstallmentSupabase).toHaveBeenCalledWith(
+        "inst-free-1",
+        userId,
+        expect.objectContaining({
+          receipt_path: null,
+        })
+      );
+      expect(debtSupabase.createPaymentSupabase).toHaveBeenCalledWith(
+        expect.objectContaining({
+          receipt_path: null,
+        })
+      );
+    });
+  });
+
+  describe("attachInstallmentReceiptApi (Anexo Posterior de Comprovante na Parcela)", () => {
+    it("deve retornar Forbidden se o usuário estiver no plano gratuito", async () => {
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        freePermissions
+      );
+
+      const res = await attachInstallmentReceiptApi(userId, {
+        debtId: "debt-123",
+        installmentId: "inst-123",
+        receipt_path: "tubarao/payment/proof.webp",
+      });
+
+      expect(res.status).toBe(403);
+      expect(res.error).toBe("RECEIPTS_NOT_ALLOWED_ON_PLAN");
+    });
+
+    it("deve retornar NotFound se a parcela não existir para o usuário", async () => {
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        unlimitedPermissions
+      );
+      vi.mocked(debtSupabase.getInstallmentByIdSupabase).mockResolvedValue(null);
+
+      const res = await attachInstallmentReceiptApi(userId, {
+        debtId: "debt-123",
+        installmentId: "inst-inexistente",
+        receipt_path: "tubarao/payment/proof.webp",
+      });
+
+      expect(res.status).toBe(404);
+      expect(res.message).toContain("Parcela não encontrada");
+    });
+
+    it("deve retornar BadRequest se a parcela não pertencer à dívida indicada", async () => {
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        unlimitedPermissions
+      );
+      vi.mocked(debtSupabase.getInstallmentByIdSupabase).mockResolvedValue({
+        id: "inst-123",
+        debt_id: "outra-divida",
+        debtor_id: "debtor-1",
+        installment_number: 1,
+        nominal_amount: 100,
+        paid_amount: 100,
+        due_date: "2026-10-30",
+        status: "paid",
+        receipt_path: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        user_id: userId,
+      });
+
+      const res = await attachInstallmentReceiptApi(userId, {
+        debtId: "debt-123",
+        installmentId: "inst-123",
+        receipt_path: "tubarao/payment/proof.webp",
+      });
+
+      expect(res.status).toBe(400);
+      expect(res.message).toContain("não pertence à dívida indicada");
+    });
+
+    it("deve atualizar com sucesso o comprovante da parcela no plano pago", async () => {
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        unlimitedPermissions
+      );
+      vi.mocked(debtSupabase.getInstallmentByIdSupabase).mockResolvedValue({
+        id: "inst-123",
+        debt_id: "debt-123",
+        debtor_id: "debtor-1",
+        installment_number: 1,
+        nominal_amount: 100,
+        paid_amount: 100,
+        due_date: "2026-10-30",
+        status: "paid",
+        receipt_path: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        user_id: userId,
+      });
+      vi.mocked(debtSupabase.updateInstallmentSupabase).mockResolvedValue({
+        success: true,
+        error: null,
+      });
+
+      const res = await attachInstallmentReceiptApi(userId, {
+        debtId: "debt-123",
+        installmentId: "inst-123",
+        receipt_path: "tubarao/payment/proof.webp",
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.data?.success).toBe(true);
+      expect(res.data?.installmentId).toBe("inst-123");
+      expect(debtSupabase.updateInstallmentSupabase).toHaveBeenCalledWith(
+        "inst-123",
+        userId,
+        { receipt_path: "tubarao/payment/proof.webp" }
       );
     });
   });

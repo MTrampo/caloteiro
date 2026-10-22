@@ -37,6 +37,8 @@ interface InstallmentsListProps {
   installments: InstallmentFormatted[];
   onPayInstallment: (installment: InstallmentFormatted) => void;
   onAddExcuse: (installment: InstallmentFormatted) => void;
+  onViewReceipt?: (url: string) => void;
+  onAttachReceipt?: (installment: InstallmentFormatted) => void;
 }
 
 const PAGE_SIZE = 12;
@@ -45,6 +47,8 @@ export function InstallmentsList({
   installments,
   onPayInstallment,
   onAddExcuse,
+  onViewReceipt,
+  onAttachReceipt,
 }: InstallmentsListProps) {
   const [sortBy, setSortBy] = React.useState<InstallmentSortOption>("late_first");
   const [visibleCount, setVisibleCount] = React.useState(PAGE_SIZE);
@@ -181,6 +185,8 @@ export function InstallmentsList({
               totalInstallments={installments.length}
               onPayInstallment={onPayInstallment}
               onAddExcuse={onAddExcuse}
+              onViewReceipt={onViewReceipt}
+              onAttachReceipt={onAttachReceipt}
             />
           ))}
 

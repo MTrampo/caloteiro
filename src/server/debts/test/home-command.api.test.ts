@@ -269,6 +269,82 @@ describe("Serviço do Painel Principal / Central de Comando (home-command.api.ts
       const feed = buildHomeCommandFeed(debts, {});
       expect(feed.length).toBe(10);
     });
+
+    it("deve diferenciar corretamente pagamentos realizados hoje de pagamentos de ontem pelo calendário (regressão de fuso/janela deslizante)", () => {
+      const now = new Date();
+      // Criar timestamp de ontem às 19:00 (há ~20 horas atrás, que antes caía erroneamente em diffHours <= 24)
+      const yesterdayDate = new Date(now);
+      yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+      yesterdayDate.setHours(19, 0, 0, 0);
+
+      const todayDate = new Date(now);
+      todayDate.setHours(9, 0, 0, 0);
+
+      const debts: HomeCommandDebtRow[] = [
+        createFakeDebt(
+          "debt-paid-yesterday",
+          createFakeDebtor("d-yesterday", "Cleide Ferreira"),
+          [
+            createFakeInstallment(
+              "inst-cleide-1",
+              "debt-paid-yesterday",
+              1,
+              300,
+              300,
+              getRelativeDate(-5),
+              "paid",
+              yesterdayDate.toISOString()
+            ),
+          ]
+        ),
+        createFakeDebt(
+          "debt-paid-today",
+          createFakeDebtor("d-today", "Marcos Pagador"),
+          [
+            createFakeInstallment(
+              "inst-marcos-1",
+              "debt-paid-today",
+              1,
+              150,
+              150,
+              getRelativeDate(0),
+              "paid",
+              todayDate.toISOString()
+            ),
+          ]
+        ),
+      ];
+
+      const recentPayments: RecentDebtPaymentRow[] = [
+        {
+          id: "pay-cleide-1",
+          debt_id: "debt-paid-yesterday",
+          debtor_id: "d-yesterday",
+          amount: 300,
+          notes: "Pix Nubank",
+          paid_at: yesterdayDate.toISOString(),
+        },
+        {
+          id: "pay-marcos-1",
+          debt_id: "debt-paid-today",
+          debtor_id: "d-today",
+          amount: 150,
+          notes: null,
+          paid_at: todayDate.toISOString(),
+        },
+      ];
+
+      const feed = buildHomeCommandFeed(debts, {}, undefined, recentPayments);
+
+      const cleideItem = feed.find((item) => item.id === "inst-cleide-1");
+      const marcosItem = feed.find((item) => item.id === "inst-marcos-1");
+
+      expect(cleideItem).toBeDefined();
+      expect(cleideItem?.relativeTimeText).toBe("Pagou ontem");
+
+      expect(marcosItem).toBeDefined();
+      expect(marcosItem?.relativeTimeText).toBe("Pagou hoje");
+    });
   });
 
   describe("getHomeCommandDataApi (Integração e Empty States)", () => {

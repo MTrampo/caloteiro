@@ -15,6 +15,7 @@ import type {
   CreateDebtPayload,
   RegisterPaymentPayload,
   RegisterExcusePayload,
+  AttachInstallmentReceiptPayload,
   UpdateDebtPortalConfigPayload,
   UpdateDebtAgreementRulesPayload,
   UpdateDebtBreachStatusPayload,
@@ -51,6 +52,9 @@ import {
   getPublicDebtByIdSupabase,
   getPublicDebtContextByIdSupabase,
 } from "../repository/debt.supabase";
+import {
+  createSignedReceiptUrlsSupabase,
+} from "../repository/receipt-storage.supabase";
 import {
   getUserPermissionsOrCacheApi,
   getUserPermissionsApi,
@@ -201,7 +205,9 @@ export const createDebtApi = async (
   }
 
   // 4. Persistência do cabeçalho da dívida (com código de acesso aleatório e link desabilitado por padrão)
-  // No plano grátis (Tubarão Lixa), gatilho de quebra e exibição externa de cláusulas são higienizados (Zero Trust)
+  // No plano grátis (Tubarão Lixa), gatilho de quebra, exibição externa de cláusulas e comprovantes são higienizados (Zero Trust)
+  const canAttach = !permissions.isFreePlan || Boolean(permissions.canAttachReceipts);
+  const sanitizedLoanReceiptPath = canAttach ? payload.loan_receipt_path || null : null;
   const sanitizedMaxLateInstallments = permissions.isFreePlan
     ? null
     : payload.max_late_installments ?? null;
@@ -214,6 +220,7 @@ export const createDebtApi = async (
     ...payload,
     max_late_installments: sanitizedMaxLateInstallments,
     show_notes_on_invoice: sanitizedShowNotesOnInvoice,
+    loan_receipt_path: sanitizedLoanReceiptPath,
     public_link_enabled: false,
     public_access_code: initialAccessCode,
   });
@@ -293,6 +300,18 @@ export const getDebtDetailsApi = async (
     getPaymentsByDebtIdSupabase(debtId, userId),
   ]);
 
+  // Coleta todos os caminhos de comprovantes para assinar URLs em lote único
+  const receiptPathsToSign: string[] = [];
+  if (debt.loan_receipt_path) receiptPathsToSign.push(debt.loan_receipt_path);
+  for (const inst of installmentsRaw) {
+    if (inst.receipt_path) receiptPathsToSign.push(inst.receipt_path);
+  }
+  for (const pay of paymentsRaw) {
+    if (pay.receipt_path) receiptPathsToSign.push(pay.receipt_path);
+  }
+
+  const signedUrlsMap = await createSignedReceiptUrlsSupabase(receiptPathsToSign);
+
   const installmentIds = installmentsRaw.map((inst) => inst.id);
   const excusesRaw = await getExcusesByInstallmentIdsSupabase(installmentIds);
 
@@ -363,6 +382,7 @@ export const getDebtDetailsApi = async (
       lateDaysText,
       statusLabel: statusMeta.label,
       statusBadgeClass: statusMeta.badgeClass,
+      receiptUrl: inst.receipt_path ? signedUrlsMap.get(inst.receipt_path) || null : null,
       excuses: excusesByInstallment.get(inst.id) || [],
     };
   });
@@ -370,6 +390,7 @@ export const getDebtDetailsApi = async (
   // Tratamento e formatação de pagamentos (Pix recebidos)
   const paymentsFormatted: DebtPaymentFormatted[] = paymentsRaw.map((payment) => ({
     ...payment,
+    receiptUrl: payment.receipt_path ? signedUrlsMap.get(payment.receipt_path) || null : null,
     formattedAmount: formatBRL(Number(payment.amount)),
     formattedPaidAt: formatDateTime(payment.paid_at),
   }));
@@ -428,6 +449,7 @@ export const getDebtDetailsApi = async (
     maxLateInstallments,
     showNotesOnInvoice,
     breachStatus,
+    loanReceiptUrl: debt.loan_receipt_path ? signedUrlsMap.get(debt.loan_receipt_path) || null : null,
     formattedOriginalAmount: formatBRL(originalAmount),
     formattedTotalAmount: formatBRL(totalDebtAmount),
     formattedPaidAmount: formatBRL(totalAmortized),
@@ -496,6 +518,10 @@ export const registerDebtPaymentApi = async (
   }
 
   // 1. Percorre as parcelas em ordem de vencimento amortizando em cascata
+  const permissions = await getUserPermissionsOrCacheApi(userId);
+  const canAttach = !permissions.isFreePlan || Boolean(permissions.canAttachReceipts);
+  const sanitizedReceiptPath = canAttach ? payload.receipt_path || null : null;
+
   for (const inst of installments) {
     if (remainingPaymentCents <= 0) break;
 
@@ -518,6 +544,7 @@ export const registerDebtPaymentApi = async (
     await updateInstallmentSupabase(inst.id, userId, {
       paid_amount: newPaidCents / 100,
       status: newStatus,
+      receipt_path: sanitizedReceiptPath || inst.receipt_path,
     });
   }
 
@@ -529,6 +556,7 @@ export const registerDebtPaymentApi = async (
     amount: payload.amount,
     notes: payload.notes || null,
     paid_at: payload.paid_at || new Date().toISOString(),
+    receipt_path: sanitizedReceiptPath,
   });
 
   // 3. Verifica se todas as parcelas foram liquidadas
@@ -741,6 +769,14 @@ export const getPublicDebtInvoiceDataApi = async (
     });
   }
 
+  // Assina URLs de comprovantes para exibição segura na fatura pública
+  const receiptPathsToSign: string[] = [];
+  if (debt.loan_receipt_path) receiptPathsToSign.push(debt.loan_receipt_path);
+  for (const inst of context.installments) {
+    if (inst.receipt_path) receiptPathsToSign.push(inst.receipt_path);
+  }
+  const signedUrlsMap = await createSignedReceiptUrlsSupabase(receiptPathsToSign);
+
   let paidInstallmentsCount = 0;
   let lateInstallmentsCount = 0;
   let totalAmortized = 0;
@@ -812,6 +848,7 @@ export const getPublicDebtInvoiceDataApi = async (
       statusBadgeClass: statusMeta.badgeClass,
       isLate: isLate && !isPaid,
       lateDays: isLate && !isPaid ? lateDays : 0,
+      receiptUrl: inst.receipt_path ? signedUrlsMap.get(inst.receipt_path) || null : null,
     };
   });
 
@@ -1048,6 +1085,60 @@ export const updateDebtBreachStatusApi = async (
     message: payload.isBreached
       ? "Quebra de acordo declarada! Dívida marcada como Quebra de Acordo / Calote."
       : "Acordo reaberto e retornado para acompanhamento normal.",
+  });
+};
+
+/**
+ * Anexa ou substitui o comprovante de uma parcela específica (exclusivo para planos pagos)
+ */
+export const attachInstallmentReceiptApi = async (
+  userId: string,
+  payload: AttachInstallmentReceiptPayload
+): Promise<ResponseProps<{ success: boolean; installmentId: string }>> => {
+  // 1. Verificação de permissões do plano (Planos pagos)
+  const permissions = await getUserPermissionsOrCacheApi(userId);
+  const canAttach = !permissions.isFreePlan || Boolean(permissions.canAttachReceipts);
+
+  if (!canAttach) {
+    return ApiResponse.Forbidden({
+      message:
+        "O anexo de comprovantes é exclusivo dos planos Tubarão Branco e Tubarão Cabeça Chato! Faça o upgrade para liberar.",
+      error: "RECEIPTS_NOT_ALLOWED_ON_PLAN",
+    });
+  }
+
+  // 2. Busca a parcela para verificar existência e isolamento por usuário
+  const installment = await getInstallmentByIdSupabase(payload.installmentId, userId);
+  if (!installment) {
+    return ApiResponse.NotFound({
+      message: "Parcela não encontrada ou não pertence a este Tubarão.",
+    });
+  }
+
+  if (installment.debt_id !== payload.debtId) {
+    return ApiResponse.BadRequest({
+      message: "Esta parcela não pertence à dívida indicada.",
+    });
+  }
+
+  // 3. Atualiza o comprovante da parcela
+  const { success, error } = await updateInstallmentSupabase(payload.installmentId, userId, {
+    receipt_path: payload.receipt_path.trim(),
+  });
+
+  if (!success || error) {
+    return ApiResponse.InternalError({
+      message: "Erro ao anexar comprovante à parcela.",
+      error: error || undefined,
+    });
+  }
+
+  return ApiResponse.Ok({
+    data: {
+      success: true,
+      installmentId: payload.installmentId,
+    },
+    message: "Comprovante anexado à parcela com sucesso!",
   });
 };
 

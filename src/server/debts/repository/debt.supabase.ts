@@ -43,6 +43,7 @@ export const createDebtSupabase = async (
       notes: payload.notes || null,
       max_late_installments: payload.max_late_installments ?? null,
       show_notes_on_invoice: payload.show_notes_on_invoice ?? false,
+      loan_receipt_path: payload.loan_receipt_path || null,
       status: "pending",
       public_link_enabled: payload.public_link_enabled ?? false,
       ...(payload.public_access_code ? { public_access_code: payload.public_access_code } : {}),

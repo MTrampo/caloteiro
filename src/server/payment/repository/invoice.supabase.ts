@@ -4,17 +4,8 @@ import { serverSupabase } from "@/commons/lib/supabase/server";
 import { internalSupabase } from "@/commons/lib/supabase/internal";
 import type { InvoiceInsertPayload, InvoiceUpdatePayload, Invoice } from "@/commons/models/payment";
 
-async function getClient() {
-  try {
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return internalSupabase();
-    }
-  } catch {}
-  return await serverSupabase();
-}
-
 export const upsertInvoiceSupabase = async (payload: InvoiceInsertPayload) => {
-  const supabase = await getClient();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("invoices")
@@ -42,7 +33,7 @@ export const getInvoicesByUserIdSupabase = async (userId: string): Promise<Invoi
 };
 
 export const getInvoiceByMpInvoiceIdSupabase = async (mpInvoiceId: string) => {
-  const supabase = await getClient();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("invoices")
@@ -57,7 +48,7 @@ export const updateInvoiceByMpInvoiceIdSupabase = async (
   mpInvoiceId: string,
   payload: InvoiceUpdatePayload
 ) => {
-  const supabase = await getClient();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("invoices")

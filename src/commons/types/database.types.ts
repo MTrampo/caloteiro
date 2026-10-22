@@ -179,6 +179,7 @@ export type Database = {
           id: string
           notes: string | null
           paid_at: string
+          receipt_path?: string | null
           user_id: string
         }
         Insert: {
@@ -189,6 +190,7 @@ export type Database = {
           id?: string
           notes?: string | null
           paid_at?: string
+          receipt_path?: string | null
           user_id: string
         }
         Update: {
@@ -199,6 +201,7 @@ export type Database = {
           id?: string
           notes?: string | null
           paid_at?: string
+          receipt_path?: string | null
           user_id?: string
         }
         Relationships: [
@@ -295,6 +298,7 @@ export type Database = {
           interest_rate: number | null
           interest_type: string | null
           loan_date: string
+          loan_receipt_path?: string | null
           max_late_installments?: number | null
           notes: string | null
           original_amount: number
@@ -319,6 +323,7 @@ export type Database = {
           interest_rate?: number | null
           interest_type?: string | null
           loan_date?: string
+          loan_receipt_path?: string | null
           max_late_installments?: number | null
           notes?: string | null
           original_amount: number
@@ -343,6 +348,7 @@ export type Database = {
           interest_rate?: number | null
           interest_type?: string | null
           loan_date?: string
+          loan_receipt_path?: string | null
           max_late_installments?: number | null
           notes?: string | null
           original_amount?: number
@@ -384,6 +390,7 @@ export type Database = {
           installment_number: number
           nominal_amount: number
           paid_amount: number
+          receipt_path?: string | null
           status: string
           updated_at: string | null
           user_id: string
@@ -397,6 +404,7 @@ export type Database = {
           installment_number: number
           nominal_amount: number
           paid_amount?: number
+          receipt_path?: string | null
           status?: string
           updated_at?: string | null
           user_id: string
@@ -410,6 +418,7 @@ export type Database = {
           installment_number?: number
           nominal_amount?: number
           paid_amount?: number
+          receipt_path?: string | null
           status?: string
           updated_at?: string | null
           user_id?: string

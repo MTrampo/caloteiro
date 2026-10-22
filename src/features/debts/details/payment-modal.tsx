@@ -8,11 +8,12 @@ import {
   FaXmark,
   FaBolt,
   FaCheck,
+  FaSpinner,
 } from "react-icons/fa6";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { ReceiptAttachmentField } from "@/components/forms/receipt-attachment-field";
 import { maskCurrency, parseCurrencyToNumber } from "@/commons/utils/masks";
 
 interface PaymentModalProps {
@@ -21,7 +22,9 @@ interface PaymentModalProps {
   debtId: string;
   defaultAmount?: number;
   remainingDebtAmount: string;
+  isReceiptLocked?: boolean;
   onSuccess: () => void;
+  onPreviewReceipt?: (url: string) => void;
 }
 
 export function PaymentModal({
@@ -30,12 +33,25 @@ export function PaymentModal({
   debtId,
   defaultAmount,
   remainingDebtAmount,
+  isReceiptLocked = false,
   onSuccess,
+  onPreviewReceipt,
 }: PaymentModalProps) {
+  const getTodayDateStr = () => {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Sao_Paulo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+  };
+
   const [amountInput, setAmountInput] = React.useState<string>(
     defaultAmount ? maskCurrency(defaultAmount) : ""
   );
+  const [paidDate, setPaidDate] = React.useState<string>(getTodayDateStr());
   const [notes, setNotes] = React.useState<string>("");
+  const [receiptPath, setReceiptPath] = React.useState<string | null>(null);
   const [isPending, startTransition] = React.useTransition();
 
   const [prevDefaultAmount, setPrevDefaultAmount] = React.useState<number | undefined>(defaultAmount);
@@ -56,9 +72,15 @@ export function PaymentModal({
     }
 
     startTransition(async () => {
+      const paidAtIso = paidDate
+        ? new Date(`${paidDate}T12:00:00.000Z`).toISOString()
+        : undefined;
+
       const res = await registerDebtPaymentAction(debtId, {
         amount: numericAmount,
         notes: notes.trim() || null,
+        paid_at: paidAtIso,
+        receipt_path: receiptPath || null,
       });
 
       if (!res.success) {
@@ -67,6 +89,8 @@ export function PaymentModal({
       }
 
       toast.success(res.message || "Pingou o Pix! Parcela(s) amortizada(s) com sucesso!");
+      setReceiptPath(null);
+      setPaidDate(getTodayDateStr());
       onSuccess();
       onClose();
     });
@@ -102,25 +126,41 @@ export function PaymentModal({
 
         {/* Formulário de Baixa */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field>
-            <FieldLabel>
-              Quanto pingou na conta? <span className="text-rose-400">*</span>
-            </FieldLabel>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500 font-mono text-xs">
-                R$
-              </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Field>
+              <FieldLabel>
+                Quanto pingou na conta? <span className="text-rose-400">*</span>
+              </FieldLabel>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500 font-mono text-xs">
+                  R$
+                </span>
+                <Input
+                  type="text"
+                  required
+                  value={amountInput}
+                  onChange={(e) => setAmountInput(maskCurrency(e.target.value))}
+                  placeholder="0,00"
+                  disabled={isPending}
+                  className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
+                />
+              </div>
+            </Field>
+
+            <Field>
+              <FieldLabel>
+                Data do Pix <span className="text-rose-400">*</span>
+              </FieldLabel>
               <Input
-                type="text"
+                type="date"
                 required
-                value={amountInput}
-                onChange={(e) => setAmountInput(maskCurrency(e.target.value))}
-                placeholder="0,00"
+                value={paidDate}
+                onChange={(e) => setPaidDate(e.target.value)}
                 disabled={isPending}
-                className="pl-9 bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
+                className="bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11"
               />
-            </div>
-          </Field>
+            </Field>
+          </div>
 
           <Field>
             <FieldLabel>
@@ -136,6 +176,16 @@ export function PaymentModal({
             />
           </Field>
 
+          {/* Anexo de Comprovante Pix (Opcional) */}
+          <ReceiptAttachmentField
+            label="Comprovante Pix do Recebimento (Opcional)"
+            folder="payment"
+            isLocked={isReceiptLocked}
+            value={receiptPath}
+            onChange={setReceiptPath}
+            onPreviewClick={onPreviewReceipt}
+          />
+
           {/* Dica da Amortização em Cascata */}
           <div className="p-3 bg-zinc-800/40 rounded-xl border border-zinc-800/80 text-xs font-mono text-zinc-400 space-y-1">
             <div className="flex items-center gap-1.5 text-zinc-200 font-semibold">
@@ -148,16 +198,16 @@ export function PaymentModal({
           </div>
 
           {/* Botão de Ação */}
-          <div className="flex items-center justify-end pt-2">
+          <div className="pt-2">
             <Button
               type="submit"
               size="lg"
               disabled={isPending}
-              className="w-full sm:w-auto bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+              className="w-full bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl shadow-xs transition-all cursor-pointer"
             >
               {isPending ? (
                 <>
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <FaSpinner className="size-3.5 animate-spin" />
                   <span>Amortizando...</span>
                 </>
               ) : (

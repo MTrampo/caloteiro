@@ -25,12 +25,13 @@ import {
   FaScaleBalanced,
   FaTriangleExclamation,
   FaGavel,
+  FaEye,
 } from "react-icons/fa6";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ReceiptViewerDialog } from "@/features/debts/details/receipt-viewer-dialog";
 import {
   verifyDebtInvoiceAccessAction,
   lockDebtInvoiceAction,
@@ -53,6 +54,7 @@ export function DebtInvoicePortalFeature({
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [isPending, startTransition] = React.useTransition();
   const [copiedPix, setCopiedPix] = React.useState(false);
+  const [viewerImageUrl, setViewerImageUrl] = React.useState<string | null>(null);
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
@@ -613,28 +615,23 @@ export function DebtInvoicePortalFeature({
           </div>
         )}
 
-        {/* Abas: Cronograma Completo de Parcelas e Recibos de Pagamentos Registrados */}
-        <Tabs defaultValue="installments" className="w-full space-y-4">
-          <TabsList>
-            <TabsTrigger value="installments">
-              <FaCalendarDays className="size-3.5" />
-              <span>Cronograma de Parcelas</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
-                {invoice.installments.length}
-              </span>
-            </TabsTrigger>
+        {/* Cronograma Completo de Parcelas */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-0.5">
+              <h3 className="font-heading text-lg font-bold text-white">
+                Cronograma de Parcelas
+              </h3>
+              <p className="text-xs text-zinc-400 font-mono">
+                Acompanhamento individual de vencimentos e quitações.
+              </p>
+            </div>
+            <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-md bg-zinc-800/80 border border-zinc-700/60 text-zinc-300">
+              {invoice.installments.length} {invoice.installments.length === 1 ? "parcela" : "parcelas"}
+            </span>
+          </div>
 
-            <TabsTrigger value="payments">
-              <FaReceipt className="size-3.5" />
-              <span>Extrato de Pix</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
-                {invoice.payments.length}
-              </span>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Lista de Parcelas (Idêntica ao InstallmentCard de /painel/dividas/[id]) */}
-          <TabsContent value="installments" className="space-y-3">
+          <div className="space-y-3">
             {invoice.installments.map((inst) => {
               const isPaid = inst.status === "paid";
               const isLate = inst.isLate;
@@ -685,6 +682,22 @@ export function DebtInvoicePortalFeature({
                         </div>
                       </div>
                     </div>
+
+                    {/* Botão de Ver Comprovante (se a parcela foi liquidada e tiver comprovante) */}
+                    {isPaid && inst.receiptUrl && (
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setViewerImageUrl(inst.receiptUrl!)}
+                          className="border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 cursor-pointer"
+                        >
+                          <FaEye className="size-3" />
+                          <span>Ver Comprovante</span>
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Grid de Valores da Parcela (Idêntico ao InstallmentCard) */}
@@ -721,50 +734,15 @@ export function DebtInvoicePortalFeature({
                 </div>
               );
             })}
-          </TabsContent>
+          </div>
+        </div>
 
-          {/* Histórico / Recibos de Pagamentos Já Registrados (Idêntico ao PaymentsHistory) */}
-          <TabsContent value="payments" className="space-y-3">
-            {invoice.payments.length > 0 ? (
-              invoice.payments.map((payment) => (
-                <div
-                  key={payment.id}
-                  className="rounded-2xl border border-border bg-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                      <FaMoneyBillWave className="size-4" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-heading font-bold text-sm text-emerald-400">
-                          +{payment.formattedAmount}
-                        </span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                          Pix Confirmado
-                        </span>
-                      </div>
-                      <p className="text-xs font-mono text-zinc-400 mt-0.5">
-                        Recebido em: {payment.formattedPaidAt}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              /* Empty State Limpo e Solto (Sem Borda Pontilhada — Regra 4B) */
-              <div className="py-12 text-center space-y-2 max-w-md mx-auto">
-                <FaReceipt className="size-8 text-zinc-600 mx-auto" />
-                <p className="text-sm font-mono text-zinc-300 font-medium">
-                  Nenhum pagamento registrado ainda
-                </p>
-                <p className="text-xs font-mono text-zinc-500">
-                  Assim que os pagamentos forem realizados e confirmados, eles aparecerão listados aqui como comprovante de abatimento.
-                </p>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+        {/* Modal: Visualizador de Comprovante em Alta Resolução */}
+        <ReceiptViewerDialog
+          open={Boolean(viewerImageUrl)}
+          onOpenChange={(open) => !open && setViewerImageUrl(null)}
+          imageUrl={viewerImageUrl}
+        />
       </main>
 
       <footer className="border-t border-border/40 py-6 text-center text-xs font-mono text-zinc-500">

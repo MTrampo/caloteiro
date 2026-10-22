@@ -209,28 +209,92 @@ export function presentProfile(
 }
 
 /**
- * Calcula a diferença em dias entre a data de vencimento e hoje
+ * Retorna a data no formato YYYY-MM-DD no fuso horário do Brasil (America/Sao_Paulo)
  */
-export function calculateDaysDifference(dueDateStr: string): {
+export function getCalendarDateInSaoPaulo(dateInput: string | Date | number): string {
+  const date =
+    typeof dateInput === "number" || typeof dateInput === "string"
+      ? new Date(dateInput)
+      : dateInput;
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+/**
+ * Calcula a diferença em dias de calendário em relação a hoje (America/Sao_Paulo)
+ * 0 = hoje
+ * 1 = ontem
+ * 2 = há 2 dias
+ * etc.
+ */
+export function calculatePastCalendarDaysDiff(
+  pastDateInput: string | Date | number,
+  nowInput: string | Date | number = new Date()
+): number {
+  const pastDateStr = getCalendarDateInSaoPaulo(pastDateInput);
+  const nowDateStr = getCalendarDateInSaoPaulo(nowInput);
+
+  if (pastDateStr === nowDateStr) {
+    return 0;
+  }
+
+  const [pY, pM, pD] = pastDateStr.split("-").map(Number);
+  const [nY, nM, nD] = nowDateStr.split("-").map(Number);
+
+  const pastUtc = Date.UTC(pY, pM - 1, pD);
+  const nowUtc = Date.UTC(nY, nM - 1, nD);
+
+  const diffMs = nowUtc - pastUtc;
+  return Math.round(diffMs / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Formata o texto de tempo relativo para parcelas pagas
+ */
+export function formatRelativePaidText(diffDays: number): string {
+  if (diffDays <= 0) return "Pagou hoje";
+  if (diffDays === 1) return "Pagou ontem";
+  return `Pagou há ${diffDays} dias`;
+}
+
+/**
+ * Calcula a diferença em dias entre a data de vencimento e hoje (fuso America/Sao_Paulo)
+ */
+export function calculateDaysDifference(dueDateStr: string, nowInput: Date = new Date()): {
   isLate: boolean;
   lateDays: number;
   diffDays: number;
 } {
-  const [yearStr, monthStr, dayStr] = dueDateStr.split("-");
-  const dueDate = new Date(
-    parseInt(yearStr, 10),
-    parseInt(monthStr, 10) - 1,
-    parseInt(dayStr, 10)
-  );
+  const todayStr = getCalendarDateInSaoPaulo(nowInput);
+  const [tY, tM, tD] = todayStr.split("-").map(Number);
+  const cleanDueDate = dueDateStr.slice(0, 10);
+  const [dY, dM, dD] = cleanDueDate.split("-").map(Number);
 
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayUtc = Date.UTC(tY, tM - 1, tD);
+  const dueDateUtc = Date.UTC(dY, dM - 1, dD);
 
-  const diffTime = today.getTime() - dueDate.getTime();
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const diffTime = todayUtc - dueDateUtc;
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
   if (diffDays > 0) {
     return { isLate: true, lateDays: diffDays, diffDays: -diffDays };
   }
   return { isLate: false, lateDays: 0, diffDays: Math.abs(diffDays) };
+}
+
+/**
+ * Formata um tamanho em bytes para representação legível (ex: 35.4 KB, 1.2 MB)
+ */
+export function formatBytes(bytes: number, decimals = 1): string {
+  if (bytes <= 0) return "0 B";
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }

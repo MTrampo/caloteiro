@@ -71,6 +71,7 @@ export function CreateDebtStepperFeature({
     notes: "",
     max_late_installments: null,
     show_notes_on_invoice: false,
+    loan_receipt_path: null,
   });
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -124,6 +125,7 @@ export function CreateDebtStepperFeature({
         notes: formData.notes.trim() || null,
         max_late_installments: formData.max_late_installments,
         show_notes_on_invoice: formData.show_notes_on_invoice,
+        loan_receipt_path: formData.loan_receipt_path || null,
       });
 
       if (!res.success || !res.data) {

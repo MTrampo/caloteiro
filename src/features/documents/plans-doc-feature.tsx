@@ -164,12 +164,11 @@ const COMPARISON_ROWS = [
     isProExclusive: true,
   },
   {
-    label: "Arquivo de Provas (Recibos)",
-    description: "Anexo e custódia de comprovantes de transferência",
+    label: "Arquivo de Provas (Comprovantes Pix)",
+    description: "Anexo e custódia de comprovantes com compressão automática em WebP",
     lixa: false,
-    branco: false,
+    branco: true,
     chato: true,
-    isProExclusive: true,
   },
 ];
 
