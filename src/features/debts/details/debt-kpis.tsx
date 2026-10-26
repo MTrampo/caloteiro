@@ -9,6 +9,7 @@ import {
   FaArrowTrendUp,
 } from "react-icons/fa6";
 import { cn } from "@/commons/lib/utils";
+import { ResponsiveCardsCarousel } from "@/components/cards/responsive-cards-carousel";
 
 interface DebtKpisProps {
   debt: DebtDetailsFormatted;
@@ -16,9 +17,9 @@ interface DebtKpisProps {
 
 export function DebtKpis({ debt }: DebtKpisProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <ResponsiveCardsCarousel desktopColumns={4} tabletColumns={2}>
       {/* 1. Total Combinado (com Juros) */}
-      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-2">
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-2 h-full flex flex-col justify-between">
         <div className="flex items-center justify-between">
           <span className="text-xs font-mono text-zinc-400">Total Combinado</span>
           <div className="p-2 rounded-xl bg-zinc-800 text-zinc-300">
@@ -36,7 +37,7 @@ export function DebtKpis({ debt }: DebtKpisProps) {
       </div>
 
       {/* 2. Já Recuperado (Amortizado + Cronograma Pago) */}
-      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-2">
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-2 h-full flex flex-col justify-between">
         <div className="flex items-center justify-between">
           <span className="text-xs font-mono text-zinc-400">Já Recuperado</span>
           <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
@@ -63,7 +64,7 @@ export function DebtKpis({ debt }: DebtKpisProps) {
       </div>
 
       {/* 3. Saldo na Pista (Restante a Resgatar + Alerta de Atraso) */}
-      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-2">
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-2 h-full flex flex-col justify-between">
         <div className="flex items-center justify-between">
           <span className="text-xs font-mono text-zinc-400">Saldo na Pista</span>
           <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
@@ -91,7 +92,7 @@ export function DebtKpis({ debt }: DebtKpisProps) {
       </div>
 
       {/* 4. Juros do Tubarão (Retorno da Operação em R$ e %) */}
-      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-2">
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-2 h-full flex flex-col justify-between">
         <div className="flex items-center justify-between">
           <span className="text-xs font-mono text-zinc-400">Juros do Tubarão</span>
           <div className={cn(
@@ -113,6 +114,6 @@ export function DebtKpis({ debt }: DebtKpisProps) {
           </p>
         </div>
       </div>
-    </div>
+    </ResponsiveCardsCarousel>
   );
 }

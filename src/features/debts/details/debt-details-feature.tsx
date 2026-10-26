@@ -14,12 +14,14 @@ import { DebtPortalMenu } from "./debt-portal-menu";
 import { AgreementRulesCard } from "./agreement-rules-card";
 import { ReceiptViewerDialog } from "./receipt-viewer-dialog";
 import { AttachInstallmentReceiptModal } from "./attach-installment-receipt-modal";
+import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action";
 import {
   FaArrowLeft,
   FaHandHoldingDollar,
   FaCalendarDays,
   FaFileInvoiceDollar,
   FaEye,
+  FaLink,
 } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 
@@ -84,7 +86,7 @@ export function DebtDetailsFeature({
     : undefined;
 
   return (
-    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full">
+    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full pb-24 sm:pb-6">
       {/* Cabeçalho da Dívida (Solto, sem card, sem ícones no título h2) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="space-y-1">
@@ -111,8 +113,8 @@ export function DebtDetailsFeature({
           </p>
         </div>
 
-        {/* Menu do Link da Fatura + Botão de Ação CTA Principal */}
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+        {/* Menu do Link da Fatura + Botão de Ação CTA Principal (Desktop) */}
+        <div className="hidden sm:flex flex-wrap items-center gap-2.5 shrink-0">
           <DebtPortalMenu
             debtId={debt.id}
             debtTitle={debt.title}
@@ -235,6 +237,29 @@ export function DebtDetailsFeature({
         open={Boolean(viewerImageUrl)}
         onOpenChange={(open) => !open && setViewerImageUrl(null)}
         imageUrl={viewerImageUrl}
+      />
+
+      {/* Ações Flutuantes no Mobile (FAB com Dropdown se houver mais de 1 ação) */}
+      <MobileFloatingAction
+        triggerIcon={<FaHandHoldingDollar className="size-5 text-emerald-950" />}
+        ariaLabel="Ações da dívida"
+        actions={[
+          ...(!debt.isFullySettled
+            ? [
+                {
+                  label: "Pingou o Pix!",
+                  icon: <FaHandHoldingDollar className="size-4 text-emerald-400" />,
+                  onClick: handleOpenGeneralPayment,
+                  variant: "emerald" as const,
+                },
+              ]
+            : []),
+          {
+            label: "Ver Fatura Pública",
+            icon: <FaLink className="size-4 text-zinc-300" />,
+            href: `/fatura/${debt.id}`,
+          },
+        ]}
       />
     </div>
   );

@@ -1,16 +1,35 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Field, FieldLabel } from "@/components/ui/field"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   FaKey,
   FaWhatsapp,
-  FaSliders,
+  FaPercent,
   FaCheck,
   FaCopy,
   FaRotateLeft,
   FaCircleInfo,
+  FaLock,
 } from "react-icons/fa6"
+import { saveCreditorSettingsAction } from "@/actions/settings"
+import type { CreditorSettings, CreditorSettingsFormInputs } from "@/commons/models/user"
+import type { UserPermissions } from "@/commons/models/subscription"
+import { type InterestType, INTEREST_TYPE_LABELS } from "@/commons/models/debt"
+import { maskPixKey } from "@/commons/utils/masks"
+import { formatProperName } from "@/commons/utils/format"
 
 type VariableItem = {
   tag: string
@@ -60,23 +79,37 @@ const AVAILABLE_VARIABLES: VariableItem[] = [
 
 const DEFAULT_TEMPLATES = {
   template1:
-    "Fala {nome}, beleza? Passando só pra lembrar que aquela nossa parcela vence hoje. Segue a chave Pix: {chave_pix} ({titular} - {banco}). Valeu!",
+    "Fala {nome}, beleza? Passando só pra lembrar que aquela nossa parcela vence hoje. Segue a chave Pix: {chave_pix} ({titular} - {banco}). Valeu!\n\n_(Notificação automática de vencimento • Sistema Caloteiro)_",
   template2:
-    "E aí {nome}! O prazo venceu faz {dias_atraso} dias e o Pix não pingou. Meu boleto não espera, meu parceiro! Manda aí: {chave_pix} ({titular}).",
+    "E aí {nome}! O prazo venceu faz {dias_atraso} dias e o Pix não pingou. Meu boleto não espera, meu parceiro! Manda aí: {chave_pix} ({titular}).\n\n_(Disparo automático de cobrança • Sistema Caloteiro)_",
   template3:
-    "Alerta vermelho, {nome}. Você sumiu há {dias_atraso} dias. Já posso ligar pra sua mãe ou você vai honrar essa promessa agora? Chave Pix: {chave_pix}.",
+    "Alerta vermelho, {nome}. Você sumiu há {dias_atraso} dias. Já posso ligar pra sua mãe ou você vai honrar essa promessa agora? Chave Pix: {chave_pix}.\n\n_(Alerta crítico automático • Sistema Caloteiro)_",
 }
 
-import Link from "next/link"
-import { toast } from "sonner"
-import { saveCreditorSettingsAction } from "@/actions/settings"
-import type { CreditorSettings, CreditorSettingsFormInputs } from "@/commons/models/user"
-import type { UserPermissions } from "@/commons/models/subscription"
-import { FaLock } from "react-icons/fa6"
-import { Input } from "@/components/ui/input"
-import { Field, FieldLabel } from "@/components/ui/field"
-import { maskPixKey } from "@/commons/utils/masks"
-import { formatProperName } from "@/commons/utils/format"
+const PIX_KEY_TYPES = [
+  { value: "cpf", label: "CPF" },
+  { value: "cnpj", label: "CNPJ" },
+  { value: "celular", label: "Celular / WhatsApp" },
+  { value: "email", label: "E-mail" },
+  { value: "aleatoria", label: "Chave Aleatória" },
+]
+
+const PIX_KEY_LABELS: Record<string, string> = {
+  cpf: "CPF",
+  cnpj: "CNPJ",
+  celular: "Celular / WhatsApp",
+  phone: "Celular / WhatsApp",
+  email: "E-mail",
+  aleatoria: "Chave Aleatória",
+  random: "Chave Aleatória",
+}
+
+const normalizePixType = (type?: string | null): string => {
+  if (type === "phone") return "celular"
+  if (type === "random") return "aleatoria"
+  if (type && ["cpf", "cnpj", "celular", "email", "aleatoria"].includes(type)) return type
+  return "cpf"
+}
 
 interface SettingsFeatureProps {
   initialSettings?: CreditorSettings | null
@@ -97,17 +130,23 @@ export function SettingsFeature({
     isSubscriptionActive: false,
   },
 }: SettingsFeatureProps) {
-  const [pixType, setPixType] = React.useState<string>(initialSettings?.pix_key_type || "cpf")
+  // Card 1: Chave Pix
+  const [pixType, setPixType] = React.useState<string>(normalizePixType(initialSettings?.pix_key_type))
   const [pixKey, setPixKey] = React.useState(initialSettings?.pix_key || "")
   const [accountOwner, setAccountOwner] = React.useState(initialSettings?.pix_holder_name || "")
   const [bankName, setBankName] = React.useState(initialSettings?.pix_bank_name || "")
-  const [isSaving, setIsSaving] = React.useState(false)
-  const [savedSuccess, setSavedSuccess] = React.useState(false)
-  const [copiedVariable, setCopiedVariable] = React.useState<string | null>(null)
 
-  const canCustomTemplates = permissions.canCustomTemplates
+  // Card 2: Regras Financeiras e Taxas Padrão
+  const [defaultInterestType, setDefaultInterestType] = React.useState<InterestType>(
+    (initialSettings?.default_interest_type as InterestType) || "none"
+  )
+  const [defaultInterestRate, setDefaultInterestRate] = React.useState<string>(
+    initialSettings?.default_interest_rate !== undefined && initialSettings?.default_interest_rate !== null
+      ? String(initialSettings.default_interest_rate)
+      : "0"
+  )
 
-  // Templates de mensagens do WhatsApp
+  // Card 3: Templates de mensagens do WhatsApp
   const [template1, setTemplate1] = React.useState(
     initialSettings?.template_friendly || DEFAULT_TEMPLATES.template1
   )
@@ -118,9 +157,30 @@ export function SettingsFeature({
     initialSettings?.template_critical || DEFAULT_TEMPLATES.template3
   )
 
-  // Tolerâncias
-  const [criticalDays, setCriticalDays] = React.useState(30)
-  const [defaultPublicMode, setDefaultPublicMode] = React.useState(true)
+  const [isSaving, setIsSaving] = React.useState(false)
+  const [savedSuccess, setSavedSuccess] = React.useState(false)
+  const [copiedVariable, setCopiedVariable] = React.useState<string | null>(null)
+
+  const canCustomTemplates = permissions.canCustomTemplates
+
+  const interestTypeSelectOptions = [
+    { value: "none", label: INTEREST_TYPE_LABELS.none },
+    { value: "total_percentage", label: INTEREST_TYPE_LABELS.total_percentage },
+    {
+      value: "fixed",
+      label: permissions.isFreePlan
+        ? `${INTEREST_TYPE_LABELS.fixed} (Liberado no Tubarão Branco)`
+        : INTEREST_TYPE_LABELS.fixed,
+      disabled: permissions.isFreePlan,
+    },
+    {
+      value: "monthly_percentage",
+      label: permissions.maxDebtors !== null
+        ? `${INTEREST_TYPE_LABELS.monthly_percentage} (Exclusivo Tubarão Cabeça Chato)`
+        : INTEREST_TYPE_LABELS.monthly_percentage,
+      disabled: permissions.maxDebtors !== null,
+    },
+  ]
 
   const handleCopyTag = (tag: string) => {
     navigator.clipboard.writeText(tag)
@@ -139,11 +199,18 @@ export function SettingsFeature({
     e.preventDefault()
     try {
       setIsSaving(true)
+      const numericRate =
+        defaultInterestType === "none"
+          ? 0
+          : parseFloat(defaultInterestRate.replace(",", ".")) || 0
+
       const res = await saveCreditorSettingsAction({
         pix_key_type: (pixType || null) as CreditorSettingsFormInputs["pix_key_type"],
         pix_key: pixKey,
         pix_holder_name: accountOwner,
         pix_bank_name: bankName,
+        default_interest_type: defaultInterestType,
+        default_interest_rate: numericRate,
         template_friendly: canCustomTemplates ? template1 : undefined,
         template_acid: canCustomTemplates ? template2 : undefined,
         template_critical: canCustomTemplates ? template3 : undefined,
@@ -151,7 +218,7 @@ export function SettingsFeature({
 
       if (res.success) {
         setSavedSuccess(true)
-        toast.success("Armas de cobrança e Chave Pix calibradas no cofre!")
+        toast.success("Armas de cobrança e taxas calibradas no cofre!")
         setTimeout(() => setSavedSuccess(false), 3000)
       } else {
         toast.error(res.error)
@@ -172,7 +239,7 @@ export function SettingsFeature({
             Configurações do Tubarão
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 font-mono">
-            Armas de cobrança, chave Pix padrão e modelos de mensagens para o WhatsApp.
+            Armas de cobrança, chave Pix padrão, taxas de juros e modelos de mensagens para o WhatsApp.
           </p>
         </div>
 
@@ -209,29 +276,41 @@ export function SettingsFeature({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Field>
-              <FieldLabel>
-                Tipo de Chave
-              </FieldLabel>
-              <select
+              <FieldLabel>Tipo de Chave</FieldLabel>
+              <Select
                 value={pixType}
-                onChange={(e) => {
-                  setPixType(e.target.value)
-                  setPixKey(maskPixKey(pixKey, e.target.value))
+                onValueChange={(val) => {
+                  if (val) {
+                    setPixType(val)
+                    setPixKey(maskPixKey(pixKey, val))
+                  }
                 }}
-                className="w-full bg-zinc-950/60 border border-zinc-800 rounded-xl px-3 py-2 text-xs sm:text-sm font-mono text-zinc-200 focus:outline-hidden focus:border-emerald-500 transition-colors h-11 cursor-pointer"
+                items={PIX_KEY_TYPES}
               >
-                <option value="cpf">CPF</option>
-                <option value="cnpj">CNPJ</option>
-                <option value="celular">Celular / WhatsApp</option>
-                <option value="email">E-mail</option>
-                <option value="aleatoria">Chave Aleatória</option>
-              </select>
+                <SelectTrigger
+                  size="lg"
+                  className="bg-zinc-950/60 border-zinc-800 text-zinc-200 font-mono text-xs sm:text-sm h-11 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/30"
+                >
+                  <SelectValue placeholder="Selecione o tipo de chave">
+                    {PIX_KEY_LABELS[pixType] || "Selecione o tipo"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border border-zinc-800 text-zinc-200">
+                  {PIX_KEY_TYPES.map((opt) => (
+                    <SelectItem
+                      key={opt.value}
+                      value={opt.value}
+                      className="hover:bg-zinc-800 focus:bg-zinc-800 text-xs sm:text-sm font-mono py-2 cursor-pointer"
+                    >
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
 
             <Field>
-              <FieldLabel>
-                Chave Pix
-              </FieldLabel>
+              <FieldLabel>Chave Pix</FieldLabel>
               <Input
                 type="text"
                 value={pixKey}
@@ -242,9 +321,7 @@ export function SettingsFeature({
             </Field>
 
             <Field>
-              <FieldLabel>
-                Titular da Conta
-              </FieldLabel>
+              <FieldLabel>Titular da Conta</FieldLabel>
               <Input
                 type="text"
                 value={accountOwner}
@@ -258,9 +335,7 @@ export function SettingsFeature({
             </Field>
 
             <Field>
-              <FieldLabel>
-                Banco / Instituição
-              </FieldLabel>
+              <FieldLabel>Banco / Instituição</FieldLabel>
               <Input
                 type="text"
                 value={bankName}
@@ -273,16 +348,114 @@ export function SettingsFeature({
 
           {/* Prévia de Exibição */}
           <div className="rounded-xl bg-zinc-950/70 border border-zinc-800/80 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
-            <span className="text-zinc-400">
-              Prévia formatada para o devedor:
-            </span>
+            <span className="text-zinc-400">Prévia formatada para o devedor:</span>
             <span className="text-emerald-400 font-bold bg-zinc-900 px-2.5 py-1 rounded-md border border-zinc-800">
               Chave: {pixKey || "Não configurada"} ({accountOwner || "Titular"} - {bankName || "Banco"})
             </span>
           </div>
         </div>
 
-        {/* Card 2: Modelos de Mensagem para o WhatsApp & Painel de Variáveis */}
+        {/* Card 2: Regras Financeiras e Taxas Padrão */}
+        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-5 w-full">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-zinc-800">
+            <div className="flex items-center gap-2.5">
+              <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                <FaPercent className="size-3.5" />
+              </div>
+              <div>
+                <h3 className="font-heading text-base font-bold text-white">
+                  Regras Financeiras e Taxas Padrão
+                </h3>
+                <p className="text-xs text-zinc-400 font-mono">
+                  Calibre a modalidade e o valor padrão de acréscimo pré-carregados ao criar novas dívidas.
+                </p>
+              </div>
+            </div>
+
+            <span className="text-[11px] font-mono text-zinc-400 bg-zinc-950 px-2.5 py-1 rounded-lg border border-zinc-800 self-start sm:self-auto">
+              Inteligência Financeira
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field>
+              <FieldLabel>Modalidade de Juros Padrão</FieldLabel>
+              <Select
+                value={defaultInterestType}
+                onValueChange={(val) => {
+                  if (val) {
+                    const nextType = val as InterestType
+                    setDefaultInterestType(nextType)
+                    if (nextType === "none") {
+                      setDefaultInterestRate("0")
+                    }
+                  }
+                }}
+                items={interestTypeSelectOptions}
+              >
+                <SelectTrigger
+                  size="lg"
+                  className="bg-zinc-950/60 border-zinc-800 text-zinc-200 font-mono text-xs sm:text-sm h-11 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/30"
+                >
+                  <SelectValue placeholder="Selecione a modalidade de juros">
+                    {INTEREST_TYPE_LABELS[defaultInterestType] || "Selecione a modalidade"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border border-zinc-800 text-zinc-200">
+                  {interestTypeSelectOptions.map((opt) => (
+                    <SelectItem
+                      key={opt.value}
+                      value={opt.value}
+                      disabled={opt.disabled}
+                      className="hover:bg-zinc-800 focus:bg-zinc-800 text-xs sm:text-sm font-mono py-2 cursor-pointer data-disabled:opacity-50 data-disabled:pointer-events-none"
+                    >
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <Field>
+              <FieldLabel>
+                {defaultInterestType === "fixed"
+                  ? "Valor da Taxa Fixa Padrão (R$)"
+                  : defaultInterestType === "monthly_percentage"
+                  ? "Taxa Mensal Padrão (% a.m.)"
+                  : defaultInterestType === "total_percentage"
+                  ? "Taxa Percentual Padrão (%)"
+                  : "Taxa de Juros Padrão"}
+              </FieldLabel>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                disabled={defaultInterestType === "none"}
+                value={defaultInterestType === "none" ? "0" : defaultInterestRate}
+                onChange={(e) => setDefaultInterestRate(e.target.value)}
+                placeholder={defaultInterestType === "fixed" ? "Ex: 50.00" : "Ex: 5.0"}
+                className="bg-zinc-950/60 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 font-mono text-xs sm:text-sm h-11 disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </Field>
+          </div>
+
+          {/* Explicativo em tempo real */}
+          <div className="rounded-xl bg-zinc-950/70 border border-zinc-800/80 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
+            <span className="text-zinc-400">Comportamento em novas dívidas:</span>
+            <span className="text-emerald-400 font-medium text-left sm:text-right">
+              {defaultInterestType === "none" &&
+                "Novas dívidas serão pré-carregadas sem juros (empréstimo camarada)."}
+              {defaultInterestType === "fixed" &&
+                `Novas dívidas virão com acréscimo fixo padrão de R$ ${Number(defaultInterestRate || 0).toFixed(2)}.`}
+              {defaultInterestType === "total_percentage" &&
+                `Novas dívidas virão com taxa percentual padrão de ${defaultInterestRate || 0}% sobre o total.`}
+              {defaultInterestType === "monthly_percentage" &&
+                `Novas dívidas virão com taxa proporcional padrão de ${defaultInterestRate || 0}% ao mês.`}
+            </span>
+          </div>
+        </div>
+
+        {/* Card 3: Modelos de Mensagem para o WhatsApp & Painel de Variáveis */}
         <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-6 w-full">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-zinc-800">
             <div className="flex items-center gap-2.5">
@@ -313,7 +486,7 @@ export function SettingsFeature({
                 </span>
               </div>
               <Link
-                href="/painel/conta"
+                href="/painel/conta/assinatura"
                 className="text-amber-400 underline shrink-0 hover:text-amber-200 font-bold"
               >
                 Ver Planos
@@ -398,12 +571,12 @@ export function SettingsFeature({
                 )}
               </div>
 
-              <textarea
-                rows={2}
+              <Textarea
+                rows={3}
                 disabled={!canCustomTemplates}
                 value={template1}
                 onChange={(e) => setTemplate1(e.target.value)}
-                className={`w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-200 focus:outline-hidden focus:border-emerald-500 leading-relaxed transition-colors ${
+                className={`w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-200 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500 leading-relaxed transition-colors ${
                   !canCustomTemplates ? "opacity-60 cursor-not-allowed" : ""
                 }`}
               />
@@ -434,12 +607,12 @@ export function SettingsFeature({
                 )}
               </div>
 
-              <textarea
-                rows={2}
+              <Textarea
+                rows={3}
                 disabled={!canCustomTemplates}
                 value={template2}
                 onChange={(e) => setTemplate2(e.target.value)}
-                className={`w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-200 focus:outline-hidden focus:border-amber-500 leading-relaxed transition-colors ${
+                className={`w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-200 focus-visible:ring-amber-500/30 focus-visible:border-amber-500 leading-relaxed transition-colors ${
                   !canCustomTemplates ? "opacity-60 cursor-not-allowed" : ""
                 }`}
               />
@@ -470,12 +643,12 @@ export function SettingsFeature({
                 )}
               </div>
 
-              <textarea
-                rows={2}
+              <Textarea
+                rows={3}
                 disabled={!canCustomTemplates}
                 value={template3}
                 onChange={(e) => setTemplate3(e.target.value)}
-                className={`w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-200 focus:outline-hidden focus:border-rose-500 leading-relaxed transition-colors ${
+                className={`w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs font-mono text-zinc-200 focus-visible:ring-rose-500/30 focus-visible:border-rose-500 leading-relaxed transition-colors ${
                   !canCustomTemplates ? "opacity-60 cursor-not-allowed" : ""
                 }`}
               />
@@ -483,75 +656,13 @@ export function SettingsFeature({
           </div>
         </div>
 
-        {/* Card 3: Tolerâncias e Comportamento do Sistema */}
-        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4 w-full">
-          <div className="flex items-center gap-2.5 pb-3 border-b border-zinc-800">
-            <div className="size-8 rounded-lg bg-zinc-800 border border-zinc-700/80 flex items-center justify-center text-zinc-300 shrink-0">
-              <FaSliders className="size-3.5" />
-            </div>
-            <div>
-              <h3 className="font-heading text-base font-bold text-white">
-                Tolerâncias &amp; Privacidade
-              </h3>
-              <p className="text-xs text-zinc-400 font-mono">
-                Critérios de alerta de calote e preferências de segurança visual.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-            <div className="rounded-xl bg-zinc-950/60 border border-zinc-800/80 p-4 space-y-2">
-              <label className="text-xs font-mono font-bold text-zinc-200 block">
-                Dias para Alerta Vermelho (Risco Crítico)
-              </label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="number"
-                  min={5}
-                  max={90}
-                  value={criticalDays}
-                  onChange={(e) => setCriticalDays(Number(e.target.value))}
-                  className="w-24 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs font-mono text-white text-center focus:outline-hidden focus:border-emerald-500"
-                />
-                <span className="text-xs font-mono text-zinc-400">
-                  dias de atraso antes de acionar a sirene
-                </span>
-              </div>
-            </div>
-
-            <div className="rounded-xl bg-zinc-950/60 border border-zinc-800/80 p-4 space-y-2 flex flex-col justify-between">
-              <div className="space-y-1">
-                <label className="text-xs font-mono font-bold text-zinc-200 block">
-                  Modo Público como Padrão
-                </label>
-                <p className="text-xs font-mono text-zinc-400">
-                  Ao abrir o sistema, entrar sempre na Central de Comando sem valores em R$.
-                </p>
-              </div>
-
-              <label className="inline-flex items-center gap-2 cursor-pointer pt-2">
-                <input
-                  type="checkbox"
-                  checked={defaultPublicMode}
-                  onChange={(e) => setDefaultPublicMode(e.target.checked)}
-                  className="size-4 rounded-sm border-zinc-700 bg-zinc-900 text-emerald-500 focus:ring-0"
-                />
-                <span className="text-xs font-mono text-zinc-300">
-                  {defaultPublicMode ? "Ativado (Segurança Máxima)" : "Desativado"}
-                </span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Botão Salvar */}
+        {/* Botão Salvar (Regra 4A: CTA padronizado em branco) */}
         <div className="flex justify-end gap-3 pt-2">
           <Button
             type="submit"
-            variant="success"
             size="lg"
             disabled={isSaving}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl shadow-xs transition-all cursor-pointer"
           >
             {isSaving ? "Gravando no Cofre..." : "Salvar Configurações"}
           </Button>

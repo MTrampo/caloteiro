@@ -20,11 +20,8 @@ export default async function ConfiguracoesPage() {
     redirect("/entrar")
   }
 
-  // Validação rápida via cache em cookie HMAC-SHA256
+  // Permissões ativas do plano do Tubarão
   const permissions: UserPermissions = await getUserPermissionsOrCacheApi(user.id)
-  if (!permissions.canCustomTemplates) {
-    redirect("/painel")
-  }
 
   let initialSettings = null
   const res = await getCreditorSettingsApi(user.id)

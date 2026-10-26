@@ -42,6 +42,8 @@ export const saveCreditorSettingsApi = async (
     pix_key: data.pix_key,
     pix_holder_name: data.pix_holder_name,
     pix_bank_name: data.pix_bank_name,
+    default_interest_type: data.default_interest_type || "none",
+    default_interest_rate: data.default_interest_rate ?? 0,
   };
 
   if (permissions.canCustomTemplates) {

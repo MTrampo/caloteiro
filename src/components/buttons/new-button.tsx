@@ -5,7 +5,7 @@ import Link from "next/link"
 import { FaPlus, FaUserPlus, FaCirclePlus, FaLock, FaFileCirclePlus } from "react-icons/fa6"
 import { Button } from "@/components/ui/button"
 import { PlanLimitModal } from "@/components/modals/plan-limit-modal"
-import { cn } from "cn"
+import { cn } from "@/commons/lib/utils"
 
 export type NewButtonIconName = "plus" | "user-plus" | "circle-plus" | "file-circle-plus"
 

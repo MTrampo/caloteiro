@@ -72,7 +72,7 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
   const whatsappMessage = encodeURIComponent(
     `Fala ${debtor.debtorName}, tudo bem? Passando pra lembrar da parcela de ${formatCurrencyBRL(
       currentAmountToPay
-    )} do acordo "${debtor.debtTitle}".${paymentPixKey} Manda o comprovante assim que transferir!`
+    )} do acordo "${debtor.debtTitle}".${paymentPixKey} Manda o comprovante assim que transferir!\n\n_(Disparo automático de cobrança • Sistema Caloteiro)_`
   )
 
   return (
@@ -92,7 +92,7 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
       {/* Card Principal em Destaque */}
       <div
         className={cn(
-          "rounded-2xl border bg-card p-5 sm:p-6 shadow-md transition-all duration-200 relative overflow-hidden",
+          "rounded-2xl border bg-card p-4 sm:p-6 shadow-md transition-all duration-200 relative overflow-hidden",
           isCritical
             ? "border-rose-500/40 border-l-4 border-l-rose-500 bg-rose-500/[0.03]"
             : "border-amber-500/40 border-l-4 border-l-amber-500 bg-amber-500/[0.03]"
@@ -101,7 +101,7 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
           
           {/* Bloco 1: Devedor, Iniciais & Motivo (5 Colunas) */}
-          <div className="lg:col-span-5 flex items-start gap-3.5">
+          <div className="lg:col-span-5 flex items-start gap-3.5 min-w-0">
             <div
               className={cn(
                 "size-12 sm:size-14 rounded-2xl flex items-center justify-center font-mono font-black text-sm sm:text-base shrink-0 border shadow-md",
@@ -113,11 +113,11 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
               {debtor.debtorInitials || debtor.debtorName.slice(0, 2).toUpperCase()}
             </div>
 
-            <div className="space-y-1 min-w-0">
+            <div className="space-y-1 min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span
                   className={cn(
-                    "text-[10px] font-mono font-extrabold uppercase px-2 py-0.5 rounded-md border",
+                    "text-[10px] font-mono font-extrabold uppercase px-2 py-0.5 rounded-md border whitespace-nowrap shrink-0",
                     isCritical
                       ? "bg-rose-500/20 text-rose-300 border-rose-500/30"
                       : "bg-amber-500/20 text-amber-300 border-amber-500/30"
@@ -125,7 +125,7 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
                 >
                   {isCritical ? "ALERTA VERMELHO" : "ATENÇÃO IMEDIATA"}
                 </span>
-                <span className="text-[11px] font-mono text-zinc-400">
+                <span className="text-[11px] font-mono text-zinc-400 whitespace-nowrap">
                   Parcela {debtor.currentInstallment} de {debtor.totalInstallments}
                 </span>
               </div>

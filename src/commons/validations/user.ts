@@ -39,11 +39,20 @@ export const creditorSettingsSchema = z.object({
     .enum(["cpf", "cnpj", "email", "phone", "random", "celular", "aleatoria"])
     .optional()
     .nullable(),
-  pix_key: z.string().min(1, "Informe sua chave Pix").optional().nullable(),
+  pix_key: z.string().optional().nullable(),
   pix_holder_name: z.string().optional().nullable(),
   pix_bank_name: z.string().optional().nullable(),
   template_friendly: z.string().optional().nullable(),
   template_acid: z.string().optional().nullable(),
   template_critical: z.string().optional().nullable(),
+  default_interest_type: z
+    .enum(["none", "fixed", "total_percentage", "monthly_percentage"])
+    .optional()
+    .nullable(),
+  default_interest_rate: z
+    .number()
+    .min(0, "A taxa padrão não pode ser negativa.")
+    .optional()
+    .nullable(),
 });
 

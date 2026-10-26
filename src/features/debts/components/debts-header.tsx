@@ -1,7 +1,7 @@
 import { NewButton } from "@/components/buttons/new-button"
 import { FinancialPeriod } from "../types"
-import { cn } from "@/commons/lib/utils"
 import type { UserPlanLimits } from "@/commons/models/subscription"
+import { SegmentedTabs } from "@/components/ui/segmented-tabs"
 
 type DebtsHeaderProps = {
   period: FinancialPeriod
@@ -30,40 +30,29 @@ export function DebtsHeader({ period, onPeriodChange, onNewDebtClick, planLimits
       </div>
 
       {/* Controles: Seletor de Período e Botão de Ação */}
-      <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+      <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 w-full md:w-auto">
         {/* Pills de Período */}
-        <div className="inline-flex items-center rounded-xl bg-zinc-900 border border-border p-1 shadow-xs">
-          {PERIOD_OPTIONS.map((opt) => {
-            const isActive = period === opt.id
-            return (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => onPeriodChange(opt.id)}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer whitespace-nowrap",
-                  isActive
-                    ? "bg-zinc-100 text-zinc-950 shadow-sm shadow-white/10"
-                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60"
-                )}
-              >
-                <span>{opt.label}</span>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Botão Nova Dívida */}
-        <NewButton
-          href="/painel/dividas/nova"
-          label="Nova Dívida"
-          icon="file-circle-plus"
-          onClick={onNewDebtClick}
-          isLocked={planLimits?.isDebtLimitReached}
-          lockReason="debt"
-          maxAllowed={planLimits?.maxDebtors ?? 2}
-          planName={planLimits?.planName ?? "Tubarão Lixa"}
+        <SegmentedTabs<FinancialPeriod>
+          items={PERIOD_OPTIONS.map((opt) => ({ id: opt.id, label: opt.label }))}
+          value={period}
+          onChange={onPeriodChange}
+          ariaLabel="Filtro de Período Financeiro"
+          className="w-full sm:w-auto"
         />
+
+        {/* Botão Nova Dívida (Desktop) */}
+        <div className="hidden sm:inline-flex">
+          <NewButton
+            href="/painel/dividas/nova"
+            label="Nova Dívida"
+            icon="file-circle-plus"
+            onClick={onNewDebtClick}
+            isLocked={planLimits?.isDebtLimitReached}
+            lockReason="debt"
+            maxAllowed={planLimits?.maxDebtors ?? 2}
+            planName={planLimits?.planName ?? "Tubarão Lixa"}
+          />
+        </div>
       </div>
     </div>
   )

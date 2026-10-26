@@ -1,6 +1,7 @@
 "use client";
 
 import { SummaryCard } from "@/components/cards/summary-card";
+import { ResponsiveCardsCarousel } from "@/components/cards/responsive-cards-carousel";
 import { SUMMARY_CARD_CONFIGS } from "@/commons/utils/status-map";
 import type { TrackingSummaryData } from "@/commons/models/tracking";
 import { cn } from "@/commons/lib/utils";
@@ -50,7 +51,7 @@ export function SummaryCardsGrid({
   const DefaultedIcon = defaultedConfig.icon;
 
   const openBadge = (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[11px] font-bold text-zinc-300 bg-zinc-800/80 border border-zinc-700/60">
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[10px] sm:text-[11px] font-bold text-zinc-300 bg-zinc-800/80 border border-zinc-700/60 whitespace-nowrap shrink-0">
       {data.open.changePercent}% na gruta
     </span>
   );
@@ -58,7 +59,7 @@ export function SummaryCardsGrid({
   const onTimeBadge = (
     <span
       className={cn(
-        "inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[11px] font-bold border",
+        "inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[10px] sm:text-[11px] font-bold border whitespace-nowrap shrink-0",
         data.onTime.changePercent > 0
           ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
           : "text-zinc-400 bg-zinc-800/80 border-zinc-700/60"
@@ -71,7 +72,7 @@ export function SummaryCardsGrid({
   const overdueBadge = (
     <span
       className={cn(
-        "inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[11px] font-bold border",
+        "inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[10px] sm:text-[11px] font-bold border whitespace-nowrap shrink-0",
         data.overdue.changePercent > 0
           ? "text-amber-400 bg-amber-500/10 border-amber-500/20"
           : "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
@@ -84,7 +85,7 @@ export function SummaryCardsGrid({
   const defaultedBadge = (
     <span
       className={cn(
-        "inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[11px] font-bold border",
+        "inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[10px] sm:text-[11px] font-bold border whitespace-nowrap shrink-0",
         data.defaulted.changePercent > 0
           ? "text-rose-400 bg-rose-500/10 border-rose-500/20"
           : "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
@@ -95,7 +96,7 @@ export function SummaryCardsGrid({
   );
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+    <ResponsiveCardsCarousel desktopColumns={4} tabletColumns={2}>
       {/* 1º Em Aberto */}
       <SummaryCard
         title={openConfig.title}
@@ -143,6 +144,6 @@ export function SummaryCardsGrid({
         last={data.defaulted.last}
         percentage={defaultedBadge}
       />
-    </div>
+    </ResponsiveCardsCarousel>
   );
 }

@@ -4,6 +4,7 @@ import * as React from "react";
 import type { Plan } from "@/commons/models/subscription";
 import { PlanChangeModal } from "./plan-change-modal";
 import { FaCheck, FaArrowUp, FaArrowDown } from "react-icons/fa6";
+import { ResponsiveCardsCarousel } from "@/components/cards/responsive-cards-carousel";
 
 interface PlanChangeManagerProps {
   plans: Plan[];
@@ -29,7 +30,7 @@ export function PlanChangeManager({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <ResponsiveCardsCarousel desktopColumns={4} tabletColumns={2}>
         {plans.map((plan) => {
           const planPrice = Number(plan.price);
           const isCurrent = currentPlanSlug === plan.slug;
@@ -39,7 +40,7 @@ export function PlanChangeManager({
           return (
             <div
               key={plan.id}
-              className={`rounded-2xl border p-5 flex flex-col justify-between gap-4 transition-all ${
+              className={`rounded-2xl border p-5 flex flex-col justify-between gap-4 transition-all h-full ${
                 isCurrent
                   ? "bg-zinc-900/90 border-emerald-500/50 shadow-md ring-1 ring-emerald-500/20"
                   : "bg-card border-border hover:border-zinc-700"
@@ -143,7 +144,7 @@ export function PlanChangeManager({
             </div>
           );
         })}
-      </div>
+      </ResponsiveCardsCarousel>
 
       {/* Modal de Confirmação com Impacto (Ganhos vs Perdas) */}
       <PlanChangeModal

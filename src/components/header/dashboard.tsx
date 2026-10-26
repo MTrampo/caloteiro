@@ -18,7 +18,7 @@ export default function Header({
       <div className="flex w-full items-center gap-2 px-3 sm:px-4">
         {showSidebarTrigger && (
           <>
-            <SidebarTrigger className="-ml-1 size-7 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-md transition-colors" />
+            <SidebarTrigger className="-ml-1 size-8.5 sm:size-7 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-lg transition-colors touch-manipulation" />
             <Separator
               orientation="vertical"
               className="mx-1 h-3.5 bg-border"

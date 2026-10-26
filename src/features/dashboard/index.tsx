@@ -1,6 +1,8 @@
 import { SummaryCardsGrid } from "./components/summary-cards-grid"
 import { PromisesList } from "./components/promises-list"
 import { NewButton } from "@/components/buttons/new-button"
+import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action"
+import { FaFileCirclePlus } from "react-icons/fa6"
 import type {
   TrackingSummaryData,
   PaginatedPromisesResult,
@@ -19,7 +21,7 @@ export function DashboardFeature({
   planLimits,
 }: DashboardFeatureProps) {
   return (
-    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full min-w-0 overflow-x-hidden">
+    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full min-w-0 overflow-x-hidden pb-24 sm:pb-6">
       {/* Topo do Acompanhamento */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="space-y-1">
@@ -31,7 +33,7 @@ export function DashboardFeature({
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="hidden sm:flex items-center gap-3">
           {planLimits?.maxDebtors !== null && planLimits?.maxDebtors !== undefined && (
             <div className="text-xs font-mono text-zinc-400 flex items-center gap-1.5 shrink-0">
               <span>{planLimits.currentActiveDebtsCount} / {planLimits.maxDebtors} ativas</span>
@@ -62,6 +64,21 @@ export function DashboardFeature({
         initialData={initialPaginated?.items}
         initialHasMore={initialPaginated?.hasMore}
         initialCounts={initialPaginated?.counts}
+      />
+
+      {/* Ação Flutuante no Mobile (FAB) */}
+      <MobileFloatingAction
+        actions={[
+          {
+            label: "Nova Dívida",
+            icon: <FaFileCirclePlus className="size-5" />,
+            href: "/painel/dividas/nova",
+            isLocked: planLimits?.isDebtLimitReached,
+            lockReason: "debt",
+            maxAllowed: planLimits?.maxDebtors ?? 2,
+            planName: planLimits?.planName ?? "Tubarão Lixa",
+          },
+        ]}
       />
     </div>
   )

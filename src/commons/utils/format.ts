@@ -153,7 +153,7 @@ export function presentDebtorItem(debtor: DebtorItem): DebtorItemFormatted {
   const cleanPhone = (debtor.phone || "").replace(/\D/g, "");
   const displayPhone = formatDisplayPhone(debtor.phone);
 
-  const whatsAppMessage = `Fala ${formattedName}, tudo bem? Passando para ver como estão as pendências que combinamos.`;
+  const whatsAppMessage = `Fala ${formattedName}, tudo bem? Passando para ver como estão as pendências que combinamos.\n\n_(Disparo automático de cobrança • Sistema Caloteiro)_`;
   const whatsAppUrl = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(whatsAppMessage)}`;
 
   const rel = debtor.relationship as DebtorRelationshipEnum;

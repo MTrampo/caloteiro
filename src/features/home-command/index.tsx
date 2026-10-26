@@ -6,8 +6,9 @@ import { GreetingBanner } from "./components/greeting-banner";
 import { TriageKPIsGrid } from "./components/triage-kpis";
 import { DailyFeed } from "./components/daily-feed";
 import { CreditorWisdom } from "./components/creditor-wisdom";
-import { FaFishFins } from "react-icons/fa6";
+import { FaFishFins, FaFileCirclePlus } from "react-icons/fa6";
 import { NewButton } from "@/components/buttons/new-button";
+import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action";
 import type { UserPlanLimits } from "@/commons/models/subscription";
 
 export interface HomeCommandFeatureProps {
@@ -36,7 +37,7 @@ export function HomeCommandFeature({
   const isAccountEmpty = data.totalDebtsCount === 0;
 
   return (
-    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full min-w-0">
+    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full min-w-0 pb-24 sm:pb-6">
       {/* 1. Faixa de Boas-vindas Ácida com Saudação Dinâmica e Ação Direta */}
       <GreetingBanner
         userName={data.userName}
@@ -89,6 +90,21 @@ export function HomeCommandFeature({
 
       {/* 4. Pílula de Humor & Sabedoria Ácida do Tubarão */}
       <CreditorWisdom initialWisdom={wisdom} />
+
+      {/* 5. Ação Flutuante no Mobile (FAB) */}
+      <MobileFloatingAction
+        actions={[
+          {
+            label: "Nova Dívida",
+            icon: <FaFileCirclePlus className="size-5" />,
+            href: "/painel/dividas/nova",
+            isLocked: planLimits?.isDebtLimitReached,
+            lockReason: "debt",
+            maxAllowed: planLimits?.maxDebtors ?? 2,
+            planName: planLimits?.planName ?? "Tubarão Lixa",
+          },
+        ]}
+      />
     </div>
   );
 }

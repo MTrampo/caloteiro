@@ -168,5 +168,55 @@ describe("Serviço de Configurações do Credor (creditor-settings.api.ts)", () 
       expect(response.status).toBe(HttpStatusEnum.Ok);
       expect(capturedPayload.template_acid).toBe("Passou do prazo, o tubarão está farejando!");
     });
+
+    it("deve persistir default_interest_type e default_interest_rate para calibragem padrão de novas dívidas", async () => {
+      const permissions: UserPermissions = {
+        maxDebtors: null,
+        canCustomTemplates: true,
+        canExportReports: true,
+        canAccessFinancial: true,
+        canDebtorPortal: true,
+        canRiskScore: true,
+        canAttachReceipts: true,
+        isFreePlan: false,
+        isSubscriptionActive: true,
+      };
+
+      vi.mocked(subscriptionSupabase.getUserPermissionsByUserIdSupabase).mockResolvedValue(permissions);
+
+      let capturedPayload: Partial<CreditorSettings> & { user_id: string } = { user_id: userId };
+      vi.mocked(creditorSettingsSupabase.upsertCreditorSettingsSupabase).mockImplementation(async (payload) => {
+        capturedPayload = payload;
+        return {
+          data: {
+            id: "settings-upsert-3",
+            user_id: payload.user_id,
+            pix_key_type: payload.pix_key_type ?? null,
+            pix_key: payload.pix_key ?? null,
+            pix_holder_name: payload.pix_holder_name ?? null,
+            pix_bank_name: payload.pix_bank_name ?? null,
+            template_friendly: payload.template_friendly ?? null,
+            template_acid: payload.template_acid ?? null,
+            template_critical: payload.template_critical ?? null,
+            default_interest_type: payload.default_interest_type ?? "none",
+            default_interest_rate: payload.default_interest_rate ?? 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          error: null,
+        };
+      });
+
+      const response = await saveCreditorSettingsApi(userId, {
+        pix_key_type: "cpf",
+        pix_key: "123.456.789-00",
+        default_interest_type: "monthly_percentage",
+        default_interest_rate: 2.5,
+      });
+
+      expect(response.status).toBe(HttpStatusEnum.Ok);
+      expect(capturedPayload.default_interest_type).toBe("monthly_percentage");
+      expect(capturedPayload.default_interest_rate).toBe(2.5);
+    });
   });
 });

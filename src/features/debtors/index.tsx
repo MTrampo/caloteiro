@@ -5,6 +5,7 @@ import Link from "next/link"
 import { FaMagnifyingGlass, FaUserPlus, FaRotateRight } from "react-icons/fa6"
 import { Button } from "@/components/ui/button"
 import { NewButton } from "@/components/buttons/new-button"
+import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action"
 import { DebtorCard } from "./components/debtor-card"
 import { DebtorCardSkeleton } from "./components/debtor-card-skeleton"
 import { getDebtorsAction } from "@/actions/debtors"
@@ -113,7 +114,7 @@ export function DebtorsFeature({
   }, [loadMoreDebtors, hasMore, isLoadingMore, isSearching])
 
   return (
-    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full">
+    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full pb-24 sm:pb-6">
       {/* Cabeçalho da Lista de Devedores (Solto, sem card, sem ícones no título h2) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="space-y-1">
@@ -125,16 +126,18 @@ export function DebtorsFeature({
           </p>
         </div>
 
-        {/* Botão Cadastrar Devedor Padronizado (NewButton) */}
-        <NewButton
-          href="/painel/devedores/novo"
-          label="Cadastrar Devedor"
-          icon="user-plus"
-          isLocked={planLimits?.isDebtorLimitReached}
-          lockReason="debtor"
-          maxAllowed={planLimits?.maxDebtors ?? 2}
-          planName={planLimits?.planName ?? "Tubarão Lixa"}
-        />
+        {/* Botão Cadastrar Devedor Padronizado (NewButton - Desktop) */}
+        <div className="hidden sm:inline-flex">
+          <NewButton
+            href="/painel/devedores/novo"
+            label="Cadastrar Devedor"
+            icon="user-plus"
+            isLocked={planLimits?.isDebtorLimitReached}
+            lockReason="debtor"
+            maxAllowed={planLimits?.maxDebtors ?? 2}
+            planName={planLimits?.planName ?? "Tubarão Lixa"}
+          />
+        </div>
       </div>
 
       {/* Barra de Busca (Sem Tabs obsoletas) */}
@@ -245,6 +248,21 @@ export function DebtorsFeature({
           </div>
         </div>
       )}
+
+      {/* Ação Flutuante no Mobile (FAB) */}
+      <MobileFloatingAction
+        actions={[
+          {
+            label: "Novo Devedor",
+            icon: <FaUserPlus className="size-5" />,
+            href: "/painel/devedores/novo",
+            isLocked: planLimits?.isDebtorLimitReached,
+            lockReason: "debtor",
+            maxAllowed: planLimits?.maxDebtors ?? 2,
+            planName: planLimits?.planName ?? "Tubarão Lixa",
+          },
+        ]}
+      />
     </div>
   )
 }

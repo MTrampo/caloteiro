@@ -54,43 +54,45 @@ export function SummaryCard({
   return (
     <Card
       className={cn(
-        "overflow-hidden border border-border bg-card shadow-xs rounded-xl sm:rounded-2xl flex flex-col justify-between gap-0",
+        "overflow-hidden border border-border bg-card shadow-xs rounded-xl sm:rounded-2xl flex flex-col justify-between gap-0 h-full",
         className
       )}
     >
       <CardHeader className="space-y-2 p-3.5 sm:p-4 pb-1">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             {icon && (
-              <div className={cn("p-1.5 rounded-lg border shadow-2xs", style.iconContainer)}>
+              <div className={cn("p-1.5 rounded-lg border shadow-2xs shrink-0", style.iconContainer)}>
                 {icon}
               </div>
             )}
-            <span className="font-bold text-sm sm:text-base uppercase tracking-wider text-zinc-100 font-mono">
+            <span className="font-bold text-sm sm:text-base uppercase tracking-wider text-zinc-100 font-mono truncate">
               {title}
             </span>
             {helpText && (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <button
-                      type="button"
-                      className="text-zinc-500 hover:text-zinc-300 transition-colors cursor-help"
-                    />
-                  }
-                >
-                  <FaCircleQuestion className="w-3.5 h-3.5" />
-                </TooltipTrigger>
-                <TooltipContent
-                  side="top"
-                  className="max-w-56 text-xs bg-zinc-950 text-zinc-200 border border-zinc-800 shadow-xl p-2.5 leading-relaxed rounded-lg"
-                >
-                  {helpText}
-                </TooltipContent>
-              </Tooltip>
+              <div className="hidden sm:inline-flex shrink-0">
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <button
+                        type="button"
+                        className="text-zinc-500 hover:text-zinc-300 transition-colors cursor-help"
+                      />
+                    }
+                  >
+                    <FaCircleQuestion className="w-3.5 h-3.5" />
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    className="max-w-56 text-xs bg-zinc-950 text-zinc-200 border border-zinc-800 shadow-xl p-2.5 leading-relaxed rounded-lg"
+                  >
+                    {helpText}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             )}
           </div>
-          {percentage && <CardAction>{percentage}</CardAction>}
+          {percentage && <CardAction className="shrink-0">{percentage}</CardAction>}
         </div>
       </CardHeader>
 

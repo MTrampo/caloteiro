@@ -8,6 +8,8 @@ import { FinancialKpiGrid } from "./components/financial-kpi-grid"
 import { PriorityDebtorCard } from "./components/priority-debtor-card"
 import { PortfolioDistribution } from "./components/portfolio-distribution"
 import { DebtsEfficiency } from "./components/debts-efficiency"
+import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action"
+import { FaFileCirclePlus } from "react-icons/fa6"
 import { getFinancialAnalyticsAction } from "@/actions/financial"
 import type { UserPlanLimits } from "@/commons/models/subscription"
 import { cn } from "@/commons/lib/utils"
@@ -37,7 +39,7 @@ export function DebtsFeature({ initialData, planLimits }: DebtsFeatureProps) {
   }
 
   return (
-    <div className={cn("flex-1 p-4 sm:p-6 space-y-6 w-full transition-opacity duration-200", isPending && "opacity-70")}>
+    <div className={cn("flex-1 p-4 sm:p-6 space-y-6 w-full transition-opacity duration-200 pb-24 sm:pb-6", isPending && "opacity-70")}>
       {/* 1. Cabeçalho com Título, Seletor de Períodos e Ação Global */}
       <DebtsHeader
         period={period}
@@ -56,6 +58,21 @@ export function DebtsFeature({ initialData, planLimits }: DebtsFeatureProps) {
         <PortfolioDistribution data={data.portfolio} />
         <DebtsEfficiency data={data.efficiency} />
       </div>
+
+      {/* 5. Ação Flutuante no Mobile (FAB) */}
+      <MobileFloatingAction
+        actions={[
+          {
+            label: "Nova Dívida",
+            icon: <FaFileCirclePlus className="size-5" />,
+            href: "/painel/dividas/nova",
+            isLocked: planLimits?.isDebtLimitReached,
+            lockReason: "debt",
+            maxAllowed: planLimits?.maxDebtors ?? 2,
+            planName: planLimits?.planName ?? "Tubarão Lixa",
+          },
+        ]}
+      />
     </div>
   )
 }

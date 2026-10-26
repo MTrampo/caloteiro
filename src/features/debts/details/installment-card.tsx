@@ -82,12 +82,13 @@ export function InstallmentCard({
 
         {/* Botões de Ação da Parcela */}
         {!isPaid ? (
-          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
             <Button
               type="button"
               variant="secondary"
               size="sm"
               onClick={() => onAddExcuse(installment)}
+              className="w-full sm:w-auto h-9 font-mono text-xs font-bold"
             >
               <FaCommentDots className="size-3 text-amber-400" />
               <span>Anotar Caô</span>
@@ -98,20 +99,21 @@ export function InstallmentCard({
               variant="default"
               size="sm"
               onClick={() => onPayInstallment(installment)}
+              className="w-full sm:w-auto h-9 font-mono text-xs font-bold"
             >
               <FaHandHoldingDollar className="size-3" />
               <span>Baixar Parcela</span>
             </Button>
           </div>
         ) : (
-          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40 justify-end">
             {installment.receiptUrl ? (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => onViewReceipt?.(installment.receiptUrl!)}
-                className="border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 cursor-pointer"
+                className="w-full sm:w-auto h-9 font-mono text-xs font-bold border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 cursor-pointer"
               >
                 <FaEye className="size-3" />
                 <span>Ver Comprovante</span>
@@ -122,7 +124,7 @@ export function InstallmentCard({
                 variant="outline"
                 size="sm"
                 onClick={() => onAttachReceipt?.(installment)}
-                className="border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 cursor-pointer"
+                className="w-full sm:w-auto h-9 font-mono text-xs font-bold border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 cursor-pointer"
               >
                 <FaPaperclip className="size-3 text-zinc-400" />
                 <span>Anexar Comprovante</span>

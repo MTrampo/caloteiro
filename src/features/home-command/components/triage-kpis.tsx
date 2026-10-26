@@ -3,6 +3,7 @@
 import { TriageKPIs } from "../types"
 import { FaClock, FaCircleCheck, FaTriangleExclamation, FaArrowRight } from "react-icons/fa6"
 import Link from "next/link"
+import { ResponsiveCardsCarousel } from "@/components/cards/responsive-cards-carousel"
 
 type TriageKPIsProps = {
   kpis: TriageKPIs
@@ -12,18 +13,18 @@ export function TriageKPIsGrid({ kpis }: TriageKPIsProps) {
   const { dueSoonCount, recentlyPaidCount, criticalOverdueCount } = kpis
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <ResponsiveCardsCarousel desktopColumns={3} tabletColumns={2}>
       {/* Mini-Card 1: Atenção Redobrada */}
       <Link
         href="/painel/dividas/acompanhamento"
-        className="group rounded-2xl border border-border bg-card p-5 shadow-xs hover:border-zinc-700 transition-all flex flex-col justify-between gap-4"
+        className="group rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-xs hover:border-zinc-700 transition-all flex flex-col justify-between gap-4 h-full"
       >
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-            <FaClock className="size-3 text-amber-400" />
-            Vencem Esta Semana
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5 min-w-0 truncate">
+            <FaClock className="size-3 text-amber-400 shrink-0" />
+            <span className="truncate">Vencem Esta Semana</span>
           </span>
-          <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-bold">
+          <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-bold whitespace-nowrap shrink-0">
             Fique de Olho
           </span>
         </div>
@@ -49,14 +50,14 @@ export function TriageKPIsGrid({ kpis }: TriageKPIsProps) {
       {/* Mini-Card 2: Pix Recentes */}
       <Link
         href="/painel/dividas/acompanhamento"
-        className="group rounded-2xl border border-border bg-card p-5 shadow-xs hover:border-zinc-700 transition-all flex flex-col justify-between gap-4"
+        className="group rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-xs hover:border-zinc-700 transition-all flex flex-col justify-between gap-4 h-full"
       >
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-            <FaCircleCheck className="size-3 text-emerald-400" />
-            Pix nos Últimos 7 Dias
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5 min-w-0 truncate">
+            <FaCircleCheck className="size-3 text-emerald-400 shrink-0" />
+            <span className="truncate">Pix nos Últimos 7 Dias</span>
           </span>
-          <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold">
+          <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold whitespace-nowrap shrink-0">
             Milagres Recentes
           </span>
         </div>
@@ -82,14 +83,14 @@ export function TriageKPIsGrid({ kpis }: TriageKPIsProps) {
       {/* Mini-Card 3: Casos em Risco Crítico */}
       <Link
         href="/painel/dividas/acompanhamento"
-        className="group rounded-2xl border border-border bg-card p-5 shadow-xs hover:border-zinc-700 transition-all flex flex-col justify-between gap-4"
+        className="group rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-xs hover:border-zinc-700 transition-all flex flex-col justify-between gap-4 h-full"
       >
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-            <FaTriangleExclamation className="size-3 text-rose-500" />
-            Risco Crítico (&gt; 30d)
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5 min-w-0 truncate">
+            <FaTriangleExclamation className="size-3 text-rose-500 shrink-0" />
+            <span className="truncate">Risco Crítico (&gt; 30d)</span>
           </span>
-          <span className="px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] font-mono font-bold">
+          <span className="px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] font-mono font-bold whitespace-nowrap shrink-0">
             Alerta Vermelho
           </span>
         </div>
@@ -111,7 +112,7 @@ export function TriageKPIsGrid({ kpis }: TriageKPIsProps) {
           <FaArrowRight className="size-2.5 transition-transform group-hover:translate-x-1" />
         </div>
       </Link>
-    </div>
+    </ResponsiveCardsCarousel>
   )
 }
 

@@ -76,7 +76,7 @@ export function StepReviewAndConfirm({
       ? ` Condições do acordo: "${formData.notes.trim()}".`
       : "";
 
-    return `Fala ${debtor.formattedName}! Passei pra confirmar nosso combinado sobre "${formData.title}": valor total de ${formatBRL(calculation.totalAmount)} ${installmentsText}.${tolerancePart}${notesPart} Segue o combinado! Valeu!`;
+    return `Fala ${debtor.formattedName}! Passei pra confirmar nosso combinado sobre "${formData.title}": valor total de ${formatBRL(calculation.totalAmount)} ${installmentsText}.${tolerancePart}${notesPart} Segue o combinado! Valeu!\n\n_(Registro formal de acordo • Sistema Caloteiro)_`;
   }, [debtor.formattedName, formData, calculation]);
 
   const cleanPhone = (debtor.phone || "").replace(/\D/g, "");

@@ -16,6 +16,7 @@ import {
 } from "react-icons/fa6";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { SegmentedTabs, type SegmentedTabItem } from "@/components/ui/segmented-tabs";
 
 interface DailyFeedProps {
   feed: FeedOccurrence[];
@@ -80,11 +81,11 @@ export function DailyFeed({
       : "";
 
     if (item.type === "urgent_overdue") {
-      text = `E aí, ${item.debtorName}! Passando pra avisar que aquela nossa pendência (${item.installmentText}) venceu há alguns dias e o Pix ainda não caiu.${pixSuffix} Valeu!`;
+      text = `E aí, ${item.debtorName}! Passando pra avisar que aquela nossa pendência (${item.installmentText}) venceu há alguns dias e o Pix ainda não caiu.${pixSuffix} Valeu!\n\n_(Disparo automático de cobrança • Sistema Caloteiro)_`;
     } else if (item.type === "due_today") {
-      text = `Fala ${item.debtorName}, bom dia! Só lembrando que aquela nossa parcela (${item.installmentText}) vence hoje.${pixSuffix} Valeu!`;
+      text = `Fala ${item.debtorName}, bom dia! Só lembrando que aquela nossa parcela (${item.installmentText}) vence hoje.${pixSuffix} Valeu!\n\n_(Notificação automática de vencimento • Sistema Caloteiro)_`;
     } else {
-      text = `Opa ${item.debtorName}, tudo bem? Passando pra lembrar da nossa promessa (${item.installmentText}) que vence em breve.${pixSuffix}`;
+      text = `Opa ${item.debtorName}, tudo bem? Passando pra lembrar da nossa promessa (${item.installmentText}) que vence em breve.${pixSuffix}\n\n_(Lembrete automático de pendência • Sistema Caloteiro)_`;
     }
 
     return `https://wa.me/55${phone}?text=${encodeURIComponent(text)}`;
@@ -105,6 +106,26 @@ export function DailyFeed({
     return true;
   });
 
+  const tabItems: SegmentedTabItem<"all" | "overdue" | "upcoming">[] = [
+    {
+      id: "all",
+      label: "Todas",
+      count: feed.length,
+    },
+    {
+      id: "overdue",
+      label: "Atrasadas",
+      count: overdueItems.length > 0 ? overdueItems.length : undefined,
+      countVariant: "danger",
+    },
+    {
+      id: "upcoming",
+      label: "A Vencer",
+      count: upcomingItems.length > 0 ? upcomingItems.length : undefined,
+      countVariant: "warning",
+    },
+  ];
+
   return (
     <div className="space-y-4 pt-1">
       {/* Cabeçalho da Seção */}
@@ -118,67 +139,15 @@ export function DailyFeed({
           </p>
         </div>
 
-        {/* Filtros por Categoria (Pills Limpos) */}
+        {/* Filtros por Categoria (SegmentedTabs Unificado) */}
         {feed.length > 0 && (
-          <div className="flex items-center gap-1.5 p-1 bg-zinc-900/80 border border-zinc-800 rounded-xl self-start sm:self-auto">
-            <button
-              type="button"
-              onClick={() => setSelectedFilter("all")}
-              className={`px-2.5 py-1 text-xs font-mono rounded-lg transition-all cursor-pointer ${
-                selectedFilter === "all"
-                  ? "bg-white text-zinc-950 font-bold shadow-xs"
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Todas ({feed.length})
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setSelectedFilter("overdue")}
-              className={`px-2.5 py-1 text-xs font-mono rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                selectedFilter === "overdue"
-                  ? "bg-white text-zinc-950 font-bold shadow-xs"
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              <span>Atrasadas</span>
-              {overdueItems.length > 0 && (
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                    selectedFilter === "overdue"
-                      ? "bg-rose-500 text-white"
-                      : "bg-rose-500/20 text-rose-400"
-                  }`}
-                >
-                  {overdueItems.length}
-                </span>
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setSelectedFilter("upcoming")}
-              className={`px-2.5 py-1 text-xs font-mono rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                selectedFilter === "upcoming"
-                  ? "bg-white text-zinc-950 font-bold shadow-xs"
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              <span>A Vencer</span>
-              {upcomingItems.length > 0 && (
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                    selectedFilter === "upcoming"
-                      ? "bg-amber-500 text-white"
-                      : "bg-amber-500/20 text-amber-400"
-                  }`}
-                >
-                  {upcomingItems.length}
-                </span>
-              )}
-            </button>
-          </div>
+          <SegmentedTabs<"all" | "overdue" | "upcoming">
+            items={tabItems}
+            value={selectedFilter}
+            onChange={setSelectedFilter}
+            ariaLabel="Filtro de ocorrências diárias"
+            className="w-full sm:w-auto"
+          />
         )}
       </div>
 
@@ -251,32 +220,32 @@ export function DailyFeed({
                   </div>
 
                   <div className="space-y-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 min-w-0">
                       <span className="font-heading font-bold text-sm sm:text-base text-white group-hover/link:text-emerald-400 transition-colors truncate">
                         {item.debtorName}
                       </span>
 
                       {item.debtorNickname && (
-                        <span className="text-xs font-mono text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded-md border border-zinc-700">
+                        <span className="text-xs font-mono text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded-md border border-zinc-700 whitespace-nowrap shrink-0">
                           {item.debtorNickname}
                         </span>
                       )}
 
                       {/* Tag de Urgência */}
                       {item.type === "urgent_overdue" && !isPaid && (
-                        <span className="px-2 py-0.5 rounded-md bg-rose-500/20 border border-rose-500/40 text-rose-400 text-[10px] font-mono font-extrabold uppercase">
+                        <span className="px-2 py-0.5 rounded-md bg-rose-500/20 border border-rose-500/40 text-rose-400 text-[10px] font-mono font-extrabold uppercase whitespace-nowrap shrink-0">
                           Cobrar Urgente
                         </span>
                       )}
 
                       {item.type === "due_today" && !isPaid && (
-                        <span className="px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[10px] font-mono font-extrabold uppercase">
+                        <span className="px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[10px] font-mono font-extrabold uppercase whitespace-nowrap shrink-0">
                           Vence Hoje
                         </span>
                       )}
 
                       {isPaid && (
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-mono font-extrabold uppercase">
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-mono font-extrabold uppercase whitespace-nowrap shrink-0">
                           Pix no Bolso
                         </span>
                       )}

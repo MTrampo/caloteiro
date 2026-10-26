@@ -89,8 +89,8 @@ export function PlanChangeModal({
   const isFromFreePlan = currentPrice === 0 || currentPlan?.slug === "tubarao-lixa";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-50">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-50">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-t-2xl sm:rounded-2xl max-w-lg w-full p-5 sm:p-6 space-y-5 shadow-2xl animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
         {/* Cabeçalho do Modal */}
         <div className="flex items-start justify-between gap-3 border-b border-zinc-800 pb-3">
           <div className="space-y-1">

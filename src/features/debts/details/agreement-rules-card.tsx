@@ -94,10 +94,10 @@ export function AgreementRulesCard({
     if (debt.breachStatus === "breached") {
       return `Olá ${debt.debtor.formattedName}. Constam ${debt.lateInstallmentsCount} ${
         debt.lateInstallmentsCount === 1 ? "parcela vencida" : "parcelas vencidas"
-      } no acordo "${debt.title}" (saldo pendente de ${debt.formattedRemainingAmount}).${clausesSnippet} o limite de tolerância do acordo foi atingido e o acordo entrou em quebra. Entre em contato imediatamente para regularizar antes do encaminhamento das medidas cabíveis.`;
+      } no acordo "${debt.title}" (saldo pendente de ${debt.formattedRemainingAmount}).${clausesSnippet} o limite de tolerância do acordo foi atingido e o acordo entrou em quebra. Entre em contato imediatamente para regularizar antes do encaminhamento das medidas cabíveis.\n\n_(Alerta crítico automático • Sistema Caloteiro)_`;
     }
 
-    return `Olá ${debt.debtor.formattedName}. Atenção ao acordo "${debt.title}": você já possui ${debt.lateInstallmentsCount} de ${debt.maxLateInstallments} parcelas toleradas em atraso.${clausesSnippet} se mais 1 parcela vencer sem pagamento, ocorrerá a quebra imediata do acordo. Regularize via Pix para manter o acordo ativo.`;
+    return `Olá ${debt.debtor.formattedName}. Atenção ao acordo "${debt.title}": você já possui ${debt.lateInstallmentsCount} de ${debt.maxLateInstallments} parcelas toleradas em atraso.${clausesSnippet} se mais 1 parcela vencer sem pagamento, ocorrerá a quebra imediata do acordo. Regularize via Pix para manter o acordo ativo.\n\n_(Notificação automática de tolerância • Sistema Caloteiro)_`;
   }, [debt]);
 
   const cleanPhone = (debt.debtor.phone || "").replace(/\D/g, "");

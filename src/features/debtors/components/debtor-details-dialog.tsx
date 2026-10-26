@@ -52,7 +52,7 @@ export function DebtorDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg w-full bg-zinc-900 border-zinc-800 p-5 sm:p-6 space-y-4">
+      <DialogContent className="max-w-lg w-full bg-zinc-900 border-zinc-800 p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
         {/* Cabeçalho do Devedor */}
         <DialogHeader className="text-left space-y-3">
           <div className="flex items-start gap-3.5">
@@ -77,7 +77,7 @@ export function DebtorDetailsDialog({
                 <p className="text-xs font-mono text-zinc-400">
                   Vulgo na praça:{" "}
                   <strong className="text-zinc-200">
-                    "{debtor.formattedNickname}"
+                    &quot;{debtor.formattedNickname}&quot;
                   </strong>
                 </p>
               ) : (

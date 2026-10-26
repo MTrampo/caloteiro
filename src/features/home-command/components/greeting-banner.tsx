@@ -28,7 +28,7 @@ export function GreetingBanner({
         </p>
       </div>
 
-      <div className="flex items-center gap-2.5 shrink-0">
+      <div className="hidden sm:flex items-center gap-2.5 shrink-0">
         <NewButton
           href="/painel/dividas/nova"
           label="Nova Dívida"

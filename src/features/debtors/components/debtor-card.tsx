@@ -72,7 +72,7 @@ export function DebtorCard({ debtor }: DebtorCardProps) {
             size="sm"
             variant="outline"
             onClick={() => setIsDetailsOpen(true)}
-            className="h-8 px-2.5 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer"
+            className="h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer touch-manipulation"
             title="Verificar Detalhes do Devedor"
           >
             <FaEye className="size-3 text-zinc-400" />
@@ -81,7 +81,7 @@ export function DebtorCard({ debtor }: DebtorCardProps) {
 
           <Button
             size="sm"
-            className="h-8 text-xs font-mono font-bold bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-xs cursor-pointer"
+            className="h-9 px-3 text-xs font-mono font-bold bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-xs cursor-pointer touch-manipulation"
             render={
               <a
                 href={debtor.whatsAppUrl}
@@ -100,7 +100,7 @@ export function DebtorCard({ debtor }: DebtorCardProps) {
               size="sm"
               variant="outline"
               onClick={handleCopyPix}
-              className="h-8 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 cursor-pointer"
+              className="h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 cursor-pointer touch-manipulation"
             >
               {copied ? (
                 <FaCheck className="size-3 mr-1 text-emerald-400" />
