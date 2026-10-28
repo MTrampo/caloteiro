@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { FinancialKpiGrid } from "@/features/debts/components/financial-kpi-grid";
 import { InstallmentCard } from "@/features/debts/details/installment-card";
+import { ResponsiveCardsCarousel } from "@/components/cards/responsive-cards-carousel";
 import type { InstallmentFormatted } from "@/commons/models/debt";
 import { formatCurrencyBRL } from "@/commons/utils/date-formatter";
 import {
@@ -119,7 +120,7 @@ export function GrottoCommandSimulation() {
       );
 
       gsap.fromTo(
-        '.grotto-kpi-wrapper [data-slot="card"]',
+        '.grotto-kpi-wrapper .hidden.lg\\:grid [data-slot="card"]',
         { y: -6 },
         {
           y: 0,
@@ -181,35 +182,26 @@ export function GrottoCommandSimulation() {
       });
 
       tl.fromTo(
-        ".grotto-sim-header",
-        { y: 26, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.65, ease: "power3.out" }
-      )
-        .fromTo(
-          '.grotto-kpi-wrapper [data-slot="card"]',
-          { y: 36, opacity: 0, scale: 0.95 },
-          {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            duration: 0.7,
-            stagger: 0.13,
-            ease: "back.out(1.25)",
-          },
-          "-=0.25"
-        )
-        .fromTo(
-          ".grotto-sim-panel",
-          { y: 36, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.7,
-            stagger: 0.16,
-            ease: "power3.out",
-          },
-          "-=0.3"
-        );
+        kpiWrapperRef.current,
+        { y: 24, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.65,
+          ease: "power3.out",
+        }
+      ).fromTo(
+        ".grotto-sim-panel",
+        { y: 28, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.65,
+          stagger: 0.14,
+          ease: "power3.out",
+        },
+        "-=0.3"
+      );
 
       // 2. Simulação automática da baixa do Pix SÓ dispara quando o painel de cards está centralizado na tela
       ScrollTrigger.create({
@@ -278,56 +270,57 @@ export function GrottoCommandSimulation() {
     <section
       ref={sectionRef}
       id="central-gruta"
-      className="py-16 sm:py-24 border-b border-border/60 space-y-8"
+      className="w-full py-12 sm:py-24 border-b border-border/60 bg-zinc-900/30"
     >
-      {/* Cabeçalho Solto da Seção (Regra 7) + Gatilho de Simulação */}
-      <div className="grotto-sim-header flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-        <div className="space-y-2 max-w-2xl">
-          <h2 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-white">
-            Saiba exatamente quanto está na rua, quanto já voltou e quem está
-            enrolando.
-          </h2>
-          <p className="text-xs sm:text-sm text-zinc-400 font-mono leading-relaxed">
-            Simulação Real — Central da Gruta: acompanhe os indicadores
-            recalculando a baixa do Pix ao vivo ou clique para testar.
-          </p>
-        </div>
-
-        {/* Botão Interativo de Cenário */}
-        <div className="flex items-center gap-3 self-start lg:self-auto">
-          <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-zinc-400">
-            <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Painel interativo ao vivo:</span>
+      <div className="w-full mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl space-y-6 sm:space-y-8">
+        {/* Cabeçalho Solto da Seção (Estático e Visível Imediatamente) */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+          <div className="space-y-2 max-w-2xl">
+            <h2 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-white">
+              Saiba exatamente quanto está na rua, quanto já voltou e quem está
+              enrolando.
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-400 font-mono leading-relaxed">
+              Simulação Real — Central da Gruta: acompanhe os indicadores
+              recalculando a baixa do Pix ao vivo ou clique para testar.
+            </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              if (autoDemoTimerRef.current) {
-                clearTimeout(autoDemoTimerRef.current);
-              }
-              triggerPixSettlement(!isSettledDemo);
-            }}
-            className={`inline-flex items-center gap-2 text-xs font-mono font-bold px-4 py-2.5 rounded-xl border transition-all cursor-pointer ${
-              isSettledDemo
-                ? "bg-zinc-900 hover:bg-zinc-800 text-amber-300 border-amber-500/30"
-                : "bg-white hover:bg-zinc-200 text-zinc-950 border-white shadow-sm"
-            }`}
-          >
-            {isSettledDemo ? (
-              <>
-                <FaRotateLeft className="size-3" />
-                <span>Voltar Parcela para Em Atraso</span>
-              </>
-            ) : (
-              <>
-                <FaBolt className="size-3 text-emerald-600" />
-                <span>Simular Pix de R$ 600,00 Agora</span>
-              </>
-            )}
-          </button>
+          {/* Botão Interativo de Cenário (100% Width no Mobile para toque rápido) */}
+          <div className="flex items-center gap-3 w-full sm:w-auto self-start lg:self-auto">
+            <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-zinc-400">
+              <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Painel interativo ao vivo:</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (autoDemoTimerRef.current) {
+                  clearTimeout(autoDemoTimerRef.current);
+                }
+                triggerPixSettlement(!isSettledDemo);
+              }}
+              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 text-xs font-mono font-bold px-4 py-2.5 rounded-xl border transition-all cursor-pointer ${
+                isSettledDemo
+                  ? "bg-zinc-900 hover:bg-zinc-800 text-amber-300 border-amber-500/30"
+                  : "bg-white hover:bg-zinc-200 text-zinc-950 border-white shadow-sm"
+              }`}
+            >
+              {isSettledDemo ? (
+                <>
+                  <FaRotateLeft className="size-3" />
+                  <span>Voltar Parcela para Em Atraso</span>
+                </>
+              ) : (
+                <>
+                  <FaBolt className="size-3 text-emerald-600" />
+                  <span>Simular Pix de R$ 600,00 Agora</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
-      </div>
 
       {/* 1. Os 4 Cards de KPI Financeiros Reais do Sistema (FinancialKpiGrid) */}
       <div ref={kpiWrapperRef} className="grotto-kpi-wrapper">
@@ -419,7 +412,7 @@ export function GrottoCommandSimulation() {
         className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch"
       >
         {/* Coluna Esquerda (7 cols): O InstallmentCard Real com Baixa e Histórico de Caôs */}
-        <div className="grotto-sim-panel lg:col-span-7 rounded-2xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between gap-4">
+        <div className="grotto-sim-panel lg:col-span-7 rounded-2xl border border-border bg-card p-4 sm:p-6 flex flex-col justify-between gap-4">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-border/60">
               <div>
@@ -473,8 +466,8 @@ export function GrottoCommandSimulation() {
           </div>
         </div>
 
-        {/* Coluna Direita (5 cols): Quem Tá Devendo na Gruta (2 Presas Alinhadas com a Coluna Esquerda) */}
-        <div className="grotto-sim-panel lg:col-span-5 rounded-2xl border border-border bg-card p-5 sm:p-6 flex flex-col justify-between gap-4">
+        {/* Coluna Direita (5 cols): Quem Tá Devendo na Gruta (Carrossel no Mobile/Tablet e Lista Vertical no Desktop) */}
+        <div className="grotto-sim-panel lg:col-span-5 rounded-2xl border border-border bg-card p-4 sm:p-6 flex flex-col justify-between gap-4">
           <div className="flex items-center justify-between pb-3 border-b border-border/60">
             <div>
               <h3 className="font-heading text-base sm:text-lg font-bold text-white">
@@ -484,12 +477,81 @@ export function GrottoCommandSimulation() {
                 Quanto cada presa já pagou e quanto falta arrancar
               </p>
             </div>
-            <span className="text-xs font-mono font-bold text-zinc-300 bg-zinc-900 border border-zinc-800 px-2.5 py-1 rounded-lg">
+            <span className="text-xs font-mono font-bold text-zinc-300 bg-zinc-900 border border-zinc-800 px-2.5 py-1 rounded-lg shrink-0">
               2 Presas
             </span>
           </div>
 
-          <div className="space-y-3.5 flex-1 flex flex-col justify-center">
+          {/* Mobile & Tablet (< lg): Carrossel Deslizável com Dots */}
+          <div className="block lg:hidden">
+            <ResponsiveCardsCarousel desktopColumns={3} tabletColumns={2}>
+              {debtorsQueue.map((debtor) => (
+                <div
+                  key={debtor.id}
+                  className="grotto-debtor-row h-full rounded-xl border border-zinc-800/90 bg-zinc-950/70 p-4 flex flex-col justify-between gap-3 transition-all"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-heading text-sm font-bold text-white truncate">
+                        {debtor.name}
+                      </p>
+                      <p className="text-[11px] font-mono text-zinc-400 truncate">
+                        {debtor.debtTitle}
+                      </p>
+                    </div>
+
+                    <span
+                      className={`text-[10px] font-mono font-extrabold px-2 py-0.5 rounded-md border shrink-0 ${debtor.badgeClass}`}
+                    >
+                      {debtor.badgeText}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5 text-xs font-mono">
+                    <div className="rounded-lg bg-zinc-900/70 border border-zinc-800/70 px-3 py-2">
+                      <span className="text-[10px] text-zinc-500 block">
+                        Já Recuperado:
+                      </span>
+                      <span className="font-bold text-emerald-400 tabular-nums">
+                        {formatCurrencyBRL(debtor.paidSoFar)}
+                      </span>
+                    </div>
+
+                    <div className="rounded-lg bg-zinc-900/70 border border-zinc-800/70 px-3 py-2">
+                      <span className="text-[10px] text-zinc-500 block">
+                        Falta Receber:
+                      </span>
+                      <span className="font-bold text-white tabular-nums">
+                        {formatCurrencyBRL(debtor.remaining)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ${debtor.barClass}`}
+                        style={{ width: `${debtor.progressPercent}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400">
+                      <span className="truncate">{debtor.statusText}</span>
+                      <a
+                        href="#armas-whatsapp"
+                        className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-bold shrink-0"
+                      >
+                        <FaWhatsapp className="size-3" />
+                        <span>Cobrar</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </ResponsiveCardsCarousel>
+          </div>
+
+          {/* Desktop (>= lg): Lista Vertical Empilhada */}
+          <div className="hidden lg:flex space-y-3.5 flex-1 flex-col justify-center">
             {debtorsQueue.map((debtor) => (
               <div
                 key={debtor.id}
@@ -556,6 +618,7 @@ export function GrottoCommandSimulation() {
             ))}
           </div>
         </div>
+      </div>
       </div>
     </section>
   );

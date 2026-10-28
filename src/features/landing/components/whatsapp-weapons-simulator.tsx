@@ -196,53 +196,58 @@ export function WhatsappWeaponsSimulator() {
     <section
       ref={sectionRef}
       id="armas-whatsapp"
-      className="py-16 sm:py-24 border-b border-border/60 space-y-8"
+      className="w-full py-12 sm:py-24 border-b border-border/60 bg-background"
     >
-      {/* Cabeçalho da Seção (Regra 7) */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div className="space-y-2 max-w-2xl">
-          <h2 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-white">
-            Três níveis de pressão. Zero vergonha de cobrar.
-          </h2>
-          <p className="text-xs sm:text-sm text-zinc-400 font-mono leading-relaxed">
-            Role pela seção ou clique nos níveis abaixo. A mensagem já sai com
-            sua Chave Pix interpolada e assinada como disparo automático para
-            tirar o constrangimento das suas costas.
-          </p>
+      <div className="w-full mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl space-y-6 sm:space-y-8">
+        {/* Cabeçalho da Seção (Regra 7) */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div className="space-y-2 max-w-2xl">
+            <h2 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-white">
+              Três níveis de pressão. Zero vergonha de cobrar.
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-400 font-mono leading-relaxed">
+              Role pela seção ou toque nos níveis abaixo. A mensagem já sai com
+              sua Chave Pix interpolada e assinada como disparo automático para
+              tirar o constrangimento das suas costas.
+            </p>
+          </div>
+
+          {/* Seletor rápido de Presa de Exemplo */}
+          <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto self-start sm:self-auto">
+            {DEBTOR_PRESETS.map((preset) => {
+              const isSelected = preset.id === selectedDebtorId;
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => setSelectedDebtorId(preset.id)}
+                  className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl text-xs font-mono border transition-all cursor-pointer ${
+                    isSelected
+                      ? "bg-white text-zinc-950 font-bold border-white"
+                      : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:text-white"
+                  }`}
+                >
+                  <FaUser className="size-3 shrink-0" />
+                  <span className="truncate">
+                    {preset.name} ({preset.relation})
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Seletor rápido de Presa de Exemplo */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          {DEBTOR_PRESETS.map((preset) => {
-            const isSelected = preset.id === selectedDebtorId;
-            return (
-              <button
-                key={preset.id}
-                type="button"
-                onClick={() => setSelectedDebtorId(preset.id)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono border transition-all cursor-pointer ${
-                  isSelected
-                    ? "bg-white text-zinc-950 font-bold border-white"
-                    : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:text-white"
-                }`}
-              >
-                <FaUser className="size-3" />
-                <span>
-                  {preset.name} ({preset.relation})
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Grid do Simulador */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        {/* Coluna Esquerda: Seleção dos 3 Níveis Reais */}
-        <div className="lg:col-span-5 flex flex-col justify-between gap-3">
+        {/* Seletor Compacto de 3 Abas Exclusivo para Mobile/Tablet (< lg) — Mantém a Prévia na Mesma Tela */}
+        <div className="grid grid-cols-3 gap-2 lg:hidden">
           {([1, 2, 3] as WeaponLevel[]).map((level) => {
             const item = WEAPON_LEVELS[level];
             const isActive = selectedLevel === level;
+            const mobileShortLabel =
+              level === 1
+                ? "Nível 1 • Dia"
+                : level === 2
+                ? "Nível 2 • Atraso"
+                : "Nível 3 • Julius";
 
             return (
               <button
@@ -252,40 +257,78 @@ export function WhatsappWeaponsSimulator() {
                   lastScrollLevelRef.current = level;
                   setSelectedLevel(level);
                 }}
-                className={`wa-level-btn rounded-2xl border p-4 sm:p-5 text-left transition-all cursor-pointer space-y-2 ${
+                className={`rounded-xl border px-2.5 py-2.5 text-left transition-all cursor-pointer ${
                   isActive
                     ? item.activeBorderClass
-                    : "border-border bg-card hover:border-zinc-700"
+                    : "border-border bg-card text-zinc-400"
                 }`}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`size-2.5 rounded-full shrink-0 ${item.dotClass}`}
-                    />
-                    <span className="font-heading text-sm sm:text-base font-bold text-white">
-                      {item.title}
-                    </span>
-                  </div>
-
+                <div className="flex items-center gap-1.5">
                   <span
-                    className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border shrink-0 ${item.badgeClass}`}
-                  >
-                    {item.subtitle}
+                    className={`size-2 rounded-full shrink-0 ${item.dotClass}`}
+                  />
+                  <span className="font-heading text-xs font-bold text-white truncate">
+                    {mobileShortLabel}
                   </span>
                 </div>
-
-                <p className="text-xs font-mono text-zinc-400 line-clamp-2">
-                  {item.buildMessage(currentDebtor)}
-                </p>
+                <span className="text-[10px] font-mono text-zinc-400 block mt-0.5 truncate">
+                  {item.subtitle}
+                </span>
               </button>
             );
           })}
         </div>
 
-        {/* Coluna Direita: Mockup Fiel do Disparo no WhatsApp */}
-        <div className="wa-preview-window lg:col-span-7">
-          <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs h-full flex flex-col justify-between gap-5">
+        {/* Grid do Simulador */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {/* Coluna Esquerda (Apenas Desktop >= lg): Seleção Detalhada dos 3 Níveis Reais */}
+          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between gap-3">
+            {([1, 2, 3] as WeaponLevel[]).map((level) => {
+              const item = WEAPON_LEVELS[level];
+              const isActive = selectedLevel === level;
+
+              return (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => {
+                    lastScrollLevelRef.current = level;
+                    setSelectedLevel(level);
+                  }}
+                  className={`wa-level-btn rounded-2xl border p-4 sm:p-5 text-left transition-all cursor-pointer space-y-2 ${
+                    isActive
+                      ? item.activeBorderClass
+                      : "border-border bg-card hover:border-zinc-700"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`size-2.5 rounded-full shrink-0 ${item.dotClass}`}
+                      />
+                      <span className="font-heading text-sm sm:text-base font-bold text-white">
+                        {item.title}
+                      </span>
+                    </div>
+
+                    <span
+                      className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border shrink-0 ${item.badgeClass}`}
+                    >
+                      {item.subtitle}
+                    </span>
+                  </div>
+
+                  <p className="text-xs font-mono text-zinc-400 line-clamp-2">
+                    {item.buildMessage(currentDebtor)}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Coluna Direita: Mockup Fiel do Disparo no WhatsApp */}
+          <div className="wa-preview-window lg:col-span-7">
+            <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-xs h-full flex flex-col justify-between gap-4 sm:gap-5">
             {/* Topo da Janela de Mensagem + Termômetro de Pressão */}
             <div className="space-y-3 pb-4 border-b border-zinc-800">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -373,6 +416,7 @@ export function WhatsappWeaponsSimulator() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </section>
   );

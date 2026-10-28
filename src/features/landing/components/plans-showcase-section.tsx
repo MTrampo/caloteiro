@@ -8,6 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { Button } from "@/components/ui/button";
 import { SharkBehaviorBox } from "@/features/subscription/components/shark-behavior-box";
+import { ResponsiveCardsCarousel } from "@/components/cards/responsive-cards-carousel";
 import tlSvg from "@/commons/assets/svgs/tl.svg";
 import tbSvg from "@/commons/assets/svgs/tb.svg";
 import tccSvg from "@/commons/assets/svgs/tcc.svg";
@@ -214,9 +215,12 @@ export function PlansShowcaseSection() {
     <section
       ref={sectionWrapperRef}
       id="planos"
-      className="py-14 sm:py-20 border-t border-b border-border/60"
+      className="w-full py-12 sm:py-20 border-b border-border/60 bg-background"
     >
-      <div ref={pinBlockRef} className="w-full space-y-5">
+      <div
+        ref={pinBlockRef}
+        className="w-full mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl space-y-5"
+      >
         {/* Cabeçalho da Seção (Regra 7: Sem ícones no h2, sem pílula acima do título) */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
           <div className="space-y-1.5 max-w-2xl">
@@ -224,7 +228,7 @@ export function PlansShowcaseSection() {
               Qual espécie de Tubarão representa a sua fome de receber?
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 font-mono leading-relaxed">
-              Role a página (ou clique nas etapas abaixo) para descobrir para
+              Role a página (ou toque nas etapas abaixo) para descobrir para
               quem serve cada tubarão antes de escolher o seu plano.
             </p>
           </div>
@@ -239,7 +243,7 @@ export function PlansShowcaseSection() {
         </div>
 
         {/* Barra de Stepper (4 Passos: TL -> TB -> TCC -> Comparativo) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5">
           {STEP_NAVS.map((item) => {
             const isActive = activeStep === item.index;
             const isCompleted = activeStep > item.index;
@@ -249,7 +253,7 @@ export function PlansShowcaseSection() {
                 key={item.index}
                 type="button"
                 onClick={() => handleManualStepSelect(item.index)}
-                className={`text-left rounded-xl border p-3 transition-all cursor-pointer ${
+                className={`text-left rounded-xl border p-2.5 sm:p-3 transition-all cursor-pointer ${
                   isActive
                     ? "border-emerald-500/50 bg-emerald-500/10 text-white shadow-xs"
                     : isCompleted
@@ -287,11 +291,14 @@ export function PlansShowcaseSection() {
           })}
         </div>
 
-        {/* Palco Principal com Altura Padronizada para Todos os 4 Steps */}
-        <div ref={stageRef} className="w-full min-h-[510px] flex flex-col justify-center">
+        {/* Palco Principal com Altura Padronizada no Desktop e Fluida no Mobile */}
+        <div
+          ref={stageRef}
+          className="w-full lg:min-h-[510px] flex flex-col justify-center"
+        >
           {currentShark ? (
             /* STEPS 1, 2 e 3: Foco Total em "Para Quem Serve" (Sem repetir SharkBehaviorBox) */
-            <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 lg:p-9 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center shadow-xl min-h-[510px]">
+            <div className="rounded-2xl border border-border bg-card p-4 sm:p-8 lg:p-9 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center shadow-xl lg:min-h-[510px]">
               {/* Coluna Esquerda (5 cols): Ilustração Oficial do Tubarão (tl.svg, tb.svg, tcc.svg) */}
               <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
                 <div
@@ -305,18 +312,18 @@ export function PlansShowcaseSection() {
                   }`}
                 />
 
-                <div className="relative w-full max-w-[290px] sm:max-w-[330px] mx-auto select-none">
+                <div className="relative w-full max-w-[180px] sm:max-w-[260px] lg:max-w-[330px] mx-auto select-none">
                   <Image
                     src={currentShark.svg}
                     alt={`Ilustração ${currentShark.name}`}
                     unoptimized
-                    className="w-full h-auto max-h-[320px] object-contain drop-shadow-[0_18px_36px_rgba(0,0,0,0.65)]"
+                    className="w-full h-auto max-h-[180px] sm:max-h-[260px] lg:max-h-[320px] object-contain drop-shadow-[0_18px_36px_rgba(0,0,0,0.65)]"
                   />
                 </div>
               </div>
 
               {/* Coluna Direita (7 cols): Destaque Exclusivo em "Para Quem Serve" com 5 Sinais Clássicos */}
-              <div className="lg:col-span-7 space-y-5">
+              <div className="lg:col-span-7 space-y-4 sm:space-y-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h3 className="font-heading text-2xl sm:text-3xl font-bold text-white">
@@ -330,19 +337,15 @@ export function PlansShowcaseSection() {
                       ({currentShark.period})
                     </p>
                   </div>
-
-                  <span className="text-xs font-mono font-bold px-3 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300">
-                    Etapa {currentShark.stepIndex + 1} de 4
-                  </span>
                 </div>
 
                 {/* Bloco Principal: Para Quem Serve Este Plano (Expandido e Sem Repetição) */}
-                <div className="rounded-xl border border-zinc-800/90 bg-zinc-950/60 p-5 space-y-3.5">
+                <div className="rounded-xl border border-zinc-800/90 bg-zinc-950/60 p-4 sm:p-5 space-y-3 sm:space-y-3.5">
                   <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-400 block">
                     Para quem serve o {currentShark.name}?
                   </span>
 
-                  <p className="font-heading text-lg sm:text-xl font-bold text-white leading-snug">
+                  <p className="font-heading text-base sm:text-xl font-bold text-white leading-snug">
                     &ldquo;{currentShark.whoItServesHeadline}&rdquo;
                   </p>
 
@@ -361,7 +364,7 @@ export function PlansShowcaseSection() {
                 </div>
 
                 {/* Ações do Step */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 pt-1">
                   <Button
                     render={<Link href="/cadastrar" />}
                     size="lg"
@@ -378,7 +381,7 @@ export function PlansShowcaseSection() {
                     onClick={() =>
                       handleManualStepSelect(currentShark.stepIndex + 1)
                     }
-                    className="text-xs font-mono text-zinc-400 hover:text-white transition-colors cursor-pointer py-2"
+                    className="text-xs font-mono font-bold text-zinc-300 hover:text-white bg-zinc-900/80 sm:bg-transparent border border-zinc-800 sm:border-0 rounded-xl px-4 py-2.5 sm:p-2 transition-colors cursor-pointer text-center"
                   >
                     {currentShark.stepIndex < 2
                       ? "Próxima espécie de Tubarão ➔"
@@ -388,12 +391,12 @@ export function PlansShowcaseSection() {
               </div>
             </div>
           ) : (
-            /* STEP 4: Cards Comparativos dos 3 Planos (Onde entra o SharkBehaviorBox + Limites) */
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 min-h-[510px]">
+            /* STEP 4: Cards Comparativos dos 3 Planos com ResponsiveCardsCarousel no Mobile/Tablet e Grid 3 Colunas no Desktop */
+            <ResponsiveCardsCarousel desktopColumns={3} tabletColumns={2}>
               {SHARK_SPECIES_STEPS.map((plan) => (
                 <div
                   key={plan.id}
-                  className={`rounded-2xl border p-5 sm:p-6 flex flex-col justify-between gap-4 ${
+                  className={`h-full rounded-2xl border p-4 sm:p-6 flex flex-col justify-between gap-4 ${
                     plan.isFeatured
                       ? "border-emerald-500/50 bg-card ring-1 ring-emerald-500/20 shadow-lg"
                       : "border-border bg-card shadow-xs"
@@ -475,7 +478,7 @@ export function PlansShowcaseSection() {
                   </div>
                 </div>
               ))}
-            </div>
+            </ResponsiveCardsCarousel>
           )}
         </div>
       </div>

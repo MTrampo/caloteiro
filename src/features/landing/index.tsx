@@ -6,8 +6,12 @@ import { Logo } from "@/components/ui/logo";
 import { HeroCommandShowcase } from "./components/hero-command-showcase";
 import { GrottoCommandSimulation } from "./components/grotto-command-simulation";
 import { WhatsappWeaponsSimulator } from "./components/whatsapp-weapons-simulator";
+import { DebtorPortalShowcase } from "./components/debtor-portal-showcase";
 import { RealFeaturesBento } from "./components/real-features-bento";
-import { FinalClosingBanner } from "./components/grotto-manifesto-banner";
+import {
+  GrottoVisualShowcase,
+  FinalClosingBanner,
+} from "./components/grotto-manifesto-banner";
 import { PlansShowcaseSection } from "./components/plans-showcase-section";
 import { LandingFaqSection } from "./components/landing-faq-section";
 import { FaInstagram, FaWhatsapp, FaArrowUpRightFromSquare } from "react-icons/fa6";
@@ -17,12 +21,12 @@ export function LandingFeature() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Cabeçalho Sticky (Acompanha o Scroll sem barra de progresso) */}
       <header className="sticky top-0 z-50 flex h-14 shrink-0 items-center border-b border-border bg-background/90 backdrop-blur-md">
-        <div className="w-full mx-auto px-6 max-w-5xl md:max-w-7xl flex items-center justify-between gap-4">
-          <Link href="/" className="cursor-pointer select-none">
-            <Logo size="md" showText />
+        <div className="w-full mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl flex items-center justify-between gap-2 sm:gap-4">
+          <Link href="/" className="cursor-pointer select-none shrink-0">
+            <Logo size="sm" showText />
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6 text-xs font-mono text-zinc-400">
+          <nav className="hidden lg:flex items-center gap-6 text-xs font-mono text-zinc-400">
             <a
               href="#central-gruta"
               className="hover:text-white transition-colors"
@@ -35,6 +39,12 @@ export function LandingFeature() {
             >
               Armas de WhatsApp
             </a>
+            <a
+              href="#portal-devedor"
+              className="hover:text-white transition-colors"
+            >
+              Link do Devedor
+            </a>
             <a href="#arsenal" className="hover:text-white transition-colors">
               Recursos
             </a>
@@ -46,16 +56,16 @@ export function LandingFeature() {
             </a>
           </nav>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             <Link
               href="/entrar"
-              className="inline-flex items-center h-9 px-3.5 text-xs font-mono text-zinc-300 hover:text-white transition-colors"
+              className="inline-flex items-center h-8 sm:h-9 px-2.5 sm:px-3.5 text-[11px] sm:text-xs font-mono text-zinc-300 hover:text-white transition-colors"
             >
               Entrar
             </Link>
             <Link
               href="/cadastrar"
-              className="inline-flex items-center h-9 px-4 text-xs font-heading font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl transition-all cursor-pointer"
+              className="inline-flex items-center h-8 sm:h-9 px-3 sm:px-4 text-[11px] sm:text-xs font-heading font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl transition-all cursor-pointer whitespace-nowrap"
             >
               Criar Gruta Grátis
             </Link>
@@ -63,24 +73,22 @@ export function LandingFeature() {
         </div>
       </header>
 
-      {/* Conteúdo Principal da Apresentação */}
+      {/* Conteúdo Principal da Apresentação (Seções 100% Full-Width com contraste e bordas de ponta a ponta) */}
       <main className="flex-1 w-full overflow-x-clip">
-        <div className="w-full mx-auto px-6 max-w-5xl md:max-w-7xl">
-          <HeroCommandShowcase />
-          <GrottoCommandSimulation />
-          <WhatsappWeaponsSimulator />
-          <RealFeaturesBento />
-          <PlansShowcaseSection />
-          <LandingFaqSection />
-        </div>
-
-        {/* Fechamento de Ponta a Ponta (100% Width) com a arte background.svg completa */}
+        <HeroCommandShowcase />
+        <GrottoCommandSimulation />
+        <WhatsappWeaponsSimulator />
+        <DebtorPortalShowcase />
+        <RealFeaturesBento />
+        <GrottoVisualShowcase />
+        <PlansShowcaseSection />
+        <LandingFaqSection />
         <FinalClosingBanner />
       </main>
 
       {/* Rodapé Completo da Gruta */}
-      <footer className="border-t border-border/60 bg-zinc-950/90 pt-12 pb-8 text-xs font-mono text-zinc-400">
-        <div className="mx-auto px-6 max-w-5xl md:max-w-7xl space-y-10">
+      <footer className="border-t border-border/60 bg-zinc-950/90 pt-10 sm:pt-12 pb-8 text-xs font-mono text-zinc-400">
+        <div className="mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl space-y-10">
           {/* Topo do Rodapé: Marca + Canais Sociais + Colunas de Links */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-8 border-b border-zinc-800/80">
             {/* Coluna 1: Identidade + Instagram & WhatsApp Suporte (6 cols) */}

@@ -12,6 +12,7 @@ import {
   ROUTE_ASSINATURA,
   ROUTE_CONVITE,
   ROUTE_FATURA,
+  ROUTE_DOCUMENTOS,
   SUBSCRIPTION_GRACE_PERIOD_MS,
 } from "@/commons/constants";
 import {
@@ -83,7 +84,8 @@ export async function handleRouteAccess(
   const isPublicPath =
     PUBLIC_PATHS.some((path) => pathname === path) ||
     pathname.startsWith(ROUTE_CONVITE) ||
-    pathname.startsWith(ROUTE_FATURA);
+    pathname.startsWith(ROUTE_FATURA) ||
+    pathname.startsWith(ROUTE_DOCUMENTOS);
 
   // API não autenticada → 401
   if (!user && pathname.startsWith("/api/") && !isPublicApiRoute) {

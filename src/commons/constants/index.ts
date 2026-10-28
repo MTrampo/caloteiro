@@ -4,6 +4,7 @@ export const ROUTE_PAINEL = "/painel";
 export const ROUTE_ASSINATURA = "/assinatura";
 export const ROUTE_CONVITE = "/convite";
 export const ROUTE_FATURA = "/fatura";
+export const ROUTE_DOCUMENTOS = "/documentos";
 
 
 export const PUBLIC_PATHS = [

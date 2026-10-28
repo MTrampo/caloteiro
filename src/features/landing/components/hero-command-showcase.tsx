@@ -13,27 +13,19 @@ import { FaArrowRight, FaCheck } from "react-icons/fa6";
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 export function HeroCommandShowcase() {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const leftColumnRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = React.useRef<HTMLElement>(null);
   const heroVisualRef = React.useRef<HTMLDivElement>(null);
   const floatingImageRef = React.useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-
-      tl.fromTo(
-        ".hero-reveal",
-        { y: 28, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.75, stagger: 0.12 }
-      ).fromTo(
+      // Apenas a ilustração da direita possui animação de entrada, flutuação e parallax
+      gsap.fromTo(
         heroVisualRef.current,
-        { y: 36, opacity: 0, scale: 0.94 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.9 },
-        "-=0.45"
+        { y: 24, opacity: 0, scale: 0.96 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.85, ease: "power3.out" }
       );
 
-      // Flutuação contínua suave da arte principal do Hero
       if (floatingImageRef.current) {
         gsap.to(floatingImageRef.current, {
           y: -12,
@@ -44,21 +36,9 @@ export function HeroCommandShowcase() {
         });
       }
 
-      // Parallax em planos opostos conforme o usuário rola a página
-      gsap.to(leftColumnRef.current, {
-        y: -44,
-        ease: "none",
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: 0.6,
-        },
-      });
-
       gsap.to(heroVisualRef.current, {
-        y: 36,
-        scale: 0.96,
+        y: 28,
+        scale: 0.97,
         ease: "none",
         scrollTrigger: {
           trigger: containerRef.current,
@@ -74,17 +54,17 @@ export function HeroCommandShowcase() {
   return (
     <section
       ref={containerRef}
-      className="relative pt-8 pb-16 sm:pt-14 sm:pb-24 border-b border-border/60"
+      className="relative w-full pt-6 pb-12 sm:pt-14 sm:pb-24 border-b border-border/60 bg-background"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
-        {/* Coluna Esquerda: Narrativa Principal */}
-        <div ref={leftColumnRef} className="lg:col-span-6 space-y-6">
-          <div className="space-y-4">
-            <h1 className="hero-reveal font-heading text-3xl sm:text-5xl font-bold tracking-tight text-white leading-[1.12]">
+      <div className="w-full mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
+        {/* Coluna Esquerda: Narrativa Principal Estática (Visível Imediatamente) */}
+        <div className="lg:col-span-6 space-y-5 sm:space-y-6">
+          <div className="space-y-3 sm:space-y-4">
+            <h1 className="font-heading text-3xl sm:text-5xl font-bold tracking-tight text-white leading-[1.12]">
               Eles fingem que esqueceram. O Tubarão lembra até o último centavo.
             </h1>
 
-            <p className="hero-reveal text-xs sm:text-base text-zinc-400 font-mono leading-relaxed max-w-xl">
+            <p className="text-xs sm:text-base text-zinc-400 font-mono leading-relaxed max-w-xl">
               Chega de anotar dívidas em bloco de notas e ficar com vergonha de
               cobrar. Marque suas presas na gruta, registre cada caô e deixe o
               sistema cobrar o seu Pix.
@@ -92,11 +72,11 @@ export function HeroCommandShowcase() {
           </div>
 
           {/* Botões de Ação Principais (Regra 4A: CTA em Branco) */}
-          <div className="hero-reveal flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1">
             <Button
               render={<Link href="/cadastrar" />}
               size="lg"
-              className="bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl h-12 px-6 text-sm shadow-sm cursor-pointer justify-center"
+              className="bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl h-11 sm:h-12 px-6 text-xs sm:text-sm shadow-sm cursor-pointer justify-center"
             >
               <span>Abrir Minha Gruta Grátis</span>
               <FaArrowRight className="size-3.5 ml-2" />
@@ -106,24 +86,24 @@ export function HeroCommandShowcase() {
               render={<a href="#central-gruta" />}
               variant="outline"
               size="lg"
-              className="border-zinc-800 bg-zinc-950/60 hover:bg-zinc-900 text-zinc-200 font-mono text-xs sm:text-sm rounded-xl h-12 px-5 cursor-pointer justify-center"
+              className="border-zinc-800 bg-zinc-950/60 hover:bg-zinc-900 text-zinc-200 font-mono text-xs sm:text-sm rounded-xl h-11 sm:h-12 px-5 cursor-pointer justify-center"
             >
               Ver Central da Gruta em Ação
             </Button>
           </div>
 
-          {/* Destaques Rápidos Reais */}
-          <div className="hero-reveal grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-border/50 text-xs font-mono text-zinc-400">
-            <div className="flex items-center gap-2">
-              <FaCheck className="size-3.5 text-emerald-400 shrink-0" />
+          {/* Destaques Rápidos Reais (Em linha fluida no mobile para economizar altura) */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-3 border-t border-border/50 text-[11px] sm:text-xs font-mono text-zinc-400">
+            <div className="flex items-center gap-1.5">
+              <FaCheck className="size-3 text-emerald-400 shrink-0" />
               <span>Grátis até 2 presas</span>
             </div>
-            <div className="flex items-center gap-2">
-              <FaCheck className="size-3.5 text-emerald-400 shrink-0" />
+            <div className="flex items-center gap-1.5">
+              <FaCheck className="size-3 text-emerald-400 shrink-0" />
               <span>Amortização em cascata</span>
             </div>
-            <div className="flex items-center gap-2">
-              <FaCheck className="size-3.5 text-emerald-400 shrink-0" />
+            <div className="flex items-center gap-1.5">
+              <FaCheck className="size-3 text-emerald-400 shrink-0" />
               <span>Disparo no WhatsApp</span>
             </div>
           </div>
@@ -134,7 +114,6 @@ export function HeroCommandShowcase() {
           ref={heroVisualRef}
           className="lg:col-span-6 flex items-center justify-center relative"
         >
-          {/* Iluminação atmosférica suave ao fundo da arte */}
           <div
             aria-hidden="true"
             className="absolute inset-6 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"
@@ -142,7 +121,7 @@ export function HeroCommandShowcase() {
 
           <div
             ref={floatingImageRef}
-            className="relative w-full max-w-[520px] mx-auto select-none"
+            className="relative w-full max-w-[290px] sm:max-w-[420px] lg:max-w-[520px] mx-auto select-none"
           >
             <Image
               src={heroIllustration}

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { isSubscriptionActive } from "@/commons/lib/http/security";
+import { isSubscriptionActive, handleRouteAccess } from "@/commons/lib/http/security";
 import { MercadoPagoStatusEnum } from "@/commons/enums/subscription";
 import type { SubscriptionPayloadCookie } from "@/commons/models/subscription";
 import {
@@ -13,6 +13,7 @@ import * as debtorSupabase from "@/server/debtors/repository/debtor.supabase";
 import * as subscriptionService from "@/server/account/service/subscription.api";
 import type { DebtRow, InstallmentRow } from "@/commons/models/debt";
 import { HttpStatusEnum } from "@/commons/enums/http";
+import { NextRequest, NextResponse } from "next/server";
 
 vi.mock("@/server/debts/repository/debt.supabase");
 vi.mock("@/server/debtors/repository/debtor.supabase");
@@ -286,6 +287,39 @@ describe("Blindagem de Segurança, Anti-Bypass e Zero Trust", () => {
 
       expect(responseZero.status).toBe(HttpStatusEnum.BadRequest);
       expect(responseZero.message).toContain("superior a zero");
+    });
+  });
+
+  describe("Acesso Público a Documentos Legais e Isenções (handleRouteAccess)", () => {
+    it("deve permitir acesso público e sem autenticação às rotas de /documentos/**", async () => {
+      const paths = [
+        "http://localhost:3000/documentos/planos",
+        "http://localhost:3000/documentos/termos",
+        "http://localhost:3000/documentos/privacidade",
+      ];
+
+      for (const urlStr of paths) {
+        const req = new NextRequest(new URL(urlStr));
+        const res = NextResponse.next();
+
+        // Usuário null (não autenticado)
+        const result = await handleRouteAccess(req, null, res);
+
+        // Não deve redirecionar para /entrar (status 200 / NextResponse.next)
+        expect(result.status).not.toBe(307);
+        expect(result.status).not.toBe(308);
+        expect(result.headers.get("location")).toBeNull();
+      }
+    });
+
+    it("deve redirecionar para /entrar quando usuário não autenticado tentar acessar rota privada", async () => {
+      const req = new NextRequest(new URL("http://localhost:3000/painel"));
+      const res = NextResponse.next();
+
+      const result = await handleRouteAccess(req, null, res);
+
+      expect(result.status).toBe(307);
+      expect(result.headers.get("location")).toContain("/entrar");
     });
   });
 });
