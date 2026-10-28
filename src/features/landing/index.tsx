@@ -14,9 +14,19 @@ import {
 } from "./components/grotto-manifesto-banner";
 import { PlansShowcaseSection } from "./components/plans-showcase-section";
 import { LandingFaqSection } from "./components/landing-faq-section";
-import { FaInstagram, FaWhatsapp, FaArrowUpRightFromSquare } from "react-icons/fa6";
+import {
+  FaInstagram,
+  FaWhatsapp,
+  FaArrowUpRightFromSquare,
+  FaRightToBracket,
+  FaGaugeHigh,
+} from "react-icons/fa6";
 
-export function LandingFeature() {
+interface LandingFeatureProps {
+  isLoggedIn?: boolean;
+}
+
+export function LandingFeature({ isLoggedIn = false }: LandingFeatureProps) {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Cabeçalho Sticky (Acompanha o Scroll sem barra de progresso) */}
@@ -56,19 +66,26 @@ export function LandingFeature() {
             </a>
           </nav>
 
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-            <Link
-              href="/entrar"
-              className="inline-flex items-center h-8 sm:h-9 px-2.5 sm:px-3.5 text-[11px] sm:text-xs font-mono text-zinc-300 hover:text-white transition-colors"
-            >
-              Entrar
-            </Link>
-            <Link
-              href="/cadastrar"
-              className="inline-flex items-center h-8 sm:h-9 px-3 sm:px-4 text-[11px] sm:text-xs font-heading font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl transition-all cursor-pointer whitespace-nowrap"
-            >
-              Criar Gruta Grátis
-            </Link>
+          <div className="flex items-center gap-2 shrink-0">
+            {isLoggedIn ? (
+              <Link
+                href="/painel"
+                title="Acessar Painel da Gruta"
+                aria-label="Acessar Painel da Gruta"
+                className="relative inline-flex items-center justify-center size-9 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 transition-all cursor-pointer group"
+              >
+                <FaGaugeHigh className="size-4 transition-transform group-hover:scale-110" />
+              </Link>
+            ) : (
+              <Link
+                href="/entrar"
+                title="Entrar na Conta"
+                aria-label="Entrar na Conta"
+                className="inline-flex items-center justify-center size-9 rounded-xl border border-zinc-800 bg-zinc-900/80 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white transition-all cursor-pointer group"
+              >
+                <FaRightToBracket className="size-4 transition-transform group-hover:scale-110" />
+              </Link>
+            )}
           </div>
         </div>
       </header>

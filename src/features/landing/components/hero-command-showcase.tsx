@@ -96,15 +96,15 @@ export function HeroCommandShowcase() {
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-3 border-t border-border/50 text-[11px] sm:text-xs font-mono text-zinc-400">
             <div className="flex items-center gap-1.5">
               <FaCheck className="size-3 text-emerald-400 shrink-0" />
-              <span>Grátis até 2 presas</span>
+              <span>Controle financeiro de verdade</span>
             </div>
             <div className="flex items-center gap-1.5">
               <FaCheck className="size-3 text-emerald-400 shrink-0" />
-              <span>Amortização em cascata</span>
+              <span>Acompanhamento de meteção de louco</span>
             </div>
             <div className="flex items-center gap-1.5">
               <FaCheck className="size-3 text-emerald-400 shrink-0" />
-              <span>Disparo no WhatsApp</span>
+              <span>Cobrança facilitada no WhatsApp</span>
             </div>
           </div>
         </div>

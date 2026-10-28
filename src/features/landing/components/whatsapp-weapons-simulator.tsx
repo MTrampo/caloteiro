@@ -60,7 +60,7 @@ const WEAPON_LEVELS: Record<
     barColorClass: "bg-emerald-400",
     buildMessage: (d) =>
       `Fala ${d.name}, beleza? Passando só pra lembrar que aquela nossa parcela de ${d.amount} vence hoje. Segue a chave Pix: 123.456.789-00 (Tubarão - Nubank). Valeu!`,
-    signature: "_(Notificação automática de vencimento • Sistema Caloteiro)_",
+    signature: "_(Mensagem de cobrança facilitada • Sistema Caloteiro)_",
   },
   2: {
     title: "Nível 2 — Cutucada Ácida do Caloteiro",
@@ -72,7 +72,7 @@ const WEAPON_LEVELS: Record<
     barColorClass: "bg-amber-400",
     buildMessage: (d) =>
       `E aí ${d.name}! O prazo da parcela de ${d.amount} venceu faz ${d.lateDays} dias e o Pix não pingou. Meu boleto não espera, meu parceiro! Manda aí: 123.456.789-00 (Tubarão).`,
-    signature: "_(Disparo automático de cobrança • Sistema Caloteiro)_",
+    signature: "_(Cobrança calculada • Sistema Caloteiro)_",
   },
   3: {
     title: "Nível 3 — Pressão Total / Modo Julius",
@@ -84,7 +84,7 @@ const WEAPON_LEVELS: Record<
     barColorClass: "bg-rose-500",
     buildMessage: (d) =>
       `Alerta vermelho, ${d.name}. Você sumiu há ${d.lateDays} dias com os ${d.amount} em aberto. Já posso ligar pra sua mãe ou você vai honrar essa dívida agora? Chave Pix: 123.456.789-00.`,
-    signature: "_(Alerta crítico automático • Sistema Caloteiro)_",
+    signature: "_(Aviso de atraso crítico • Sistema Caloteiro)_",
   },
 };
 
@@ -206,9 +206,10 @@ export function WhatsappWeaponsSimulator() {
               Três níveis de pressão. Zero vergonha de cobrar.
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 font-mono leading-relaxed">
-              Role pela seção ou toque nos níveis abaixo. A mensagem já sai com
-              sua Chave Pix interpolada e assinada como disparo automático para
-              tirar o constrangimento das suas costas.
+              Você tem o controle total: o Caloteiro não envia mensagens sozinho
+              pelas suas costas. O sistema gera a mensagem personalizada com
+              valores e Chave Pix calculados, e você só clica para abrir o seu
+              WhatsApp e enviar com 1 toque.
             </p>
           </div>
 
@@ -338,7 +339,7 @@ export function WhatsappWeaponsSimulator() {
                   </div>
                   <div>
                     <span className="font-heading text-sm sm:text-base font-bold text-white block">
-                      Prévia da Mensagem Pronta para Disparo
+                      Prévia da Mensagem Pronta para Envio
                     </span>
                     <span className="text-xs font-mono text-zinc-400">
                       Para: {currentDebtor.name} ({currentDebtor.relation}) •
@@ -375,6 +376,14 @@ export function WhatsappWeaponsSimulator() {
               <p className="text-xs font-mono text-emerald-400/90 italic pt-2 border-t border-zinc-800/80">
                 {currentWeapon.signature.replace(/^_|_$/g, "")}
               </p>
+            </div>
+
+            {/* Aviso de Envio Humano e Transparência */}
+            <div className="flex items-center gap-2 px-1 text-[11px] font-mono text-zinc-400">
+              <FaCheck className="size-3 text-emerald-400 shrink-0" />
+              <span>
+                Envio facilitado com 1 toque: você sempre confere antes de enviar pelo seu próprio WhatsApp.
+              </span>
             </div>
 
             {/* Rodapé Explicativo das Variáveis + Botão Copiar Teste */}

@@ -78,9 +78,6 @@ export function GrottoCommandSimulation() {
   const kpiWrapperRef = React.useRef<HTMLDivElement>(null);
   const panelsGridRef = React.useRef<HTMLDivElement>(null);
   const toastBannerRef = React.useRef<HTMLDivElement>(null);
-  const autoDemoTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
-    null
-  );
 
   const [isSettledDemo, setIsSettledDemo] = React.useState(false);
   const [openAmount, setOpenAmount] = React.useState(2450);
@@ -173,9 +170,6 @@ export function GrottoCommandSimulation() {
             });
           },
           onLeaveBack: () => {
-            if (autoDemoTimerRef.current) {
-              clearTimeout(autoDemoTimerRef.current);
-            }
             setIsSettledDemo(false);
           },
         },
@@ -202,26 +196,6 @@ export function GrottoCommandSimulation() {
         },
         "-=0.3"
       );
-
-      // 2. Simulação automática da baixa do Pix SÓ dispara quando o painel de cards está centralizado na tela
-      ScrollTrigger.create({
-        trigger: panelsGridRef.current,
-        start: "top 58%",
-        onEnter: () => {
-          if (autoDemoTimerRef.current) {
-            clearTimeout(autoDemoTimerRef.current);
-          }
-          autoDemoTimerRef.current = setTimeout(() => {
-            triggerPixSettlement(true);
-          }, 1400);
-        },
-      });
-
-      return () => {
-        if (autoDemoTimerRef.current) {
-          clearTimeout(autoDemoTimerRef.current);
-        }
-      };
     },
     { scope: sectionRef }
   );
@@ -296,9 +270,6 @@ export function GrottoCommandSimulation() {
             <button
               type="button"
               onClick={() => {
-                if (autoDemoTimerRef.current) {
-                  clearTimeout(autoDemoTimerRef.current);
-                }
                 triggerPixSettlement(!isSettledDemo);
               }}
               className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 text-xs font-mono font-bold px-4 py-2.5 rounded-xl border transition-all cursor-pointer ${
@@ -436,9 +407,6 @@ export function GrottoCommandSimulation() {
                 }
                 totalInstallments={4}
                 onPayInstallment={() => {
-                  if (autoDemoTimerRef.current) {
-                    clearTimeout(autoDemoTimerRef.current);
-                  }
                   triggerPixSettlement(true);
                 }}
                 onAddExcuse={handleManualExcuse}
