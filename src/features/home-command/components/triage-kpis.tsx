@@ -19,12 +19,12 @@ export function TriageKPIsGrid({ kpis }: TriageKPIsProps) {
         href="/painel/dividas/acompanhamento"
         className="group rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-xs hover:border-zinc-700 transition-all flex flex-col justify-between gap-4 h-full"
       >
-        <div className="flex items-center justify-between gap-2 min-w-0">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5 min-w-0 truncate">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 min-w-0">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5 min-w-0">
             <FaClock className="size-3 text-amber-400 shrink-0" />
             <span className="truncate">Vencem Esta Semana</span>
           </span>
-          <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-bold whitespace-nowrap shrink-0">
+          <span className="self-start sm:self-auto px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-bold whitespace-nowrap shrink-0">
             Fique de Olho
           </span>
         </div>
@@ -52,12 +52,12 @@ export function TriageKPIsGrid({ kpis }: TriageKPIsProps) {
         href="/painel/dividas/acompanhamento"
         className="group rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-xs hover:border-zinc-700 transition-all flex flex-col justify-between gap-4 h-full"
       >
-        <div className="flex items-center justify-between gap-2 min-w-0">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5 min-w-0 truncate">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 min-w-0">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5 min-w-0">
             <FaCircleCheck className="size-3 text-emerald-400 shrink-0" />
             <span className="truncate">Pix nos Últimos 7 Dias</span>
           </span>
-          <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold whitespace-nowrap shrink-0">
+          <span className="self-start sm:self-auto px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold whitespace-nowrap shrink-0">
             Milagres Recentes
           </span>
         </div>
@@ -85,12 +85,12 @@ export function TriageKPIsGrid({ kpis }: TriageKPIsProps) {
         href="/painel/dividas/acompanhamento"
         className="group rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-xs hover:border-zinc-700 transition-all flex flex-col justify-between gap-4 h-full"
       >
-        <div className="flex items-center justify-between gap-2 min-w-0">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5 min-w-0 truncate">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 min-w-0">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5 min-w-0">
             <FaTriangleExclamation className="size-3 text-rose-500 shrink-0" />
             <span className="truncate">Risco Crítico (&gt; 30d)</span>
           </span>
-          <span className="px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] font-mono font-bold whitespace-nowrap shrink-0">
+          <span className="self-start sm:self-auto px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] font-mono font-bold whitespace-nowrap shrink-0">
             Alerta Vermelho
           </span>
         </div>

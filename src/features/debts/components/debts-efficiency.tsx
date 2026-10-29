@@ -41,7 +41,7 @@ export function DebtsEfficiency({ data }: DebtsEfficiencyProps) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold shadow-2xs">
             <FaCircleCheck className="size-3.5" />
             <span>{globalEfficiencyScore}% Recuperado</span>

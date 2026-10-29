@@ -18,8 +18,10 @@ import * as debtSupabase from "@/server/debts/repository/debt.supabase";
 import * as paymentService from "@/server/payment/service/payment.api";
 import * as subscriptionCookie from "@/commons/lib/auth/subscription";
 import * as emailService from "@/server/email/service/email.api";
+import * as authSupabase from "../repository/auth.supabase";
 
 vi.mock("../repository/subscription.supabase");
+vi.mock("../repository/auth.supabase");
 vi.mock("@/server/debtors/repository/debtor.supabase");
 vi.mock("@/server/debts/repository/debt.supabase");
 vi.mock("@/server/payment/service/payment.api");
@@ -32,6 +34,7 @@ describe("Serviço de Assinaturas (subscription.api.ts)", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(authSupabase.updateProfileAvatarSupabase).mockResolvedValue({ data: null, error: null });
   });
 
   describe("getUserPermissionsOrCacheApi (Cache e Permissões)", () => {
@@ -563,6 +566,12 @@ describe("Serviço de Assinaturas (subscription.api.ts)", () => {
         })
       );
 
+      // Deve ter atualizado o avatar do perfil para a espécie do plano gratuito
+      expect(authSupabase.updateProfileAvatarSupabase).toHaveBeenCalledWith(
+        userId,
+        freePlan.slug
+      );
+
       // Deve ter disparado e-mail de alteração
       expect(emailService.sendPlanChangeEmailApi).toHaveBeenCalledWith(
         userEmail,
@@ -642,6 +651,12 @@ describe("Serviço de Assinaturas (subscription.api.ts)", () => {
           plan_id: paidPlanCabecaChato.id,
           base_value: 49.90,
         })
+      );
+
+      // Deve ter atualizado o avatar do perfil para a nova espécie
+      expect(authSupabase.updateProfileAvatarSupabase).toHaveBeenCalledWith(
+        userId,
+        paidPlanCabecaChato.slug
       );
 
       // Deve ter enviado e-mail

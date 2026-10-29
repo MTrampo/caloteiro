@@ -56,21 +56,23 @@ export function InstallmentCard({
             {installment.installment_number}ª
           </div>
 
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-1.5">
               <span className="font-heading font-bold text-sm text-white">
                 Parcela {installment.installment_number} de {totalInstallments}
               </span>
               <span
-                className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${installment.statusBadgeClass}`}
+                className={`text-[10px] font-mono px-2 py-0.5 rounded-full border whitespace-nowrap w-fit ${installment.statusBadgeClass}`}
               >
                 {installment.statusLabel}
               </span>
             </div>
 
-            <div className="flex items-center gap-2 text-xs font-mono text-zinc-400 mt-0.5">
-              <FaCalendarDays className="size-3 text-zinc-500 shrink-0" />
-              <span>Vencimento: {installment.formattedDueDate}</span>
+            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs font-mono text-zinc-400 mt-0.5">
+              <span className="flex items-center gap-1">
+                <FaCalendarDays className="size-3 text-zinc-500 shrink-0" />
+                <span>Vencimento: {installment.formattedDueDate}</span>
+              </span>
               {isLate && (
                 <span className="text-rose-400 font-semibold flex items-center gap-1">
                   • {installment.lateDaysText}
@@ -88,9 +90,9 @@ export function InstallmentCard({
               variant="secondary"
               size="sm"
               onClick={() => onAddExcuse(installment)}
-              className="w-full sm:w-auto h-9 font-mono text-xs font-bold"
+              className="w-full sm:w-auto h-9 font-mono text-[11px] sm:text-xs font-bold px-2 sm:px-3"
             >
-              <FaCommentDots className="size-3 text-amber-400" />
+              <FaCommentDots className="size-3 text-amber-400 shrink-0" />
               <span>Anotar Caô</span>
             </Button>
 
@@ -99,9 +101,9 @@ export function InstallmentCard({
               variant="default"
               size="sm"
               onClick={() => onPayInstallment(installment)}
-              className="w-full sm:w-auto h-9 font-mono text-xs font-bold"
+              className="w-full sm:w-auto h-9 font-mono text-[11px] sm:text-xs font-bold px-2 sm:px-3"
             >
-              <FaHandHoldingDollar className="size-3" />
+              <FaHandHoldingDollar className="size-3 shrink-0" />
               <span>Baixar Parcela</span>
             </Button>
           </div>
@@ -113,9 +115,9 @@ export function InstallmentCard({
                 variant="outline"
                 size="sm"
                 onClick={() => onViewReceipt?.(installment.receiptUrl!)}
-                className="w-full sm:w-auto h-9 font-mono text-xs font-bold border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 cursor-pointer"
+                className="w-full sm:w-auto h-9 font-mono text-[11px] sm:text-xs font-bold border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 cursor-pointer"
               >
-                <FaEye className="size-3" />
+                <FaEye className="size-3 shrink-0" />
                 <span>Ver Comprovante</span>
               </Button>
             ) : (
@@ -124,9 +126,9 @@ export function InstallmentCard({
                 variant="outline"
                 size="sm"
                 onClick={() => onAttachReceipt?.(installment)}
-                className="w-full sm:w-auto h-9 font-mono text-xs font-bold border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 cursor-pointer"
+                className="w-full sm:w-auto h-9 font-mono text-[11px] sm:text-xs font-bold border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 cursor-pointer"
               >
-                <FaPaperclip className="size-3 text-zinc-400" />
+                <FaPaperclip className="size-3 text-zinc-400 shrink-0" />
                 <span>Anexar Comprovante</span>
               </Button>
             )}
@@ -135,18 +137,18 @@ export function InstallmentCard({
       </div>
 
       {/* Grid de Valores da Parcela */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1 border-t border-border/40 text-xs font-mono">
-        <div>
-          <span className="text-zinc-500 block text-[11px]">Valor de Tabela</span>
-          <span className="text-white font-bold text-sm">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 pt-1 border-t border-border/40 text-xs font-mono">
+        <div className="min-w-0">
+          <span className="text-zinc-500 block text-[10px] sm:text-[11px]">Valor de Tabela</span>
+          <span className="text-white font-bold text-xs sm:text-sm tabular-nums truncate block">
             {installment.formattedNominalAmount}
           </span>
         </div>
 
-        <div>
-          <span className="text-zinc-500 block text-[11px]">Valor Amortizado</span>
+        <div className="min-w-0">
+          <span className="text-zinc-500 block text-[10px] sm:text-[11px]">Valor Amortizado</span>
           <span
-            className={`font-bold text-sm ${
+            className={`font-bold text-xs sm:text-sm tabular-nums truncate block ${
               Number(installment.paid_amount) > 0 ? "text-emerald-400" : "text-zinc-400"
             }`}
           >
@@ -154,10 +156,10 @@ export function InstallmentCard({
           </span>
         </div>
 
-        <div className="col-span-2 sm:col-span-1">
-          <span className="text-zinc-500 block text-[11px]">Saldo em Aberto</span>
+        <div className="col-span-2 sm:col-span-1 min-w-0">
+          <span className="text-zinc-500 block text-[10px] sm:text-[11px]">Saldo em Aberto</span>
           <span
-            className={`font-bold text-sm ${
+            className={`font-bold text-xs sm:text-sm tabular-nums truncate block ${
               isPaid ? "text-zinc-500 line-through" : "text-amber-400"
             }`}
           >

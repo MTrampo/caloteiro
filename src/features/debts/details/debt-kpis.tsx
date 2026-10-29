@@ -30,9 +30,11 @@ export function DebtKpis({ debt }: DebtKpisProps) {
           <div className="text-xl sm:text-2xl font-bold font-mono text-white tracking-tight">
             {debt.formattedTotalAmount}
           </div>
-          <p className="text-xs font-mono text-zinc-400 mt-0.5 truncate">
-            Capital: {debt.formattedOriginalAmount} • {debt.totalInstallmentsCount}x no {debt.categoryLabel}
-          </p>
+          <div className="text-[11px] sm:text-xs font-mono text-zinc-400 mt-0.5 flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 leading-tight">
+            <span>Capital: {debt.formattedOriginalAmount}</span>
+            <span className="hidden sm:inline text-zinc-600">•</span>
+            <span className="truncate">{debt.totalInstallmentsCount}x no {debt.categoryLabel}</span>
+          </div>
         </div>
       </div>
 

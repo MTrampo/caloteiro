@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { PlanLimitModal } from "@/components/modals/plan-limit-modal"
 import { cn } from "@/commons/lib/utils"
-import { FaPlus, FaBolt } from "react-icons/fa6"
+import { FaPlus, FaBolt, FaEllipsisVertical, FaXmark } from "react-icons/fa6"
 
 export interface FloatingActionItem {
   label: string
@@ -38,6 +38,7 @@ export function MobileFloatingAction({
   ariaLabel = "Ações rápidas",
 }: MobileFloatingActionProps) {
   const router = useRouter()
+  const [isOpen, setIsOpen] = React.useState(false)
   const [lockedModalData, setLockedModalData] = React.useState<{
     isOpen: boolean
     lockReason?: "debtor" | "debt"
@@ -79,7 +80,7 @@ export function MobileFloatingAction({
     <>
       <div
         className={cn(
-          "fixed bottom-6 right-5 z-40 sm:hidden pb-[env(safe-area-inset-bottom)]",
+          "fixed bottom-5 right-4 sm:bottom-6 sm:right-5 z-40 sm:hidden pb-[env(safe-area-inset-bottom)]",
           className
         )}
       >
@@ -89,18 +90,22 @@ export function MobileFloatingAction({
             type="button"
             onClick={() => handleActionClick(singleAction)}
             aria-label={singleAction.label || ariaLabel}
-            className="size-14 rounded-full bg-white text-zinc-950 shadow-2xl shadow-black/90 flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer border border-zinc-200/80 touch-manipulation"
+            className="size-12 sm:size-14 rounded-full bg-white text-zinc-950 shadow-2xl shadow-black/90 flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer border border-zinc-200/80 touch-manipulation"
           >
-            {singleAction.icon ?? <FaPlus className="size-5" />}
+            {singleAction.icon ?? <FaPlus className="size-4 sm:size-5" />}
           </button>
         ) : (
-          /* Modo Múltiplas Ações: Botão com DropdownMenu deslizante para cima */
-          <DropdownMenu>
+          /* Modo Múltiplas Ações: Botão com DropdownMenu deslizante para cima e alternância para ✕ */
+          <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
             <DropdownMenuTrigger
               aria-label={ariaLabel}
-              className="size-14 rounded-full bg-white text-zinc-950 shadow-2xl shadow-black/90 flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer border border-zinc-200/80 touch-manipulation outline-none"
+              className="size-12 sm:size-14 rounded-full bg-white text-zinc-950 shadow-2xl shadow-black/90 flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer border border-zinc-200/80 touch-manipulation outline-none"
             >
-              {triggerIcon ?? <FaBolt className="size-5" />}
+              {isOpen ? (
+                <FaXmark className="size-4 sm:size-5 transition-transform duration-200" />
+              ) : (
+                triggerIcon ?? <FaEllipsisVertical className="size-4 sm:size-5 transition-transform duration-200" />
+              )}
             </DropdownMenuTrigger>
 
             <DropdownMenuContent

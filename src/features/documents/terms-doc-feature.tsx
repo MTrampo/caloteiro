@@ -296,29 +296,26 @@ export function TermsDocFeature() {
           </p>
         </section>
 
-        {/* 7. Exclusão de Conta e Retenção de Dados */}
+        {/* 7. Exclusão de Conta e Quarentena Legal de 6 Meses */}
         <section id="exclusao" className="space-y-3 pt-2 scroll-mt-24">
           <h3 className="font-heading text-lg sm:text-xl font-bold text-white border-b border-border/60 pb-2">
-            7. Exclusão de Conta e Retenção de Dados
+            7. Exclusão de Conta e Quarentena Legal de 6 Meses
           </h3>
           <p>
-            7.1. O Usuário poderá solicitar a exclusão de sua conta a qualquer momento mediante opção disponibilizada
+            7.1. O Usuário poderá solicitar o cancelamento e a exclusão de sua conta a qualquer momento mediante opção disponibilizada
             no painel de configurações ou via contato com os canais de suporte oficiais.
           </p>
           <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4 space-y-1.5 text-xs">
             <div className="flex items-center gap-2 font-bold text-white">
               <FaLock className="size-3.5 text-emerald-400" />
-              <span>7.2. Retenção Legal Mandatória (Marco Civil da Internet)</span>
+              <span>7.2. Quarentena de Segurança e Retenção Legal (6 Meses / 180 Dias)</span>
             </div>
             <p className="text-zinc-300">
-              Conforme preconizado pelo <strong className="text-white">Artigo 15 da Lei Federal nº 12.965/2014</strong>,
-              os registros eletrônicos de acesso a aplicações de internet vinculados à conta do Usuário serão mantidos
-              em sigilo e em ambiente controlado pelo prazo obrigatório de <strong className="text-white">6 (seis) meses</strong>.
+              Ao ser solicitada a exclusão, a conta é imediatamente desativada e mantida em quarentena de retenção legal pelo prazo de <strong className="text-white">6 (seis) meses (180 dias)</strong>. Durante esse período, a assinatura do Mercado Pago é cancelada na hora para evitar novas cobranças. A plataforma não armazena dados técnicos de conexão (endereços IP). A conta poderá ser reativada caso o usuário realize novo login dentro dos 180 dias.
             </p>
           </div>
           <p>
-            7.3. Expirado o prazo legal de 6 meses, os dados do Usuário e todos os registros associados inseridos por
-            ele (incluindo presas marcadas, históricos e parcelas) serão eliminados de forma definitiva e irrecuperável.
+            7.3. Expirado o prazo legal de 180 dias sem reativação, todos os dados cadastrais, presas marcadas, históricos e parcelas vinculados ao usuário serão eliminados de forma definitiva, permanente e irrecuperável.
           </p>
         </section>
 

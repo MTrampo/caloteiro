@@ -45,7 +45,7 @@ export function PlanLimitModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-zinc-950 border-zinc-800 p-6 sm:p-7">
+      <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full max-w-md bg-zinc-950 border-zinc-800 p-4 sm:p-6 max-h-[calc(100dvh-2.5rem)] overflow-y-auto">
         <DialogHeader className="space-y-2 text-left">
           <div className="flex items-center gap-2.5 text-amber-500 pb-1">
             <div className="size-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">

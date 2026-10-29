@@ -67,14 +67,14 @@ export function SegmentedTabs<T extends string = string>({
             aria-selected={isActive}
             onClick={() => onChange(tab.id)}
             className={cn(
-              "flex items-center justify-center gap-1.5 px-3 py-1.5 sm:py-1 text-xs font-mono rounded-lg transition-all cursor-pointer whitespace-nowrap touch-manipulation",
+              "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-1 text-[11px] sm:text-xs font-mono rounded-lg transition-all cursor-pointer whitespace-nowrap touch-manipulation min-w-0",
               isCompactGrid ? "w-full" : "shrink-0",
               isActive
                 ? "bg-white text-zinc-950 font-bold shadow-xs"
                 : "text-zinc-400 hover:text-white"
             )}
           >
-            <span>{tab.label}</span>
+            <span className="truncate">{tab.label}</span>
 
             {typeof tab.count === "number" && (
               <span

@@ -41,11 +41,11 @@ export function DebtorSummaryCard({ debtor }: DebtorSummaryCardProps) {
             {initials}
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
               <h4 className="font-heading text-base font-bold text-white">
                 {debtor.formattedName}
               </h4>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 whitespace-nowrap w-fit">
                 {debtor.relationshipLabel}
               </span>
             </div>
@@ -58,13 +58,13 @@ export function DebtorSummaryCard({ debtor }: DebtorSummaryCardProps) {
         </div>
 
         {/* Ações Rápidas (WhatsApp e Detalhes do Devedor) */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0">
           {debtor.cleanPhone && (
             <a
               href={debtor.whatsAppUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-mono font-semibold rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 h-9 sm:h-8 px-3 text-xs font-mono font-semibold rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all cursor-pointer w-full sm:w-auto"
             >
               <FaWhatsapp className="size-3.5" />
               <span>WhatsApp</span>
@@ -76,10 +76,10 @@ export function DebtorSummaryCard({ debtor }: DebtorSummaryCardProps) {
             variant="outline"
             size="sm"
             onClick={() => setIsDetailsOpen(true)}
-            className="h-8 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all cursor-pointer"
+            className="h-9 sm:h-8 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all cursor-pointer w-full sm:w-auto justify-center"
           >
             <FaEye className="size-3 text-zinc-400" />
-            <span>Verificar Devedor</span>
+            <span>Verificar</span>
           </Button>
         </div>
       </div>

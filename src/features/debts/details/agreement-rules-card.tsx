@@ -192,13 +192,13 @@ export function AgreementRulesCard({
             </div>
 
             {/* Ações Rápidas da Quebra */}
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-rose-500/20">
               {whatsAppAlertUrl && (
                 <a
                   href={whatsAppAlertUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-mono text-xs font-bold transition-colors cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-mono text-xs font-bold transition-colors cursor-pointer w-full sm:w-auto"
                 >
                   <FaWhatsapp className="size-3.5" />
                   <span>Notificar Quebra no WhatsApp</span>
@@ -210,7 +210,7 @@ export function AgreementRulesCard({
                 variant="outline"
                 size="sm"
                 onClick={handleCopyAlertMessage}
-                className="h-9 text-xs font-mono border-rose-500/30 text-rose-300 hover:bg-rose-500/10"
+                className="h-9 text-xs font-mono border-rose-500/30 text-rose-300 hover:bg-rose-500/10 w-full sm:w-auto justify-center"
               >
                 {copiedAlertMsg ? (
                   <FaCheck className="size-3 text-emerald-400" />
@@ -227,7 +227,7 @@ export function AgreementRulesCard({
                     size="sm"
                     disabled={isPending}
                     onClick={() => handleToggleBreachStatus(true)}
-                    className="h-9 bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold text-xs rounded-xl cursor-pointer"
+                    className="h-9 bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold text-xs rounded-xl cursor-pointer w-full sm:w-auto justify-center"
                   >
                     <FaGavel className="size-3" />
                     <span>Declarar Quebra Oficial</span>
@@ -239,7 +239,7 @@ export function AgreementRulesCard({
                     size="sm"
                     disabled={isPending}
                     onClick={() => handleToggleBreachStatus(false)}
-                    className="h-9 text-xs font-mono border-zinc-700 text-zinc-300 hover:bg-zinc-800 cursor-pointer"
+                    className="h-9 text-xs font-mono border-zinc-700 text-zinc-300 hover:bg-zinc-800 cursor-pointer w-full sm:w-auto justify-center"
                   >
                     <FaRotateLeft className="size-3" />
                     <span>Reabrir Acordo</span>
@@ -278,13 +278,13 @@ export function AgreementRulesCard({
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-amber-500/20">
               {whatsAppAlertUrl && (
                 <a
                   href={whatsAppAlertUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 font-heading text-xs font-bold transition-colors cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 font-heading text-xs font-bold transition-colors cursor-pointer w-full sm:w-auto"
                 >
                   <FaWhatsapp className="size-3.5" />
                   <span>Mandar Aviso de Risco</span>
@@ -296,7 +296,7 @@ export function AgreementRulesCard({
                 variant="outline"
                 size="sm"
                 onClick={handleCopyAlertMessage}
-                className="h-9 text-xs font-mono border-amber-500/30 text-amber-300 hover:bg-amber-500/10"
+                className="h-9 text-xs font-mono border-amber-500/30 text-amber-300 hover:bg-amber-500/10 w-full sm:w-auto justify-center"
               >
                 {copiedAlertMsg ? (
                   <FaCheck className="size-3 text-emerald-400" />
@@ -312,24 +312,25 @@ export function AgreementRulesCard({
 
       {/* 2. CARD DE CLÁUSULAS, REGRAS E GATILHO DO ACORDO */}
       <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-zinc-800 text-amber-400">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            <div className="p-2 rounded-lg bg-zinc-800 text-amber-400 shrink-0 mt-0.5">
               <FaScaleBalanced className="size-4" />
             </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-heading text-sm sm:text-base font-bold text-white">
-                  Cláusulas e Gatilho de Quebra do Acordo
-                </h3>
+            <div className="space-y-1.5 min-w-0 flex-1">
+              <h3 className="font-heading text-sm sm:text-base font-bold text-white">
+                Cláusulas e Gatilho de Quebra do Acordo
+              </h3>
+
+              <div className="flex flex-wrap items-center gap-1.5">
                 {debt.maxLateInstallments !== null && (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold whitespace-nowrap">
                     Tolerância: {debt.maxLateInstallments}{" "}
                     {debt.maxLateInstallments === 1 ? "parcela" : "parcelas"}
                   </span>
                 )}
                 {hasRulesConfigured && (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 inline-flex items-center gap-1">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 inline-flex items-center gap-1 whitespace-nowrap">
                     {debt.showNotesOnInvoice ? (
                       <>
                         <FaEye className="size-2.5 text-emerald-400" />
@@ -344,17 +345,18 @@ export function AgreementRulesCard({
                   </span>
                 )}
               </div>
-              <p className="text-xs font-mono text-zinc-400">
+
+              <p className="text-xs font-mono text-zinc-400 leading-normal">
                 Regras específicas, número de processo e condições de vencimento antecipado ou multa.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
             {isFreePlan ? (
               <Link
                 href="/painel/assinatura"
-                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 text-xs font-mono font-semibold transition-colors"
+                className="inline-flex items-center justify-center gap-1.5 h-9 sm:h-8 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 text-xs font-mono font-semibold transition-colors w-full sm:w-auto"
               >
                 <FaLock className="size-3" />
                 <span>Liberar no Tubarão Branco</span>
@@ -370,7 +372,7 @@ export function AgreementRulesCard({
                       size="sm"
                       disabled={isPending}
                       onClick={() => handleToggleBreachStatus(true)}
-                      className="h-8 text-xs font-mono border-rose-500/20 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
+                      className="h-9 sm:h-8 text-xs font-mono border-rose-500/20 text-rose-400 hover:bg-rose-500/10 cursor-pointer w-full sm:w-auto justify-center"
                     >
                       <FaGavel className="size-3" />
                       <span>Marcar Quebra de Acordo</span>
@@ -382,7 +384,7 @@ export function AgreementRulesCard({
                   variant="outline"
                   size="sm"
                   onClick={handleOpenEdit}
-                  className="h-8 text-xs font-mono bg-zinc-900 border-zinc-800 text-zinc-200 hover:bg-zinc-800 cursor-pointer"
+                  className="h-9 sm:h-8 text-xs font-mono bg-zinc-900 border-zinc-800 text-zinc-200 hover:bg-zinc-800 cursor-pointer w-full sm:w-auto justify-center"
                 >
                   <FaPenToSquare className="size-3" />
                   <span>
@@ -397,7 +399,7 @@ export function AgreementRulesCard({
         </div>
 
         {debt.notes && debt.notes.trim().length > 0 ? (
-          <div className="rounded-xl bg-zinc-950/70 border border-zinc-800/90 p-3.5 text-xs font-mono text-zinc-200 leading-relaxed whitespace-pre-line">
+          <div className="rounded-xl bg-zinc-950/70 border border-zinc-800/90 p-3 sm:p-3.5 text-[11px] sm:text-xs font-mono text-zinc-200 leading-relaxed whitespace-pre-line break-words overflow-wrap-anywhere">
             {debt.notes}
           </div>
         ) : (
@@ -409,7 +411,7 @@ export function AgreementRulesCard({
 
       {/* Modal de Edição de Cláusulas e Gatilho (Regra #7: Apenas botão principal branco no rodapé, sem botão redundante de cancelar) */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-lg bg-zinc-900 border-zinc-800 text-white">
+        <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full max-w-lg bg-zinc-900 border-zinc-800 text-white p-4 sm:p-6 max-h-[calc(100dvh-2.5rem)] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-heading text-lg font-bold text-white">
               Cláusulas e Gatilho de Quebra
@@ -526,11 +528,11 @@ export function AgreementRulesCard({
               </div>
             </label>
 
-            <DialogFooter className="pt-2">
+            <DialogFooter className="pt-2 sm:justify-end">
               <Button
                 type="submit"
                 disabled={isPending}
-                className="bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl cursor-pointer"
+                className="w-full sm:w-auto bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl cursor-pointer"
               >
                 {isPending ? (
                   <>

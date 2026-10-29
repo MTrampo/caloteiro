@@ -2,8 +2,9 @@ import * as React from "react";
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { getUserLoggedApi } from "@/server/account/service/auth.api";
-import { FaArrowLeft, FaInstagram, FaWhatsapp, FaArrowUpRightFromSquare } from "react-icons/fa6";
+import { FaInstagram, FaWhatsapp, FaArrowUpRightFromSquare } from "react-icons/fa6";
 import { DocNav } from "@/features/documents/components/doc-nav";
+import { PublicHeader } from "@/components/headers/public-header";
 
 export default async function DocumentosLayout({
   children,
@@ -15,52 +16,14 @@ export default async function DocumentosLayout({
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      {/* Topo Limpo dos Documentos */}
-      <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center border-b border-border bg-background/90 backdrop-blur-md">
-        <div className="w-full mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl flex items-center justify-between gap-2 sm:gap-4">
-          <div className="flex items-center gap-4 sm:gap-6 min-w-0">
-            <Link href="/" className="cursor-pointer shrink-0">
-              <Logo size="sm" showText />
-            </Link>
+      {/* Cabeçalho Unificado Oficial com NavigationMenu */}
+      <PublicHeader isLoggedIn={isLoggedIn} />
 
-            {/* Links da Documentação (Desktop / Tablet) */}
-            <div className="hidden md:block">
-              <DocNav />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            {isLoggedIn ? (
-              <Link
-                href="/painel"
-                className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 text-[11px] sm:text-xs font-mono font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl transition-all cursor-pointer whitespace-nowrap"
-              >
-                <FaArrowLeft className="size-3" />
-                <span>Voltar ao Painel</span>
-              </Link>
-            ) : (
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <Link
-                  href="/entrar"
-                  className="inline-flex items-center h-8 sm:h-9 px-2.5 sm:px-3 text-[11px] sm:text-xs font-mono text-zinc-300 hover:text-white transition-colors"
-                >
-                  Entrar
-                </Link>
-                <Link
-                  href="/cadastrar"
-                  className="inline-flex items-center h-8 sm:h-9 px-3 sm:px-4 text-[11px] sm:text-xs font-heading font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl transition-all cursor-pointer whitespace-nowrap"
-                >
-                  Criar Gruta Grátis
-                </Link>
-              </div>
-            )}
-          </div>
+      {/* Barra de Subnavegação Contextual dos Documentos */}
+      <div className="border-b border-border/70 bg-zinc-950/70 px-4 py-2 sticky top-14 z-30 backdrop-blur-md">
+        <div className="w-full mx-auto max-w-5xl md:max-w-7xl">
+          <DocNav />
         </div>
-      </header>
-
-      {/* Barra de Navegação de Documentos no Mobile (< md) */}
-      <div className="md:hidden border-b border-border/70 bg-zinc-950/80 px-4 py-2 sticky top-14 z-30 backdrop-blur-md">
-        <DocNav />
       </div>
 
       {/* Conteúdo Principal */}

@@ -74,7 +74,7 @@ export function DeleteAccountCard() {
 
       {/* Dialog de Confirmação com Palavra-Chave */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-md bg-zinc-900 border-zinc-800 text-white p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full max-w-md bg-zinc-900 border-zinc-800 text-white p-4 sm:p-6 space-y-4 max-h-[calc(100dvh-2.5rem)] overflow-y-auto">
           <DialogHeader className="space-y-2 text-left">
             <div className="size-11 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 mb-1">
               <FaTriangleExclamation className="size-5" />

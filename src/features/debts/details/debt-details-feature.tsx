@@ -15,6 +15,7 @@ import { AgreementRulesCard } from "./agreement-rules-card";
 import { ReceiptViewerDialog } from "./receipt-viewer-dialog";
 import { AttachInstallmentReceiptModal } from "./attach-installment-receipt-modal";
 import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action";
+import { toast } from "sonner";
 import {
   FaArrowLeft,
   FaHandHoldingDollar,
@@ -22,6 +23,8 @@ import {
   FaFileInvoiceDollar,
   FaEye,
   FaLink,
+  FaWhatsapp,
+  FaArrowUpRightFromSquare,
 } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 
@@ -49,6 +52,7 @@ export function DebtDetailsFeature({
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = React.useState(false);
   const [isExcuseModalOpen, setIsExcuseModalOpen] = React.useState(false);
+  const [isPortalModalOpen, setIsPortalModalOpen] = React.useState(false);
   const [selectedInstallmentForPayment, setSelectedInstallmentForPayment] =
     React.useState<InstallmentFormatted | null>(null);
   const [selectedInstallmentForExcuse, setSelectedInstallmentForExcuse] =
@@ -86,23 +90,25 @@ export function DebtDetailsFeature({
     : undefined;
 
   return (
-    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full pb-24 sm:pb-6">
+    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full pb-32 sm:pb-6">
       {/* Cabeçalho da Dívida (Solto, sem card, sem ícones no título h2) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/painel/dividas"
-              className="text-zinc-400 hover:text-white transition-colors p-1.5 -ml-1 rounded-xl hover:bg-zinc-800"
-              title="Voltar para a lista de dívidas"
-            >
-              <FaArrowLeft className="size-4" />
-            </Link>
-            <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white">
-              {debt.title}
-            </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Link
+                href="/painel/dividas"
+                className="text-zinc-400 hover:text-white transition-colors p-1.5 -ml-1 rounded-xl hover:bg-zinc-800 shrink-0"
+                title="Voltar para a lista de dívidas"
+              >
+                <FaArrowLeft className="size-4" />
+              </Link>
+              <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white truncate">
+                {debt.title}
+              </h2>
+            </div>
             <span
-              className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${debt.statusBadgeClass}`}
+              className={`text-[10px] font-mono px-2 py-0.5 rounded-full border w-fit ${debt.statusBadgeClass}`}
             >
               {debt.statusLabel}
             </span>
@@ -113,8 +119,8 @@ export function DebtDetailsFeature({
           </p>
         </div>
 
-        {/* Menu do Link da Fatura + Botão de Ação CTA Principal (Desktop) */}
-        <div className="hidden sm:flex flex-wrap items-center gap-2.5 shrink-0">
+        {/* Menu do Link da Fatura + Botão de Ação CTA Principal */}
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0 pt-1 sm:pt-0 w-full sm:w-auto">
           <DebtPortalMenu
             debtId={debt.id}
             debtTitle={debt.title}
@@ -123,6 +129,8 @@ export function DebtDetailsFeature({
             initialAccessCode={debt.publicAccessCode}
             canDebtorPortal={permissions.canDebtorPortal}
             onUpdated={handleDataRefresh}
+            isMobileDialogOpen={isPortalModalOpen}
+            onMobileDialogOpenChange={setIsPortalModalOpen}
           />
 
           {!debt.isFullySettled && (
@@ -131,6 +139,7 @@ export function DebtDetailsFeature({
               variant="default"
               size="lg"
               onClick={handleOpenGeneralPayment}
+              className="hidden sm:inline-flex"
             >
               <FaHandHoldingDollar className="size-3.5" />
               <span>Pingou o Pix!</span>
@@ -239,9 +248,8 @@ export function DebtDetailsFeature({
         imageUrl={viewerImageUrl}
       />
 
-      {/* Ações Flutuantes no Mobile (FAB com Dropdown se houver mais de 1 ação) */}
+      {/* Ações Flutuantes no Mobile (FAB Multi-Ações com 3 pontinhos e transição para ✕) */}
       <MobileFloatingAction
-        triggerIcon={<FaHandHoldingDollar className="size-5 text-emerald-950" />}
         ariaLabel="Ações da dívida"
         actions={[
           ...(!debt.isFullySettled
@@ -255,8 +263,34 @@ export function DebtDetailsFeature({
               ]
             : []),
           {
-            label: "Ver Fatura Pública",
-            icon: <FaLink className="size-4 text-zinc-300" />,
+            label: "Configurar Link da Fatura",
+            icon: <FaLink className="size-4 text-amber-400" />,
+            onClick: () => setIsPortalModalOpen(true),
+          },
+          ...(debt.publicLinkEnabled
+            ? [
+                {
+                  label: "Copiar Convite p/ WhatsApp",
+                  icon: <FaWhatsapp className="size-4 text-emerald-400" />,
+                  onClick: () => {
+                    const url = `${window.location.origin}/fatura/${debt.id}`;
+                    const firstName =
+                      debt.debtor.formattedName.split(" ")[0] ||
+                      debt.debtor.formattedName;
+                    const message =
+                      `Olá, ${firstName}! Segue o link privado para você acompanhar os valores e parcelas do nosso acordo (${debt.title}):\n\n` +
+                      `Link da fatura: ${url}\n` +
+                      `Código de acesso exclusivo: *${debt.publicAccessCode}*\n\n` +
+                      `Pode ficar tranquilo(a), a página é protegida por código e somente quem tem esse código consegue visualizar.`;
+                    navigator.clipboard.writeText(message);
+                    toast.success("Convite com link e código copiado!");
+                  },
+                },
+              ]
+            : []),
+          {
+            label: "Abrir Fatura da Presa",
+            icon: <FaArrowUpRightFromSquare className="size-4 text-zinc-300" />,
             href: `/fatura/${debt.id}`,
           },
         ]}

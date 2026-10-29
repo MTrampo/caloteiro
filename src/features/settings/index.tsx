@@ -254,24 +254,18 @@ export function SettingsFeature({
       <form onSubmit={handleSave} className="space-y-6 w-full">
         {/* Card 1: Meus Dados de Recebimento (Chave Pix) */}
         <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-5 w-full">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-                <FaKey className="size-3.5" />
-              </div>
-              <div>
-                <h3 className="font-heading text-base font-bold text-white">
-                  Chave Pix de Recebimento
-                </h3>
-                <p className="text-xs text-zinc-400 font-mono">
-                  Essa chave será copiada rapidamente e anexada nas mensagens automáticas de cobrança.
-                </p>
-              </div>
+          <div className="flex items-start gap-2.5 pb-3 border-b border-zinc-800">
+            <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+              <FaKey className="size-3.5" />
             </div>
-
-            <span className="text-[11px] font-mono font-bold text-zinc-400 bg-zinc-950 px-2.5 py-1 rounded-lg border border-zinc-800 self-start sm:self-auto">
-              Chave Principal Ativa
-            </span>
+            <div className="space-y-0.5 min-w-0">
+              <h3 className="font-heading text-base font-bold text-white">
+                Chave Pix de Recebimento
+              </h3>
+              <p className="text-xs text-zinc-400 font-mono leading-relaxed">
+                Essa chave será copiada rapidamente e anexada nas mensagens automáticas de cobrança.
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -357,24 +351,18 @@ export function SettingsFeature({
 
         {/* Card 2: Regras Financeiras e Taxas Padrão */}
         <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-5 w-full">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-zinc-800">
-            <div className="flex items-center gap-2.5">
-              <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-                <FaPercent className="size-3.5" />
-              </div>
-              <div>
-                <h3 className="font-heading text-base font-bold text-white">
-                  Regras Financeiras e Taxas Padrão
-                </h3>
-                <p className="text-xs text-zinc-400 font-mono">
-                  Calibre a modalidade e o valor padrão de acréscimo pré-carregados ao criar novas dívidas.
-                </p>
-              </div>
+          <div className="flex items-start gap-2.5 pb-3 border-b border-zinc-800">
+            <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+              <FaPercent className="size-3.5" />
             </div>
-
-            <span className="text-[11px] font-mono text-zinc-400 bg-zinc-950 px-2.5 py-1 rounded-lg border border-zinc-800 self-start sm:self-auto">
-              Inteligência Financeira
-            </span>
+            <div className="space-y-0.5 min-w-0">
+              <h3 className="font-heading text-base font-bold text-white">
+                Regras Financeiras e Taxas Padrão
+              </h3>
+              <p className="text-xs text-zinc-400 font-mono leading-relaxed">
+                Calibre a modalidade e o valor padrão de acréscimo pré-carregados ao criar novas dívidas.
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -457,24 +445,18 @@ export function SettingsFeature({
 
         {/* Card 3: Modelos de Mensagem para o WhatsApp & Painel de Variáveis */}
         <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-6 w-full">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-zinc-800">
-            <div className="flex items-center gap-2.5">
-              <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-                <FaWhatsapp className="size-4" />
-              </div>
-              <div>
-                <h3 className="font-heading text-base font-bold text-white">
-                  Modelos de Mensagem para o WhatsApp
-                </h3>
-                <p className="text-xs text-zinc-400 font-mono">
-                  Personalize o tom da conversa de acordo com a cara de pau do devedor.
-                </p>
-              </div>
+          <div className="flex items-start gap-2.5 pb-3 border-b border-zinc-800">
+            <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+              <FaWhatsapp className="size-4" />
             </div>
-
-            <span className="text-[11px] font-mono text-zinc-500 bg-zinc-950 px-2.5 py-1 rounded-lg border border-zinc-800 self-start sm:self-auto">
-              Interpolação Automática
-            </span>
+            <div className="space-y-0.5 min-w-0">
+              <h3 className="font-heading text-base font-bold text-white">
+                Modelos de Mensagem para o WhatsApp
+              </h3>
+              <p className="text-xs text-zinc-400 font-mono leading-relaxed">
+                Personalize o tom da conversa de acordo com a cara de pau do devedor.
+              </p>
+            </div>
           </div>
 
           {!canCustomTemplates && (
@@ -548,14 +530,16 @@ export function SettingsFeature({
           <div className="space-y-5">
             {/* Modelo 1: Lembrete Amistoso */}
             <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-4 space-y-2.5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="size-2 rounded-full bg-emerald-400 shrink-0" />
-                  <span className="text-xs font-mono font-bold text-emerald-400">
-                    Nível 1 — Lembrete Amistoso
-                  </span>
-                  <span className="text-[11px] font-mono text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
-                    Dia do Vencimento
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-0.5 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="size-2 rounded-full bg-emerald-400 shrink-0" />
+                    <span className="text-xs font-mono font-bold text-emerald-400 truncate">
+                      Nível 1 — Lembrete Amistoso
+                    </span>
+                  </div>
+                  <span className="text-[10px] sm:text-[11px] font-mono text-zinc-500 block">
+                    Gatilho: Dia do Vencimento
                   </span>
                 </div>
 
@@ -563,7 +547,7 @@ export function SettingsFeature({
                   <button
                     type="button"
                     onClick={() => handleResetTemplate(1)}
-                    className="text-[11px] font-mono text-zinc-400 hover:text-white flex items-center gap-1 self-start sm:self-auto transition-colors"
+                    className="text-[11px] font-mono text-zinc-400 hover:text-white flex items-center gap-1 shrink-0 transition-colors cursor-pointer pt-0.5"
                   >
                     <FaRotateLeft className="size-2.5" />
                     <span>Restaurar padrão</span>
@@ -584,14 +568,16 @@ export function SettingsFeature({
 
             {/* Modelo 2: Cutucada Ácida */}
             <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-4 space-y-2.5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="size-2 rounded-full bg-amber-400 shrink-0" />
-                  <span className="text-xs font-mono font-bold text-amber-400">
-                    Nível 2 — Cutucada Ácida do Caloteiro
-                  </span>
-                  <span className="text-[11px] font-mono text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
-                    Atraso Leve (1 a 5 dias)
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-0.5 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="size-2 rounded-full bg-amber-400 shrink-0" />
+                    <span className="text-xs font-mono font-bold text-amber-400 truncate">
+                      Nível 2 — Cutucada Ácida do Caloteiro
+                    </span>
+                  </div>
+                  <span className="text-[10px] sm:text-[11px] font-mono text-zinc-500 block">
+                    Gatilho: Atraso Leve (1 a 5 dias)
                   </span>
                 </div>
 
@@ -599,7 +585,7 @@ export function SettingsFeature({
                   <button
                     type="button"
                     onClick={() => handleResetTemplate(2)}
-                    className="text-[11px] font-mono text-zinc-400 hover:text-white flex items-center gap-1 self-start sm:self-auto transition-colors"
+                    className="text-[11px] font-mono text-zinc-400 hover:text-white flex items-center gap-1 shrink-0 transition-colors cursor-pointer pt-0.5"
                   >
                     <FaRotateLeft className="size-2.5" />
                     <span>Restaurar padrão</span>
@@ -620,14 +606,16 @@ export function SettingsFeature({
 
             {/* Modelo 3: Modo Julius */}
             <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-4 space-y-2.5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="size-2 rounded-full bg-rose-500 shrink-0" />
-                  <span className="text-xs font-mono font-bold text-rose-400">
-                    Nível 3 — Pressão Total / Modo Julius
-                  </span>
-                  <span className="text-[11px] font-mono text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
-                    Atraso Crítico (&gt; 15 dias)
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-0.5 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="size-2 rounded-full bg-rose-500 shrink-0" />
+                    <span className="text-xs font-mono font-bold text-rose-400 truncate">
+                      Nível 3 — Pressão Total / Modo Julius
+                    </span>
+                  </div>
+                  <span className="text-[10px] sm:text-[11px] font-mono text-zinc-500 block">
+                    Gatilho: Atraso Crítico (&gt; 15 dias)
                   </span>
                 </div>
 
@@ -635,7 +623,7 @@ export function SettingsFeature({
                   <button
                     type="button"
                     onClick={() => handleResetTemplate(3)}
-                    className="text-[11px] font-mono text-zinc-400 hover:text-white flex items-center gap-1 self-start sm:self-auto transition-colors"
+                    className="text-[11px] font-mono text-zinc-400 hover:text-white flex items-center gap-1 shrink-0 transition-colors cursor-pointer pt-0.5"
                   >
                     <FaRotateLeft className="size-2.5" />
                     <span>Restaurar padrão</span>

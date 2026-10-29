@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
+import { PublicHeader } from "@/components/headers/public-header";
 import { HeroCommandShowcase } from "./components/hero-command-showcase";
 import { GrottoCommandSimulation } from "./components/grotto-command-simulation";
 import { WhatsappWeaponsSimulator } from "./components/whatsapp-weapons-simulator";
@@ -18,8 +19,6 @@ import {
   FaInstagram,
   FaWhatsapp,
   FaArrowUpRightFromSquare,
-  FaRightToBracket,
-  FaGaugeHigh,
 } from "react-icons/fa6";
 
 interface LandingFeatureProps {
@@ -29,66 +28,8 @@ interface LandingFeatureProps {
 export function LandingFeature({ isLoggedIn = false }: LandingFeatureProps) {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      {/* Cabeçalho Sticky (Acompanha o Scroll sem barra de progresso) */}
-      <header className="sticky top-0 z-50 flex h-14 shrink-0 items-center border-b border-border bg-background/90 backdrop-blur-md">
-        <div className="w-full mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl flex items-center justify-between gap-2 sm:gap-4">
-          <Link href="/" className="cursor-pointer select-none shrink-0">
-            <Logo size="sm" showText />
-          </Link>
-
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-mono text-zinc-400">
-            <a
-              href="#central-gruta"
-              className="hover:text-white transition-colors"
-            >
-              Central da Gruta
-            </a>
-            <a
-              href="#armas-whatsapp"
-              className="hover:text-white transition-colors"
-            >
-              Armas de WhatsApp
-            </a>
-            <a
-              href="#portal-devedor"
-              className="hover:text-white transition-colors"
-            >
-              Link do Devedor
-            </a>
-            <a href="#arsenal" className="hover:text-white transition-colors">
-              Recursos
-            </a>
-            <a href="#planos" className="hover:text-white transition-colors">
-              Planos
-            </a>
-            <a href="#faq" className="hover:text-white transition-colors">
-              Dúvidas
-            </a>
-          </nav>
-
-          <div className="flex items-center gap-2 shrink-0">
-            {isLoggedIn ? (
-              <Link
-                href="/painel"
-                title="Acessar Painel da Gruta"
-                aria-label="Acessar Painel da Gruta"
-                className="relative inline-flex items-center justify-center size-9 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 transition-all cursor-pointer group"
-              >
-                <FaGaugeHigh className="size-4 transition-transform group-hover:scale-110" />
-              </Link>
-            ) : (
-              <Link
-                href="/entrar"
-                title="Entrar na Conta"
-                aria-label="Entrar na Conta"
-                className="inline-flex items-center justify-center size-9 rounded-xl border border-zinc-800 bg-zinc-900/80 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white transition-all cursor-pointer group"
-              >
-                <FaRightToBracket className="size-4 transition-transform group-hover:scale-110" />
-              </Link>
-            )}
-          </div>
-        </div>
-      </header>
+      {/* Cabeçalho Unificado Padronizado com NavigationMenu */}
+      <PublicHeader isLoggedIn={isLoggedIn} />
 
       {/* Conteúdo Principal da Apresentação (Seções 100% Full-Width com contraste e bordas de ponta a ponta) */}
       <main className="flex-1 w-full overflow-x-clip">

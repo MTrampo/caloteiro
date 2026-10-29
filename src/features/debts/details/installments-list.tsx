@@ -123,11 +123,11 @@ export function InstallmentsList({
       {/* Cabeçalho da Seção com Seletor de Ordenação */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="space-y-0.5">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
             <h3 className="font-heading text-lg font-bold text-white">
               Cronograma de Parcelas
             </h3>
-            <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-md bg-zinc-800/80 border border-zinc-700/60 text-zinc-300 whitespace-nowrap">
+            <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-md bg-zinc-800/80 border border-zinc-700/60 text-zinc-300 whitespace-nowrap w-fit">
               {processedInstallments.length} {processedInstallments.length === 1 ? "parcela" : "parcelas"}
             </span>
           </div>
@@ -136,7 +136,7 @@ export function InstallmentsList({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
           {/* Seletor de Ordenação Shadcn UI */}
           <Select
             value={sortBy}
@@ -149,7 +149,7 @@ export function InstallmentsList({
           >
             <SelectTrigger
               size="sm"
-              className="h-8 min-w-[175px] bg-zinc-900 border-border text-xs font-mono text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer rounded-xl"
+              className="h-8 w-full sm:w-auto min-w-0 sm:min-w-[175px] bg-zinc-900 border-border text-xs font-mono text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer rounded-xl"
             >
               <div className="flex items-center gap-1.5 truncate">
                 <FaArrowDownWideShort className="size-3 text-zinc-400 shrink-0" />

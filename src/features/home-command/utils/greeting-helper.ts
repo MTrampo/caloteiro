@@ -107,10 +107,31 @@ export function generateDynamicPunchline(params: {
   const randomIndex = Math.floor(Math.random() * pool.length)
   const template = pool[randomIndex] ?? pool[0]
 
-  return template
+  let result = template
     .replace("{overdue}", String(overdueCount))
     .replace("{critical}", String(criticalCount))
     .replace("{dueSoon}", String(dueSoonCount))
+
+  if (dueSoonCount === 1) {
+    result = result
+      .replace("1 cobranças vencem", "1 cobrança vence")
+      .replace("1 caloteiros prometeram", "1 caloteiro prometeu")
+      .replace("1 promessas prestes a vencer", "1 promessa prestes a vencer")
+  }
+  if (overdueCount === 1) {
+    result = result
+      .replace("1 promessas vencidas", "1 promessa vencida")
+      .replace("1 devedores já fingiram", "1 devedor já fingiu")
+      .replace("1 parcelas atrasadas", "1 parcela atrasada")
+      .replace("1 promessas furadas", "1 promessa furada")
+  }
+  if (criticalCount === 1) {
+    result = result
+      .replace("1 sumidos", "1 sumido")
+      .replace("1 devedores achando", "1 devedor achando")
+  }
+
+  return result
 }
 
 export function getRandomWisdomQuote() {

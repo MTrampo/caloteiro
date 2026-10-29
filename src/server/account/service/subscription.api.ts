@@ -40,6 +40,7 @@ import type {
 } from "@/commons/models/subscription";
 import { countDebtorsByUserIdSupabase } from "@/server/debtors/repository/debtor.supabase";
 import { countActiveDebtsByUserIdSupabase } from "@/server/debts/repository/debt.supabase";
+import { updateProfileAvatarSupabase } from "../repository/auth.supabase";
 
 /**
  * Retorna as permissões e limites ativos do credor no servidor
@@ -362,6 +363,8 @@ export const changeSubscriptionPlanApi = async (
       });
     }
 
+    await updateProfileAvatarSupabase(userId, targetPlan.slug);
+
     const newPermissions = await getUserPermissionsByUserIdSupabase(userId);
     await setCookieSubscription(
       {
@@ -425,6 +428,8 @@ export const changeSubscriptionPlanApi = async (
       plan_id: targetPlan.id,
       base_value: newPrice,
     });
+
+    await updateProfileAvatarSupabase(userId, targetPlan.slug);
 
     const newPermissions = await getUserPermissionsByUserIdSupabase(userId);
     await setCookieSubscription(

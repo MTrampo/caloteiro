@@ -48,8 +48,8 @@ export function PlanChangeManager({
             >
               <div className="space-y-3">
                 {/* Header do Card */}
-                <div className="flex items-start justify-between gap-2">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-1.5 sm:gap-2">
+                  <div className="space-y-0.5">
                     <h4 className="font-heading text-base font-bold text-white">
                       {plan.name}
                     </h4>
@@ -59,7 +59,7 @@ export function PlanChangeManager({
                   </div>
 
                   {isCurrent && (
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0 self-start sm:self-auto">
                       Plano Atual
                     </span>
                   )}

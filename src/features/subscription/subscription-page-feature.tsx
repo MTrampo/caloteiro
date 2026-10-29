@@ -91,15 +91,15 @@ export function SubscriptionPageFeature({
       {/* Card do Plano Atual */}
       <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-800">
-          <div className="flex items-center gap-2.5">
-            <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+          <div className="flex items-start gap-2.5 min-w-0">
+            <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
               <FaCreditCard className="size-3.5" />
             </div>
-            <div>
+            <div className="space-y-0.5 min-w-0">
               <h3 className="font-heading text-base font-bold text-white">
                 Plano Atual
               </h3>
-              <p className="text-xs text-zinc-400 font-mono">
+              <p className="text-xs text-zinc-400 font-mono leading-relaxed">
                 Detalhes da modalidade e recorrência ativa
               </p>
             </div>
@@ -315,8 +315,8 @@ export function SubscriptionPageFeature({
 
       {/* Modal de Cancelamento de Assinatura */}
       {cancelModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-50">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-[calc(100vw-1.5rem)] sm:w-full max-w-md p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl animate-in zoom-in-95 max-h-[calc(100dvh-2.5rem)] overflow-y-auto overscroll-contain">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
                 <h3 className="font-heading text-lg font-bold text-white">

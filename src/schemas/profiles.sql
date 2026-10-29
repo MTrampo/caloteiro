@@ -11,6 +11,10 @@ create table if not exists public.profiles (
   avatar_url text,
   phone text,
   accepted_terms boolean default true,
+  status text not null default 'active' check (status in ('active', 'deleted', 'banned', 'suspended')),
+  status_reason text,
+  deleted_at timestamptz,
+  retention_until timestamptz,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

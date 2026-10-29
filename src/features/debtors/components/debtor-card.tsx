@@ -32,9 +32,9 @@ export function DebtorCard({ debtor }: DebtorCardProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-xs hover:border-zinc-700 transition-all flex flex-col justify-between gap-4">
+    <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-xs hover:border-zinc-700 transition-all flex flex-col justify-between gap-4">
       {/* Cabeçalho do Card (Apenas Nome, Apelido, Telefone e Relacionamento) */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-3">
         <div className="space-y-1 min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-heading text-base font-bold text-white truncate" title={debtor.formattedName}>
@@ -53,7 +53,7 @@ export function DebtorCard({ debtor }: DebtorCardProps) {
         </div>
 
         {/* Tag de Relacionamento */}
-        <div className="shrink-0">
+        <div className="shrink-0 self-start sm:self-auto">
           <span
             className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-md bg-zinc-800/80 border border-zinc-700 text-zinc-300"
             title={debtor.relationshipDesc}
@@ -72,7 +72,7 @@ export function DebtorCard({ debtor }: DebtorCardProps) {
             size="sm"
             variant="outline"
             onClick={() => setIsDetailsOpen(true)}
-            className="h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer touch-manipulation"
+            className="h-8 sm:h-9 px-2.5 sm:px-3 text-[11px] sm:text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer touch-manipulation"
             title="Verificar Detalhes do Devedor"
           >
             <FaEye className="size-3 text-zinc-400" />
@@ -81,7 +81,7 @@ export function DebtorCard({ debtor }: DebtorCardProps) {
 
           <Button
             size="sm"
-            className="h-9 px-3 text-xs font-mono font-bold bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-xs cursor-pointer touch-manipulation"
+            className="h-8 sm:h-9 px-2.5 sm:px-3 text-[11px] sm:text-xs font-mono font-bold bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-xs cursor-pointer touch-manipulation"
             render={
               <a
                 href={debtor.whatsAppUrl}
@@ -90,7 +90,7 @@ export function DebtorCard({ debtor }: DebtorCardProps) {
               />
             }
           >
-            <FaWhatsapp className="size-3.5 mr-1" />
+            <FaWhatsapp className="size-3 mr-1" />
             <span>WhatsApp</span>
           </Button>
 
@@ -100,7 +100,7 @@ export function DebtorCard({ debtor }: DebtorCardProps) {
               size="sm"
               variant="outline"
               onClick={handleCopyPix}
-              className="h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 cursor-pointer touch-manipulation"
+              className="h-8 sm:h-9 px-2.5 sm:px-3 text-[11px] sm:text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 cursor-pointer touch-manipulation"
             >
               {copied ? (
                 <FaCheck className="size-3 mr-1 text-emerald-400" />
@@ -114,7 +114,7 @@ export function DebtorCard({ debtor }: DebtorCardProps) {
 
         <Link
           href="/painel/dividas/acompanhamento"
-          className="text-xs font-mono text-zinc-400 hover:text-white flex items-center gap-1 transition-colors"
+          className="text-xs font-mono text-zinc-400 hover:text-white flex items-center gap-1 transition-colors ml-auto sm:ml-0"
         >
           <span>Dívidas</span>
           <FaArrowRight className="size-2.5" />

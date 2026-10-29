@@ -25,7 +25,7 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
   if (!debtor) {
     return (
       <div className="space-y-2.5">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-0.5 sm:gap-2">
           <div className="flex items-center gap-2">
             <h3 className="font-heading text-base sm:text-lg font-bold text-white tracking-tight">
               Próxima Cobrança
@@ -78,7 +78,7 @@ export function PriorityDebtorCard({ debtor }: PriorityDebtorCardProps) {
   return (
     <div className="space-y-2.5">
       {/* Título da Seção do Alvo */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-0.5 sm:gap-2">
         <div className="flex items-center gap-2">
           <h3 className="font-heading text-base sm:text-lg font-bold text-white tracking-tight">
             Próxima Cobrança

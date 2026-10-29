@@ -265,15 +265,15 @@ export function AccountFeature({
         <div className="lg:col-span-2 space-y-6">
           {/* Seção 1: Edição de Perfil */}
           <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-5">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-zinc-800">
-              <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+            <div className="flex items-start gap-2.5 pb-3 border-b border-zinc-800">
+              <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
                 <FaUser className="size-3.5" />
               </div>
-              <div>
+              <div className="space-y-0.5 min-w-0">
                 <h3 className="font-heading text-base font-bold text-white">
                   Identificação do Tubarão
                 </h3>
-                <p className="text-xs text-zinc-400 font-mono">
+                <p className="text-xs text-zinc-400 font-mono leading-relaxed">
                   Seu nome de apresentação e contato no sistema
                 </p>
               </div>
@@ -344,15 +344,15 @@ export function AccountFeature({
 
           {/* Seção 2: Alteração de E-mail de Acesso com Confirmação OTP */}
           <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-5">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-zinc-800">
-              <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+            <div className="flex items-start gap-2.5 pb-3 border-b border-zinc-800">
+              <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
                 <FaEnvelope className="size-3.5" />
               </div>
-              <div>
+              <div className="space-y-0.5 min-w-0">
                 <h3 className="font-heading text-base font-bold text-white">
                   E-mail de Acesso
                 </h3>
-                <p className="text-xs text-zinc-400 font-mono">
+                <p className="text-xs text-zinc-400 font-mono leading-relaxed">
                   Endereço utilizado para login e recebimento de alertas com confirmação OTP
                 </p>
               </div>
@@ -432,19 +432,19 @@ export function AccountFeature({
                     onChange={setEmailOtpCode}
                     disabled={isPendingEmailConfirm}
                   >
-                    <div className="flex items-center gap-1 sm:gap-2">
-                      <InputOTPGroup className="gap-1 sm:gap-1.5">
-                        <InputOTPSlot index={0} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-                        <InputOTPSlot index={1} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-                        <InputOTPSlot index={2} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-                        <InputOTPSlot index={3} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
+                    <div className="flex items-center gap-0.5 sm:gap-2">
+                      <InputOTPGroup className="gap-0.5 sm:gap-1.5">
+                        <InputOTPSlot index={0} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
+                        <InputOTPSlot index={1} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
+                        <InputOTPSlot index={2} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
+                        <InputOTPSlot index={3} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
                       </InputOTPGroup>
-                      <InputOTPSeparator className="text-zinc-600" />
-                      <InputOTPGroup className="gap-1 sm:gap-1.5">
-                        <InputOTPSlot index={4} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-                        <InputOTPSlot index={5} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-                        <InputOTPSlot index={6} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-                        <InputOTPSlot index={7} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
+                      <InputOTPSeparator className="text-zinc-600 scale-75 sm:scale-100" />
+                      <InputOTPGroup className="gap-0.5 sm:gap-1.5">
+                        <InputOTPSlot index={4} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
+                        <InputOTPSlot index={5} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
+                        <InputOTPSlot index={6} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
+                        <InputOTPSlot index={7} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
                       </InputOTPGroup>
                     </div>
                   </InputOTP>
@@ -516,15 +516,15 @@ export function AccountFeature({
 
           {/* Seção 3: Troca de Senha com Confirmação OTP */}
           <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-5">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-zinc-800">
-              <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+            <div className="flex items-start gap-2.5 pb-3 border-b border-zinc-800">
+              <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
                 <FaKey className="size-3.5" />
               </div>
-              <div>
+              <div className="space-y-0.5 min-w-0">
                 <h3 className="font-heading text-base font-bold text-white">
                   Troca de Senha
                 </h3>
-                <p className="text-xs text-zinc-400 font-mono">
+                <p className="text-xs text-zinc-400 font-mono leading-relaxed">
                   Defina uma nova credencial protegida por confirmação de segurança via OTP
                 </p>
               </div>
@@ -579,19 +579,19 @@ export function AccountFeature({
                     onChange={setPasswordOtpCode}
                     disabled={isPendingPasswordConfirm}
                   >
-                    <div className="flex items-center gap-1 sm:gap-2">
-                      <InputOTPGroup className="gap-1 sm:gap-1.5">
-                        <InputOTPSlot index={0} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-                        <InputOTPSlot index={1} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-                        <InputOTPSlot index={2} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-                        <InputOTPSlot index={3} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
+                    <div className="flex items-center gap-0.5 sm:gap-2">
+                      <InputOTPGroup className="gap-0.5 sm:gap-1.5">
+                        <InputOTPSlot index={0} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
+                        <InputOTPSlot index={1} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
+                        <InputOTPSlot index={2} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
+                        <InputOTPSlot index={3} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
                       </InputOTPGroup>
-                      <InputOTPSeparator className="text-zinc-600" />
-                      <InputOTPGroup className="gap-1 sm:gap-1.5">
-                        <InputOTPSlot index={4} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-                        <InputOTPSlot index={5} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-                        <InputOTPSlot index={6} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
-                        <InputOTPSlot index={7} className="size-9 sm:size-10 text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-lg focus-visible:ring-emerald-500/30" />
+                      <InputOTPSeparator className="text-zinc-600 scale-75 sm:scale-100" />
+                      <InputOTPGroup className="gap-0.5 sm:gap-1.5">
+                        <InputOTPSlot index={4} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
+                        <InputOTPSlot index={5} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
+                        <InputOTPSlot index={6} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
+                        <InputOTPSlot index={7} className="size-7 sm:size-10 text-xs sm:text-sm font-mono bg-zinc-950/80 border-zinc-800 text-white rounded-md sm:rounded-lg focus-visible:ring-emerald-500/30" />
                       </InputOTPGroup>
                     </div>
                   </InputOTP>

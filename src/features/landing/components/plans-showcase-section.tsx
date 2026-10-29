@@ -215,7 +215,7 @@ export function PlansShowcaseSection() {
     <section
       ref={sectionWrapperRef}
       id="planos"
-      className="w-full py-12 sm:py-20 border-b border-border/60 bg-background"
+      className="w-full py-12 sm:py-20 border-b border-border/60 bg-background scroll-mt-16 sm:scroll-mt-20"
     >
       <div
         ref={pinBlockRef}
@@ -242,8 +242,8 @@ export function PlansShowcaseSection() {
           </Link>
         </div>
 
-        {/* Barra de Stepper (4 Passos: TL -> TB -> TCC -> Comparativo) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5">
+        {/* Barra de Stepper (4 Passos: TL -> TB -> TCC -> Comparativo) — 1 coluna em mobile 320px / iPhone 5 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5">
           {STEP_NAVS.map((item) => {
             const isActive = activeStep === item.index;
             const isCompleted = activeStep > item.index;
@@ -283,7 +283,7 @@ export function PlansShowcaseSection() {
                     }`}
                   />
                 </div>
-                <p className="font-heading text-xs sm:text-sm font-bold mt-1 truncate">
+                <p className="font-heading text-xs sm:text-sm font-bold mt-1">
                   {item.label}
                 </p>
               </button>
@@ -298,7 +298,7 @@ export function PlansShowcaseSection() {
         >
           {currentShark ? (
             /* STEPS 1, 2 e 3: Foco Total em "Para Quem Serve" (Sem repetir SharkBehaviorBox) */
-            <div className="rounded-2xl border border-border bg-card p-4 sm:p-8 lg:p-9 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center shadow-xl lg:min-h-[510px]">
+            <div className="rounded-2xl border border-border bg-card p-3.5 sm:p-8 lg:p-9 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center shadow-xl lg:min-h-[510px]">
               {/* Coluna Esquerda (5 cols): Ilustração Oficial do Tubarão (tl.svg, tb.svg, tcc.svg) */}
               <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
                 <div
@@ -331,7 +331,7 @@ export function PlansShowcaseSection() {
                     </h3>
                     <p className="text-xs font-mono text-zinc-400 mt-0.5">
                       {currentShark.badge} •{" "}
-                      <strong className="text-white">
+                      <strong className="text-white whitespace-nowrap">
                         {currentShark.price}
                       </strong>{" "}
                       ({currentShark.period})
@@ -363,17 +363,15 @@ export function PlansShowcaseSection() {
                   </div>
                 </div>
 
-                {/* Ações do Step */}
+                {/* Ações do Step (Botão limpo e adaptado a 320px / iPhone 5) */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 pt-1">
                   <Button
                     render={<Link href="/cadastrar" />}
                     size="lg"
-                    className="bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl h-11 px-6 text-xs sm:text-sm cursor-pointer justify-center"
+                    className="bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl h-11 px-5 sm:px-6 text-xs sm:text-sm cursor-pointer justify-center w-full sm:w-auto"
                   >
-                    <span>
-                      {currentShark.buttonLabel} ({currentShark.name})
-                    </span>
-                    <FaArrowRight className="size-3.5 ml-2" />
+                    <span>{currentShark.buttonLabel}</span>
+                    <FaArrowRight className="size-3.5 ml-2 shrink-0" />
                   </Button>
 
                   <button
@@ -381,7 +379,7 @@ export function PlansShowcaseSection() {
                     onClick={() =>
                       handleManualStepSelect(currentShark.stepIndex + 1)
                     }
-                    className="text-xs font-mono font-bold text-zinc-300 hover:text-white bg-zinc-900/80 sm:bg-transparent border border-zinc-800 sm:border-0 rounded-xl px-4 py-2.5 sm:p-2 transition-colors cursor-pointer text-center"
+                    className="w-full sm:w-auto text-xs font-mono font-bold text-zinc-300 hover:text-white bg-zinc-900/80 sm:bg-transparent border border-zinc-800 sm:border-0 rounded-xl px-4 py-2.5 sm:p-2 transition-colors cursor-pointer text-center"
                   >
                     {currentShark.stepIndex < 2
                       ? "Próxima espécie de Tubarão ➔"
@@ -415,7 +413,7 @@ export function PlansShowcaseSection() {
                           />
                         </div>
                         <div className="min-w-0">
-                          <h3 className="font-heading text-lg font-bold text-white truncate">
+                          <h3 className="font-heading text-base sm:text-lg font-bold text-white leading-snug">
                             {plan.name}
                           </h3>
                           <p className="text-[11px] font-mono text-zinc-400">
@@ -425,12 +423,12 @@ export function PlansShowcaseSection() {
                       </div>
                     </div>
 
-                    {/* Preço */}
-                    <div className="flex items-baseline gap-1.5 pb-2.5 border-b border-zinc-800/80">
-                      <span className="font-heading text-2xl sm:text-3xl font-bold text-white">
+                    {/* Preço (Blindado contra quebra de linha em 320px / iPhone 5) */}
+                    <div className="flex flex-wrap items-baseline gap-1.5 pb-2.5 border-b border-zinc-800/80">
+                      <span className="font-heading text-2xl sm:text-3xl font-bold text-white whitespace-nowrap">
                         {plan.price}
                       </span>
-                      <span className="text-xs font-mono text-zinc-400">
+                      <span className="text-xs font-mono text-zinc-400 whitespace-nowrap">
                         / {plan.period}
                       </span>
                     </div>

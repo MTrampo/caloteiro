@@ -182,6 +182,21 @@ export const updateProfileByUserIdSupabase = async (
   return { data, error };
 };
 
+export const updateProfileAvatarSupabase = async (userId: string, avatarUrl: string) => {
+  const supabase = await getInternalClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({
+      avatar_url: avatarUrl,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", userId)
+    .select()
+    .single();
+
+  return { data, error };
+};
+
 export const updateUserEmailSupabase = async (newEmail: string) => {
   const supabase = await serverSupabase();
   const { data, error } = await supabase.auth.updateUser({
@@ -210,6 +225,72 @@ export const updateProfileEmailByUserIdSupabase = async (userId: string, email: 
     .eq("id", userId);
 
   return { data, error };
+};
+
+export const getProfileStatusByEmailSupabase = async (email: string) => {
+  const supabaseInternal = await getInternalClient();
+  const { data, error } = await supabaseInternal
+    .from("profiles")
+    .select("id, email, status, status_reason, deleted_at, retention_until")
+    .ilike("email", email.trim())
+    .maybeSingle();
+
+  return { data, error };
+};
+
+export const quarantineUserAccountSupabase = async (userId: string, reason?: string) => {
+  const supabaseInternal = await getInternalClient();
+  const now = new Date();
+  const retentionUntil = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000); // 180 dias de guarda legal (Marco Civil/LGPD)
+
+  const { error: profileError } = await supabaseInternal
+    .from("profiles")
+    .update({
+      status: "deleted",
+      status_reason: reason || "Auto-exclusão solicitada pelo titular",
+      deleted_at: now.toISOString(),
+      retention_until: retentionUntil.toISOString(),
+      updated_at: now.toISOString(),
+    })
+    .eq("id", userId);
+
+  return { error: profileError };
+};
+
+export const reactivateUserAccountSupabase = async (userId: string) => {
+  const supabaseInternal = await getInternalClient();
+  const now = new Date();
+
+  const { error: profileError } = await supabaseInternal
+    .from("profiles")
+    .update({
+      status: "active",
+      status_reason: null,
+      deleted_at: null,
+      retention_until: null,
+      updated_at: now.toISOString(),
+    })
+    .eq("id", userId);
+
+  return { error: profileError };
+};
+
+export const banUserAccountSupabase = async (userId: string, reason: string) => {
+  const supabaseInternal = await getInternalClient();
+  const now = new Date();
+
+  const { error: profileError } = await supabaseInternal
+    .from("profiles")
+    .update({
+      status: "banned",
+      status_reason: reason,
+      deleted_at: now.toISOString(),
+      retention_until: null, // Banimento perpétuo: nunca expira a retenção do bloqueio
+      updated_at: now.toISOString(),
+    })
+    .eq("id", userId);
+
+  return { error: profileError };
 };
 
 export const deleteUserAccountSupabase = async (userId: string) => {

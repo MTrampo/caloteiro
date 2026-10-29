@@ -159,19 +159,19 @@ export function RealFeaturesBento() {
       id: "cascade",
       colSpanClass: "lg:col-span-7",
       content: (
-        <div className="h-full rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-xs flex flex-col justify-between gap-5 sm:gap-6">
+        <div className="h-full rounded-2xl border border-border bg-card p-3.5 sm:p-6 shadow-xs flex flex-col justify-between gap-4 sm:gap-6">
           <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
                 <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
                   <FaBolt className="size-3.5" />
                 </div>
-                <h3 className="font-heading text-base sm:text-lg font-bold text-white truncate">
+                <h3 className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white leading-snug">
                   Amortização Automática em Cascata
                 </h3>
               </div>
 
-              <span className="text-[10px] font-mono font-bold px-2 py-1 rounded-lg bg-zinc-950 text-zinc-400 border border-zinc-800 shrink-0">
+              <span className="self-start sm:self-auto text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg bg-zinc-950 text-zinc-400 border border-zinc-800 shrink-0">
                 Zero Conta
               </span>
             </div>
@@ -183,7 +183,7 @@ export function RealFeaturesBento() {
             </p>
           </div>
 
-          <div className="rounded-xl bg-zinc-950/80 border border-zinc-800 p-3.5 sm:p-4 space-y-3 font-mono text-xs">
+          <div className="rounded-xl bg-zinc-950/80 border border-zinc-800 p-3 sm:p-4 space-y-3 font-mono text-xs">
             <div className="flex flex-wrap items-center justify-between gap-1 text-zinc-400 pb-2 border-b border-zinc-800/80 text-[11px] sm:text-xs">
               <span>Pix de R$ 450,00 em parcelas de R$ 300,00</span>
               <span className="text-emerald-400 font-bold">
@@ -193,9 +193,9 @@ export function RealFeaturesBento() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               <div className="rounded-lg bg-zinc-900/90 border border-emerald-500/20 p-3 space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <span className="text-white font-bold">Parcela 1 de 4</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className="self-start sm:self-auto text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
                     Liquidada (100%)
                   </span>
                 </div>
@@ -208,9 +208,9 @@ export function RealFeaturesBento() {
               </div>
 
               <div className="rounded-lg bg-zinc-900/90 border border-amber-500/20 p-3 space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <span className="text-white font-bold">Parcela 2 de 4</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <span className="self-start sm:self-auto text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap">
                     Parcial (50%)
                   </span>
                 </div>
@@ -230,14 +230,14 @@ export function RealFeaturesBento() {
       id: "breach",
       colSpanClass: "lg:col-span-5",
       content: (
-        <div className="h-full rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-xs flex flex-col justify-between gap-5 sm:gap-6">
+        <div className="h-full rounded-2xl border border-border bg-card p-3.5 sm:p-6 shadow-xs flex flex-col justify-between gap-4 sm:gap-6">
           <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2.5">
                 <div className="size-8 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
                   <FaTriangleExclamation className="size-3.5" />
                 </div>
-                <h3 className="font-heading text-base sm:text-lg font-bold text-white">
+                <h3 className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white leading-snug">
                   Gatilho de Quebra de Acordo
                 </h3>
               </div>
@@ -250,12 +250,12 @@ export function RealFeaturesBento() {
             </p>
           </div>
 
-          <div className="rounded-xl bg-rose-500/10 border border-rose-500/30 p-4 space-y-3 font-mono text-xs">
-            <div className="flex items-center justify-between">
+          <div className="rounded-xl bg-rose-500/10 border border-rose-500/30 p-3.5 sm:p-4 space-y-3 font-mono text-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <span className="font-bold text-rose-400">
                 Limite de Tolerância Atingido
               </span>
-              <span className="breach-badge text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold">
+              <span className="self-start sm:self-auto breach-badge text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold whitespace-nowrap">
                 2 / 2 atrasadas
               </span>
             </div>
@@ -276,19 +276,19 @@ export function RealFeaturesBento() {
       id: "excuses",
       colSpanClass: "lg:col-span-5",
       content: (
-        <div className="h-full rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-xs flex flex-col justify-between gap-5 sm:gap-6">
+        <div className="h-full rounded-2xl border border-border bg-card p-3.5 sm:p-6 shadow-xs flex flex-col justify-between gap-4 sm:gap-6">
           <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
                 <div className="size-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
                   <FaTriangleExclamation className="size-3.5" />
                 </div>
-                <h3 className="font-heading text-base sm:text-lg font-bold text-white truncate">
+                <h3 className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white leading-snug">
                   Histórico de Caôs por Parcela
                 </h3>
               </div>
 
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-zinc-900 text-zinc-300 border border-zinc-800 shrink-0">
+              <span className="self-start sm:self-auto text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-zinc-900 text-zinc-300 border border-zinc-800 shrink-0">
                 Memória Viva
               </span>
             </div>
@@ -300,12 +300,12 @@ export function RealFeaturesBento() {
             </p>
           </div>
 
-          <div className="rounded-xl bg-zinc-950/80 border border-amber-500/25 p-4 space-y-2.5 font-mono text-xs">
-            <div className="flex items-center justify-between text-[11px]">
+          <div className="rounded-xl bg-zinc-950/80 border border-amber-500/25 p-3.5 sm:p-4 space-y-2.5 font-mono text-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px]">
               <span className="text-amber-400 font-bold">
                 Caô #2 Registrado na Parcela
               </span>
-              <span className="text-zinc-500">Prometeu: 26/10</span>
+              <span className="text-zinc-400 font-mono">Prometeu: 26/10</span>
             </div>
 
             <p className="text-zinc-300 italic text-[11px] leading-relaxed bg-zinc-900/90 border border-zinc-800 rounded-lg p-2.5">
@@ -320,19 +320,19 @@ export function RealFeaturesBento() {
       id: "receipts",
       colSpanClass: "lg:col-span-7",
       content: (
-        <div className="h-full rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-xs flex flex-col justify-between gap-5 sm:gap-6">
+        <div className="h-full rounded-2xl border border-border bg-card p-3.5 sm:p-6 shadow-xs flex flex-col justify-between gap-4 sm:gap-6">
           <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
                 <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
                   <FaEye className="size-3.5" />
                 </div>
-                <h3 className="font-heading text-base sm:text-lg font-bold text-white truncate">
+                <h3 className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white leading-snug">
                   Cofre de Comprovantes Pix por Parcela
                 </h3>
               </div>
 
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+              <span className="self-start sm:self-auto text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
                 Tubarão Branco+
               </span>
             </div>
@@ -346,31 +346,31 @@ export function RealFeaturesBento() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 font-mono text-xs">
-            <div className="rounded-xl bg-zinc-950/80 border border-emerald-500/20 p-3.5 flex items-center justify-between gap-2">
+            <div className="rounded-xl bg-zinc-950/80 border border-emerald-500/20 p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="min-w-0">
-                <span className="text-white font-bold block truncate">
+                <span className="text-white font-bold block">
                   Parcela 1 de 5 • R$ 300,00
                 </span>
-                <span className="text-[11px] text-emerald-400 block truncate">
+                <span className="text-[11px] text-emerald-400 block mt-0.5">
                   Liquidada com recibo WebP
                 </span>
               </div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-500/30 text-emerald-400 bg-emerald-500/10 font-bold text-[11px] shrink-0">
+              <span className="self-start sm:self-auto inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-500/30 text-emerald-400 bg-emerald-500/10 font-bold text-[11px] shrink-0">
                 <FaEye className="size-3" />
                 <span>Ver</span>
               </span>
             </div>
 
-            <div className="rounded-xl bg-zinc-950/80 border border-zinc-800 p-3.5 flex items-center justify-between gap-2">
+            <div className="rounded-xl bg-zinc-950/80 border border-zinc-800 p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="min-w-0">
-                <span className="text-white font-bold block truncate">
+                <span className="text-white font-bold block">
                   Parcela 2 de 5 • R$ 300,00
                 </span>
-                <span className="text-[11px] text-zinc-400 block truncate">
+                <span className="text-[11px] text-zinc-400 block mt-0.5">
                   Auditoria permanente no cofre
                 </span>
               </div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 bg-zinc-900 font-bold text-[11px] shrink-0">
+              <span className="self-start sm:self-auto inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 bg-zinc-900 font-bold text-[11px] shrink-0">
                 <FaCheck className="size-2.5 text-emerald-400" />
                 <span>Guardado</span>
               </span>
@@ -385,7 +385,7 @@ export function RealFeaturesBento() {
     <section
       ref={sectionRef}
       id="arsenal"
-      className="w-full py-12 sm:py-24 border-b border-border/60 bg-zinc-900/35"
+      className="w-full py-12 sm:py-24 border-b border-border/60 bg-zinc-900/35 scroll-mt-16 sm:scroll-mt-20"
     >
       <div className="w-full mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl space-y-6 sm:space-y-10">
         {/* Cabeçalho da Seção (Regra 7) */}
@@ -443,17 +443,17 @@ export function RealFeaturesBento() {
             </div>
           </div>
 
-          {/* Resultado Instantâneo do Simulador (Grade compacta 2+1 no mobile) */}
+          {/* Resultado Instantâneo do Simulador (1 coluna no mobile 320px / iPhone 5, 3 colunas em tablet/desktop) */}
           <div
             ref={calcResultRef}
             className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-center"
           >
-            <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 font-mono">
+            <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 font-mono">
               <div className="rounded-xl bg-zinc-950/80 border border-zinc-800/80 p-3 sm:p-3.5 space-y-1">
                 <span className="text-[10px] sm:text-[11px] text-zinc-500 block">
                   Valor Emprestado
                 </span>
-                <span className="text-base sm:text-xl font-heading font-bold text-white block">
+                <span className="text-base sm:text-xl font-heading font-bold text-white block whitespace-nowrap">
                   {currentMode.principalText}
                 </span>
                 <span className="text-[10px] sm:text-[11px] text-zinc-400 block">
@@ -465,21 +465,21 @@ export function RealFeaturesBento() {
                 <span className="text-[10px] sm:text-[11px] text-zinc-500 block">
                   Acréscimo
                 </span>
-                <span className="text-base sm:text-xl font-heading font-bold text-emerald-400 block truncate">
+                <span className="text-base sm:text-xl font-heading font-bold text-emerald-400 block whitespace-nowrap">
                   {currentMode.additionText}
                 </span>
                 <span
-                  className={`inline-block text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded border truncate max-w-full ${currentMode.badgeClass}`}
+                  className={`inline-block text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded border ${currentMode.badgeClass}`}
                 >
                   {currentMode.planBadge}
                 </span>
               </div>
 
-              <div className="col-span-2 sm:col-span-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 sm:p-3.5 space-y-1">
+              <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 sm:p-3.5 space-y-1">
                 <span className="text-[10px] sm:text-[11px] text-emerald-300/80 block">
                   Total a Voltar para a Gruta
                 </span>
-                <span className="text-lg sm:text-xl font-heading font-bold text-white block">
+                <span className="text-lg sm:text-xl font-heading font-bold text-white block whitespace-nowrap">
                   {currentMode.finalTotalText}
                 </span>
                 <span className="text-[11px] font-bold text-emerald-400 block">

@@ -9,7 +9,7 @@ export function SharkBehaviorBox({ slug, sharkText }: SharkBehaviorBoxProps) {
     <div
       className={`rounded-xl bg-zinc-950/80 border p-3.5 flex flex-col justify-between min-h-[112px] transition-all duration-200 ${meta.borderClass}`}
     >
-      <div className="flex items-center justify-between gap-2 border-b border-zinc-800/70 pb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 border-b border-zinc-800/70 pb-2">
         <div className="flex items-center gap-1.5 min-w-0">
           <Target className={`size-3.5 shrink-0 ${meta.iconColorClass}`} />
           <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-300">
@@ -17,7 +17,7 @@ export function SharkBehaviorBox({ slug, sharkText }: SharkBehaviorBoxProps) {
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto">
           <div
             className="flex items-center gap-1"
             title={`Nível ${meta.level} de 3 — ${meta.label}`}

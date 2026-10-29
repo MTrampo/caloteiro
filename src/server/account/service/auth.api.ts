@@ -30,6 +30,7 @@ import type { SubscriptionPayloadCookie, UserPermissions } from "@/commons/model
 import { clearCookieSubscription, setCookieSubscription } from "@/commons/lib/auth/subscription";
 import { isSubscriptionActive } from "@/commons/lib/http/security";
 import { formatProperName } from "@/commons/utils/format";
+import { FREE_PLAN_SLUG } from "@/commons/constants/subscription";
 
 export const signInUserApi = async (body: SignInRequestBody) => {
   const { data, error } = await signInWithEmail(body.email, body.password);
@@ -148,6 +149,7 @@ export const signUpUserApi = async (body: UserRequestBody) => {
     name: formatProperName(body.name),
     email: body.email,
     nickname: body.nickname?.trim() ? formatProperName(body.nickname) : null,
+    avatarUrl: FREE_PLAN_SLUG,
   });
 
   return ApiResponse.Ok({

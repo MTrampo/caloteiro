@@ -196,7 +196,7 @@ export function WhatsappWeaponsSimulator() {
     <section
       ref={sectionRef}
       id="armas-whatsapp"
-      className="w-full py-12 sm:py-24 border-b border-border/60 bg-background"
+      className="w-full py-12 sm:py-24 border-b border-border/60 bg-background scroll-mt-16 sm:scroll-mt-20"
     >
       <div className="w-full mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl space-y-6 sm:space-y-8">
         {/* Cabeçalho da Seção (Regra 7) */}
@@ -213,8 +213,8 @@ export function WhatsappWeaponsSimulator() {
             </p>
           </div>
 
-          {/* Seletor rápido de Presa de Exemplo */}
-          <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto self-start sm:self-auto">
+          {/* Seletor rápido de Presa de Exemplo (Empilhado no Mobile para evitar truncamento em 320px) */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto self-start sm:self-auto">
             {DEBTOR_PRESETS.map((preset) => {
               const isSelected = preset.id === selectedDebtorId;
               return (
@@ -222,14 +222,14 @@ export function WhatsappWeaponsSimulator() {
                   key={preset.id}
                   type="button"
                   onClick={() => setSelectedDebtorId(preset.id)}
-                  className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl text-xs font-mono border transition-all cursor-pointer ${
+                  className={`inline-flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 rounded-xl text-xs font-mono border transition-all cursor-pointer w-full sm:w-auto ${
                     isSelected
                       ? "bg-white text-zinc-950 font-bold border-white"
                       : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:text-white"
                   }`}
                 >
                   <FaUser className="size-3 shrink-0" />
-                  <span className="truncate">
+                  <span>
                     {preset.name} ({preset.relation})
                   </span>
                 </button>
@@ -238,17 +238,17 @@ export function WhatsappWeaponsSimulator() {
           </div>
         </div>
 
-        {/* Seletor Compacto de 3 Abas Exclusivo para Mobile/Tablet (< lg) — Mantém a Prévia na Mesma Tela */}
-        <div className="grid grid-cols-3 gap-2 lg:hidden">
+        {/* Seletor Compacto dos 3 Níveis Exclusivo para Mobile/Tablet (< lg) — 1 coluna em mobile (320px / iPhone 5) e 3 colunas em tablet */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 lg:hidden">
           {([1, 2, 3] as WeaponLevel[]).map((level) => {
             const item = WEAPON_LEVELS[level];
             const isActive = selectedLevel === level;
-            const mobileShortLabel =
+            const levelLabel =
               level === 1
-                ? "Nível 1 • Dia"
+                ? "Nível 1 • Amistoso"
                 : level === 2
-                ? "Nível 2 • Atraso"
-                : "Nível 3 • Julius";
+                ? "Nível 2 • Firme"
+                : "Nível 3 • Modo Julius";
 
             return (
               <button
@@ -258,21 +258,26 @@ export function WhatsappWeaponsSimulator() {
                   lastScrollLevelRef.current = level;
                   setSelectedLevel(level);
                 }}
-                className={`rounded-xl border px-2.5 py-2.5 text-left transition-all cursor-pointer ${
+                className={`rounded-xl border p-3 text-left transition-all cursor-pointer ${
                   isActive
                     ? item.activeBorderClass
                     : "border-border bg-card text-zinc-400"
                 }`}
               >
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className={`size-2 rounded-full shrink-0 ${item.dotClass}`}
-                  />
-                  <span className="font-heading text-xs font-bold text-white truncate">
-                    {mobileShortLabel}
+                <div className="flex items-center justify-between sm:justify-start gap-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`size-2 rounded-full shrink-0 ${item.dotClass}`}
+                    />
+                    <span className="font-heading text-xs font-bold text-white">
+                      {levelLabel}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-zinc-400 sm:hidden">
+                    {item.subtitle}
                   </span>
                 </div>
-                <span className="text-[10px] font-mono text-zinc-400 block mt-0.5 truncate">
+                <span className="text-[10px] font-mono text-zinc-400 hidden sm:block mt-0.5">
                   {item.subtitle}
                 </span>
               </button>

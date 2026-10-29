@@ -574,33 +574,45 @@ export type Database = {
           accepted_terms: boolean | null
           avatar_url: string | null
           created_at: string | null
+          deleted_at: string | null
           email: string | null
           id: string
           name: string | null
           nickname: string | null
           phone: string | null
+          retention_until: string | null
+          status: "active" | "deleted" | "banned" | "suspended"
+          status_reason: string | null
           updated_at: string | null
         }
         Insert: {
           accepted_terms?: boolean | null
           avatar_url?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           email?: string | null
           id: string
           name?: string | null
           nickname?: string | null
           phone?: string | null
+          retention_until?: string | null
+          status?: "active" | "deleted" | "banned" | "suspended"
+          status_reason?: string | null
           updated_at?: string | null
         }
         Update: {
           accepted_terms?: boolean | null
           avatar_url?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           email?: string | null
           id?: string
           name?: string | null
           nickname?: string | null
           phone?: string | null
+          retention_until?: string | null
+          status?: "active" | "deleted" | "banned" | "suspended"
+          status_reason?: string | null
           updated_at?: string | null
         }
         Relationships: []

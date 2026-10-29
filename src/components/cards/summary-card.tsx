@@ -59,7 +59,7 @@ export function SummaryCard({
       )}
     >
       <CardHeader className="space-y-2 p-3.5 sm:p-4 pb-1">
-        <div className="flex items-center justify-between gap-2 min-w-0">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             {icon && (
               <div className={cn("p-1.5 rounded-lg border shadow-2xs shrink-0", style.iconContainer)}>
@@ -92,7 +92,11 @@ export function SummaryCard({
               </div>
             )}
           </div>
-          {percentage && <CardAction className="shrink-0">{percentage}</CardAction>}
+          {percentage && (
+            <CardAction className="shrink-0 self-start sm:self-auto">
+              {percentage}
+            </CardAction>
+          )}
         </div>
       </CardHeader>
 

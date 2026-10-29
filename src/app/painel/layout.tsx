@@ -2,6 +2,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { getCurrentUserSessionProfileApi } from "@/server/account/service/auth.api"
+import { FREE_PLAN_SLUG } from "@/commons/constants/subscription"
 import type { Metadata } from "next"
 
 export const dynamic = "force-dynamic"
@@ -23,14 +24,14 @@ export default async function PainelLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user, profile, planName, permissions } = await getCurrentUserSessionProfileApi()
+  const { user, profile, planName, permissions, subscription } = await getCurrentUserSessionProfileApi()
 
   const sidebarUserData = user
     ? {
         name: profile?.name || (user.user_metadata?.name as string | undefined) || "Tubarão",
         nickname: profile?.nickname || (user.user_metadata?.nickname as string | undefined) || null,
         email: user.email || "tubarao@caloteiro.app",
-        avatar: profile?.avatar_url || null,
+        avatar: profile?.avatar_url || subscription?.plan?.slug || FREE_PLAN_SLUG,
         plan: planName,
       }
     : undefined

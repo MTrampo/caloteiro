@@ -22,6 +22,7 @@ import {
   webhookUpsertInvoiceSupabase,
 } from "../repository/webhook.subscription.supabase";
 import { internalSupabase } from "@/commons/lib/supabase/internal";
+import { updateProfileAvatarSupabase } from "../repository/auth.supabase";
 
 interface PlanFeaturesConfig {
   max_debtors?: number | null;
@@ -125,6 +126,8 @@ const webhookUpdateSubscriptionPreapprovalApi = async (preapproval: PreApprovalR
     current_period_end: toIsoOrNull(preapproval.next_payment_date),
   };
 
+  let matchedSlug: string | null = null;
+
   // Se o preapproval tiver reason (nome do plano passado no checkout), promove o plan_id local
   if (preapproval.reason) {
     const { data: matchedPlan } = await supabase
@@ -137,6 +140,7 @@ const webhookUpdateSubscriptionPreapprovalApi = async (preapproval: PreApprovalR
       targetPlanId = matchedPlan.id;
       targetPlanName = matchedPlan.name;
       targetPlanPrice = Number(matchedPlan.price);
+      matchedSlug = matchedPlan.slug;
       resolvedConfig = (matchedPlan.config_plan as unknown as PlanFeaturesConfig) || null;
       payload.plan_id = matchedPlan.id;
       payload.base_value = Number(matchedPlan.price);
@@ -152,6 +156,7 @@ const webhookUpdateSubscriptionPreapprovalApi = async (preapproval: PreApprovalR
     if (currentPlan) {
       targetPlanName = currentPlan.name;
       targetPlanPrice = Number(currentPlan.price);
+      matchedSlug = currentPlan.slug;
       resolvedConfig = (currentPlan.config_plan as unknown as PlanFeaturesConfig) || null;
     }
   }
@@ -164,6 +169,10 @@ const webhookUpdateSubscriptionPreapprovalApi = async (preapproval: PreApprovalR
   const shouldSendUpgradeEmail = isStatusNewlyAuthorized || isPlanChangedWhileAuthorized;
 
   const updateResult = await webhookSyncSubscriptionSupabase(payload, subscription.id);
+
+  if (shouldSendUpgradeEmail && matchedSlug && subscription.user_id) {
+    await updateProfileAvatarSupabase(subscription.user_id, matchedSlug);
+  }
 
   if (resolvedEmail) {
     // 1. Autorização inicial ou Upgrade de plano (ex: Tubarão Lixa -> Tubarão Branco) confirmado no Mercado Pago

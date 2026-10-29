@@ -77,7 +77,7 @@ export function LandingFaqSection() {
     <section
       ref={sectionRef}
       id="faq"
-      className="w-full py-12 sm:py-24 border-b border-border/60 bg-zinc-900/30"
+      className="w-full py-12 sm:py-24 border-b border-border/60 bg-zinc-900/30 scroll-mt-16 sm:scroll-mt-20"
     >
       <div className="w-full mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl space-y-6 sm:space-y-8">
         {/* Cabeçalho Padrão no Topo (Regra 7) */}

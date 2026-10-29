@@ -3,13 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  FaShieldHalved,
   FaScaleBalanced,
   FaLock,
   FaArrowRight,
   FaInstagram,
   FaWhatsapp,
-  FaServer,
   FaUserCheck,
 } from "react-icons/fa6";
 
@@ -35,13 +33,6 @@ const LGPD_BASES_TABLE = [
     badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
   },
   {
-    categoria: "Registros de Conexão e IP",
-    finalidade: "Guarda obrigatória de registros de acesso a aplicações",
-    base: "Art. 7º, II da LGPD",
-    detalhes: "Cumprimento de Obrigação Legal (Marco Civil da Internet)",
-    badgeClass: "bg-sky-500/10 text-sky-400 border-sky-500/30",
-  },
-  {
     categoria: "Dados dos Devedores (Presas)",
     finalidade: "Organização, conciliação e histórico de cobranças privadas pelo credor",
     base: "Art. 7º, VI da LGPD",
@@ -49,10 +40,17 @@ const LGPD_BASES_TABLE = [
     badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/30",
   },
   {
-    categoria: "Logs de Segurança e Telemetria",
-    finalidade: "Prevenção contra abusos/fraudes e aprimoramento contínuo da ferramenta",
+    categoria: "Métricas e Telemetria (Google Analytics)",
+    finalidade: "Medição agregada e anônima de desempenho e usabilidade da interface (sem identificação pessoal e sem IPs)",
     base: "Art. 7º, IX da LGPD",
-    detalhes: "Legítimo Interesse da Controladora",
+    detalhes: "Legítimo Interesse da Controladora (Métricas Agregadas)",
+    badgeClass: "bg-sky-500/10 text-sky-400 border-sky-500/30",
+  },
+  {
+    categoria: "Cooperação Judicial Exclusiva",
+    finalidade: "Atendimento estrito a determinações e ordens judiciais emitidas pelo Poder Judiciário por descumprimento de normas",
+    base: "Art. 7º, II da LGPD",
+    detalhes: "Cumprimento de Obrigação Legal ou Decisão Judicial",
     badgeClass: "bg-purple-500/10 text-purple-400 border-purple-500/30",
   },
 ];
@@ -112,6 +110,17 @@ export function PrivacyDocFeature() {
             <span>@meutrampo.dev</span>
           </a>
         </div>
+      </div>
+
+      {/* Box de Destaque: Anonimato e Segurança do Credor */}
+      <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 sm:p-6 space-y-2.5">
+        <div className="flex items-center gap-2.5 text-emerald-400 font-heading font-bold text-sm sm:text-base">
+          <FaLock className="size-4 shrink-0" />
+          <span>Prioridade Máxima: Segurança, Sigilo e Anonimidade do Tubarão</span>
+        </div>
+        <p className="text-xs sm:text-sm font-mono text-zinc-300 leading-relaxed">
+          No Caloteiro, a discrição do credor é absoluta. <strong className="text-white">Não realizamos guarda rotineira de dados técnicos de conexão (endereços IP, modelos de dispositivo, portas lógicas ou impressões digitais de navegadores)</strong>. Suas cobranças e relacionamentos com devedores são estritamente privados. O fornecimento de dados a terceiros ocorre única e exclusivamente mediante <strong className="text-white">ordem judicial expressa e fundamentada expedida pelo Poder Judiciário</strong> em hipótese formal de apuração de descumprimento de normas legais.
+        </p>
       </div>
 
       {/* Sumário Rápido */}
@@ -190,8 +199,8 @@ export function PrivacyDocFeature() {
               </span>
               <p className="font-bold text-white">Controladora Direta</p>
               <p className="text-xs text-zinc-400">
-                Atua como Controladora exclusivamente sobre os dados cadastrais e de telemetria técnica do próprio
-                Usuário Credor (como e-mail de login, credenciais, endereço IP e logs de segurança).
+                Atua como Controladora exclusivamente sobre os dados cadastrais mínimos e essenciais do próprio
+                Usuário Credor (como e-mail de login, credenciais e configurações da conta).
               </p>
             </div>
           </div>
@@ -223,26 +232,25 @@ export function PrivacyDocFeature() {
 
             <div className="rounded-xl border border-border bg-card p-4 space-y-2">
               <h4 className="font-heading text-sm font-bold text-white">
-                3.2. Dados Técnicos e Registros de Aplicação
+                3.2. Não Armazenamento de Dados Técnicos (Sem Coleta de IPs) e Métricas Anônimas
               </h4>
-              <ul className="list-disc list-inside space-y-1 text-zinc-300">
-                <li>
-                  <strong className="text-white">Registros de Conexão (Marco Civil da Internet):</strong> Endereço IP de origem,
-                  data, hora e fuso horário de acessos à aplicação, portas lógicas e identificadores de sessão.
-                </li>
-                <li>
-                  <strong className="text-white">Dispositivo e Navegador:</strong> Versão do sistema operacional, tipo de
-                  navegador e preferências de idioma.
-                </li>
-                <li>
-                  <strong className="text-white">Cookies e Cache:</strong> Cookies estritamente necessários para autenticação
-                  de sessão e cache local do navegador para resposta instantânea da interface.
-                </li>
-                <li>
-                  <strong className="text-white">Telemetria de Uso:</strong> Uso do Google Analytics para medição anônima e
-                  estatística de volume de acessos e telas utilizadas, sem cruzamento com cadastros identificáveis.
-                </li>
-              </ul>
+              <p className="text-zinc-300">
+                <strong className="text-white">Privacidade e Zero Rastreamento Técnico:</strong> O Caloteiro{" "}
+                <strong className="text-white">NÃO coleta, NÃO monitora e NÃO armazena endereços IP</strong>,
+                portas lógicas, modelos de hardware ou impressões digitais (<em>fingerprints</em>) de navegadores
+                do Credor. Sua navegação e o uso da plataforma são confidenciais.
+              </p>
+              <p className="text-zinc-300">
+                <strong className="text-white">Telemetria de Uso via Google Analytics:</strong> Utilizamos a ferramenta{" "}
+                <strong className="text-white">Google Analytics</strong> exclusivamente para medição estatística,
+                agregada e anônima de volume de acessos e telas utilizadas. Essas informações de uso são desvinculadas
+                de qualquer dado cadastral do Usuário e não permitem identificação individual.
+              </p>
+              <p className="text-zinc-300">
+                <strong className="text-white">Cookies de Sessão:</strong> Utilizamos estritamente cookies funcionais
+                e temporários para manutenção segura da autenticação do usuário durante o período em que ele estiver
+                conectado.
+              </p>
             </div>
 
             <div className="rounded-xl border border-border bg-card p-4 space-y-2">
@@ -342,40 +350,34 @@ export function PrivacyDocFeature() {
               processamento de assinaturas e conciliação de faturas recorrentes;
             </li>
             <li>
-              <strong className="text-white">Google Analytics:</strong> Serviço de análise estatística agregada e tráfego anônimo;
+              <strong className="text-white">Google Analytics:</strong> Serviço de análise estatística agregada e medição anônima de tráfego, sem identificação de usuários ou cruzamento com cadastros;
             </li>
             <li>
-              <strong className="text-white">Autoridades Governamentais e Judiciais:</strong> Mediante determinação legal expressa,
-              ordem judicial específica ou intimação formal fundamentada de autoridade competente.
+              <strong className="text-white">Autoridades Judiciais Competentes:</strong> A única hipótese de quebra de sigilo ou fornecimento de informações cadastrais dá-se exclusivamente mediante <strong className="text-white">ordem judicial expressa e fundamentada expedida pelo Poder Judiciário</strong>, em caso de investigação formal de descumprimento de normas legais ou fraudes. A plataforma não atende a solicitações extrajudiciais genéricas.
             </li>
           </ul>
         </section>
 
-        {/* 7. Exclusão de Conta e Guarda de Logs de 6 Meses */}
+        {/* 7. Exclusão de Conta e Quarentena Legal de 6 Meses */}
         <section id="exclusao" className="space-y-3 pt-2 scroll-mt-24">
           <h3 className="font-heading text-lg sm:text-xl font-bold text-white border-b border-border/60 pb-2">
-            7. Exclusão de Conta e Regra de Retenção de 6 Meses
+            7. Exclusão de Conta e Quarentena Legal de 6 Meses
           </h3>
           <p>
-            7.1. O Usuário tem o direito de requerer o cancelamento e a exclusão integral de sua conta a qualquer momento por meio
+            7.1. O Usuário tem o direito de requerer o encerramento e a exclusão integral de sua conta a qualquer momento por meio
             das opções do painel ou acionando o suporte oficial.
           </p>
           <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-4 space-y-1.5 text-xs">
             <div className="flex items-center gap-2 font-bold text-white">
               <FaLock className="size-3.5 text-emerald-400" />
-              <span>7.2. Retenção Mandatória de Logs (Marco Civil da Internet)</span>
+              <span>7.2. Quarentena de Segurança e Retenção Legal (6 Meses / 180 Dias)</span>
             </div>
             <p className="text-zinc-300">
-              Em estrito cumprimento ao disposto no <strong className="text-white">Artigo 15 da Lei Federal nº 12.965/2014</strong>,
-              os registros eletrônicos de acesso à aplicação (endereços IP, datas e horários) serão mantidos armazenados sob sigilo
-              e ambiente restrito pelo prazo improrrogável de <strong className="text-white">6 (seis) meses</strong>.
+              Ao solicitar a exclusão, a conta é imediatamente desativada e mantida em quarentena de retenção legal pelo prazo de <strong className="text-white">6 (seis) meses (180 dias)</strong>. Durante esse período, a assinatura do Mercado Pago é cancelada de forma imediata e bloqueante para assegurar que nenhuma nova cobrança ocorra. A conta pode ser reativada voluntariamente pelo titular caso efetue novo login dentro dos 180 dias. Não há coleta nem guarda de endereços IP de conexão.
             </p>
           </div>
           <p>
-            7.3. <strong className="text-white">Exclusão Definitiva em Cascata:</strong> Transcorrido o intervalo legal de 6 meses
-            contados a partir da solicitação de exclusão, todos os dados cadastrais do Usuário, bem como todas as anotações de
-            devedores, históricos de justificativas, parcelas e pagamentos a ele associados serão excluídos permanentemente de forma
-            automatizada e irreversível.
+            7.3. <strong className="text-white">Purga Definitiva em Cascata:</strong> Transcorrido o intervalo de 180 dias sem que o usuário tenha manifestado intenção de reativar a conta, todos os dados cadastrais, presas marcadas, históricos de justificativas, parcelas e pagamentos vinculados ao titular são excluídos permanentemente de forma automatizada e irreversível.
           </p>
         </section>
 

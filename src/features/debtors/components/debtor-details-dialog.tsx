@@ -52,7 +52,7 @@ export function DebtorDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg w-full bg-zinc-900 border-zinc-800 p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full max-w-lg bg-zinc-900 border-zinc-800 p-4 sm:p-6 space-y-4 max-h-[calc(100dvh-2.5rem)] overflow-y-auto">
         {/* Cabeçalho do Devedor */}
         <DialogHeader className="text-left space-y-3">
           <div className="flex items-start gap-3.5">

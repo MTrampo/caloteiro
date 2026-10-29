@@ -54,7 +54,7 @@ export function HeroCommandShowcase() {
   return (
     <section
       ref={containerRef}
-      className="relative w-full pt-6 pb-12 sm:pt-14 sm:pb-24 border-b border-border/60 bg-background"
+      className="relative w-full pt-10 pb-12 sm:pt-16 sm:pb-24 border-b border-border/60 bg-background"
     >
       <div className="w-full mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
         {/* Coluna Esquerda: Narrativa Principal Estática (Visível Imediatamente) */}
@@ -92,8 +92,8 @@ export function HeroCommandShowcase() {
             </Button>
           </div>
 
-          {/* Destaques Rápidos Reais (Em linha fluida no mobile para economizar altura) */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-3 border-t border-border/50 text-[11px] sm:text-xs font-mono text-zinc-400">
+          {/* Destaques Rápidos Reais (Oculto no mobile para manter a Hero limpa e direto ao ponto; visível apenas em telas maiores) */}
+          <div className="hidden sm:flex flex-wrap items-center gap-x-4 gap-y-2 pt-3 border-t border-border/50 text-[11px] sm:text-xs font-mono text-zinc-400">
             <div className="flex items-center gap-1.5">
               <FaCheck className="size-3 text-emerald-400 shrink-0" />
               <span>Controle financeiro de verdade</span>

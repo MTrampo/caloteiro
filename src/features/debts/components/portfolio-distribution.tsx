@@ -23,7 +23,7 @@ export function PortfolioDistribution({ data }: PortfolioDistributionProps) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono font-bold text-zinc-400">
+        <div className="flex items-center gap-2 text-xs font-mono font-bold text-zinc-400 self-start sm:self-auto flex-wrap">
           <span>Total:</span>
           <span className="text-white bg-zinc-800 px-2.5 py-1 rounded-lg border border-zinc-700">
             {formatCurrencyBRL(totalAmount)} • {totalDebtors} devedores

@@ -90,7 +90,7 @@ export function DebtorPortalShowcase() {
     <section
       ref={sectionRef}
       id="portal-devedor"
-      className="relative w-full py-12 sm:py-24 border-b border-emerald-500/20 bg-gradient-to-br from-emerald-950/60 via-zinc-900/95 to-emerald-950/35 overflow-hidden"
+      className="relative w-full py-12 sm:py-24 border-b border-emerald-500/20 bg-gradient-to-br from-emerald-950/60 via-zinc-900/95 to-emerald-950/35 overflow-hidden scroll-mt-16 sm:scroll-mt-20"
     >
       {/* Iluminação Ambiental Verde Esmeralda de Contraste */}
       <div
@@ -155,14 +155,14 @@ export function DebtorPortalShowcase() {
         {/* Coluna Direita: Mockup Fiel da Tela que o Devedor Enxerga no Celular */}
         <div ref={phoneCardRef} className="lg:col-span-6">
           <div className="max-w-md mx-auto rounded-3xl border border-emerald-500/35 bg-zinc-950/95 p-4 sm:p-6 shadow-[0_24px_60px_rgba(0,0,0,0.75)] space-y-4 sm:space-y-5">
-            {/* Barra de Topo do Portal Público do Devedor */}
-            <div className="flex items-center justify-between gap-2 pb-3.5 border-b border-zinc-800">
+            {/* Barra de Topo do Portal Público do Devedor (Empilhado no Mobile para evitar colisão em 320px) */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3.5 border-b border-zinc-800">
               <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 font-bold">
                 <FaShieldHalved className="size-3.5 shrink-0" />
                 <span>Portal de Quitação • Visão do Devedor</span>
               </div>
 
-              <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-md bg-zinc-900 text-zinc-400 border border-zinc-800">
+              <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-md bg-zinc-900 text-zinc-400 border border-zinc-800 self-start sm:self-auto shrink-0">
                 <FaLock className="size-2.5 text-emerald-400" />
                 <span>PIN Verificado</span>
               </span>
@@ -180,9 +180,9 @@ export function DebtorPortalShowcase() {
 
             {/* Progresso da Dívida na Visão da Presa */}
             <div className="rounded-2xl bg-zinc-900/90 border border-zinc-800 p-4 space-y-3 font-mono text-xs">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-zinc-400">Falta Pagar:</span>
-                <span className="font-heading text-xl font-bold text-white">
+                <span className="font-heading text-xl font-bold text-white whitespace-nowrap">
                   R$ 1.800,00
                 </span>
               </div>
@@ -194,9 +194,9 @@ export function DebtorPortalShowcase() {
                 />
               </div>
 
-              <div className="flex items-center justify-between text-[11px] text-zinc-400">
-                <span>Já pago: R$ 600,00</span>
-                <span className="text-amber-400 font-bold">
+              <div className="flex items-center justify-between gap-2 text-[11px] text-zinc-400">
+                <span className="whitespace-nowrap">Já pago: R$ 600,00</span>
+                <span className="text-amber-400 font-bold whitespace-nowrap">
                   Parcela 2/4 Vencida
                 </span>
               </div>
@@ -204,19 +204,21 @@ export function DebtorPortalShowcase() {
 
             {/* Caixa de Pagamento Pix Direto para o Devedor */}
             <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 space-y-3 font-mono text-xs">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-emerald-300 font-bold">
                   Chave Pix para Pagamento Imediato
                 </span>
-                <span className="text-white font-bold">R$ 600,00</span>
+                <span className="text-white font-bold whitespace-nowrap">
+                  R$ 600,00
+                </span>
               </div>
 
-              <div className="flex items-center justify-between gap-2 rounded-xl bg-zinc-950/90 border border-zinc-800 px-3 py-2.5">
-                <div className="truncate">
-                  <span className="text-zinc-200 font-bold block truncate">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-zinc-950/90 border border-zinc-800 p-3">
+                <div className="min-w-0">
+                  <span className="text-zinc-200 font-bold block font-mono text-sm tracking-wide">
                     123.456.789-00
                   </span>
-                  <span className="text-[10px] text-zinc-500">
+                  <span className="text-[11px] text-zinc-400 block mt-0.5 font-mono">
                     CPF • Nubank • Titular: Tubarão
                   </span>
                 </div>
@@ -224,7 +226,7 @@ export function DebtorPortalShowcase() {
                 <button
                   type="button"
                   onClick={handleCopyPix}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold text-xs transition-colors cursor-pointer shrink-0"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold text-xs transition-colors cursor-pointer shrink-0"
                 >
                   {copiedPix ? (
                     <>

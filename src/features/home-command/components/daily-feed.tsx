@@ -273,84 +273,87 @@ export function DailyFeed({
                 </Link>
 
                 {/* Ações Rápidas de Cobrança e Baixa */}
-                <div className="flex items-center gap-2 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-zinc-800/60">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-zinc-800/60 w-full sm:w-auto">
                   {isPaid ? (
-                    <span className="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                    <span className="text-xs font-mono font-bold text-emerald-400 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 w-full sm:w-auto">
                       <FaCheck className="size-3" />
                       Milagre Confirmado
                     </span>
                   ) : (
                     <>
-                      {/* Botão Copiar Pix */}
-                      {canCopyPix && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleCopyPix(item.id, item.pixKey)}
-                          className="h-8.5 text-xs font-mono font-bold bg-zinc-900 hover:bg-zinc-800 border-zinc-700/80 text-zinc-200 cursor-pointer"
-                        >
-                          {copiedId === item.id ? (
-                            <>
-                              <FaCheck className="size-3 text-emerald-400 mr-1" />
-                              <span>Copiado!</span>
-                            </>
-                          ) : (
-                            <>
-                              <FaCopy className="size-3 mr-1 text-zinc-400" />
-                              <span>Copiar Pix</span>
-                            </>
-                          )}
-                        </Button>
-                      )}
+                      {/* Linha Superior no Mobile (Copiar + Zap + Seta) / Inline no Desktop */}
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        {/* Botão Copiar Pix */}
+                        {canCopyPix && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCopyPix(item.id, item.pixKey)}
+                            className="flex-1 sm:flex-initial h-8.5 text-xs font-mono font-bold bg-zinc-900 hover:bg-zinc-800 border-zinc-700/80 text-zinc-200 cursor-pointer min-w-0"
+                          >
+                            {copiedId === item.id ? (
+                              <>
+                                <FaCheck className="size-3 text-emerald-400 mr-1 shrink-0" />
+                                <span className="truncate">Copiado!</span>
+                              </>
+                            ) : (
+                              <>
+                                <FaCopy className="size-3 mr-1 text-zinc-400 shrink-0" />
+                                <span className="truncate">Copiar Pix</span>
+                              </>
+                            )}
+                          </Button>
+                        )}
 
-                      {/* Botão WhatsApp */}
-                      {item.debtorPhone && (
-                        <Button
-                          size="sm"
-                          className="h-8.5 text-xs font-mono font-bold bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-xs cursor-pointer"
-                          render={
-                            <a
-                              href={getWhatsAppUrl(item)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            />
-                          }
-                        >
-                          <FaWhatsapp className="size-3.5 mr-1" />
-                          <span>
-                            {item.type === "urgent_overdue"
-                              ? "Cobrar no Zap"
-                              : "Mandar Recado"}
-                          </span>
-                        </Button>
-                      )}
+                        {/* Botão WhatsApp */}
+                        {item.debtorPhone && (
+                          <Button
+                            size="sm"
+                            className="flex-1 sm:flex-initial h-8.5 text-xs font-mono font-bold bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-xs cursor-pointer min-w-0"
+                            render={
+                              <a
+                                href={getWhatsAppUrl(item)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              />
+                            }
+                          >
+                            <FaWhatsapp className="size-3.5 mr-1 shrink-0" />
+                            <span className="truncate">
+                              {item.type === "urgent_overdue"
+                                ? "Cobrar no Zap"
+                                : "Mandar Recado"}
+                            </span>
+                          </Button>
+                        )}
 
-                      {/* Botão Dar Baixa */}
+                        {/* Atalho Sutil para a Dívida */}
+                        <Link
+                          href={`/painel/dividas/${item.debtId}`}
+                          title="Ver detalhes da dívida"
+                          className="size-8.5 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors shrink-0"
+                        >
+                          <FaArrowRight className="size-3" />
+                        </Link>
+                      </div>
+
+                      {/* Botão Dar Baixa (w-full no mobile abaixo dos outros botões / inline no desktop) */}
                       <Button
                         size="sm"
-                        variant="ghost"
+                        variant="outline"
                         disabled={isPaying}
                         onClick={() => handleConfirmPix(item)}
-                        className="h-8.5 text-xs font-mono font-bold text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer"
+                        className="w-full sm:w-auto h-8.5 text-xs font-mono font-bold bg-zinc-900/80 hover:bg-zinc-800 border-zinc-800 text-zinc-300 hover:text-white cursor-pointer justify-center"
                       >
                         {isPaying ? (
                           <div className="flex items-center gap-1">
-                            <Loader2 className="size-3 animate-spin" />
+                            <Loader2 className="size-3 animate-spin shrink-0" />
                             <span>Baixando...</span>
                           </div>
                         ) : (
-                          "Pingou?"
+                          <span>Pingou o Pix?</span>
                         )}
                       </Button>
-
-                      {/* Atalho Sutil para a Dívida */}
-                      <Link
-                        href={`/painel/dividas/${item.debtId}`}
-                        title="Ver detalhes da dívida"
-                        className="size-8.5 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors shrink-0"
-                      >
-                        <FaArrowRight className="size-3" />
-                      </Link>
                     </>
                   )}
                 </div>

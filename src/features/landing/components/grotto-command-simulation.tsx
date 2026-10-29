@@ -244,7 +244,7 @@ export function GrottoCommandSimulation() {
     <section
       ref={sectionRef}
       id="central-gruta"
-      className="w-full py-12 sm:py-24 border-b border-border/60 bg-zinc-900/30"
+      className="w-full py-12 sm:py-24 border-b border-border/60 bg-zinc-900/30 scroll-mt-16 sm:scroll-mt-20"
     >
       <div className="w-full mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl space-y-6 sm:space-y-8">
         {/* Cabeçalho Solto da Seção (Estático e Visível Imediatamente) */}
@@ -458,18 +458,18 @@ export function GrottoCommandSimulation() {
                   key={debtor.id}
                   className="grotto-debtor-row h-full rounded-xl border border-zinc-800/90 bg-zinc-950/70 p-4 flex flex-col justify-between gap-3 transition-all"
                 >
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="font-heading text-sm font-bold text-white truncate">
+                      <p className="font-heading text-sm font-bold text-white leading-tight">
                         {debtor.name}
                       </p>
-                      <p className="text-[11px] font-mono text-zinc-400 truncate">
+                      <p className="text-[11px] font-mono text-zinc-400 mt-0.5 leading-tight">
                         {debtor.debtTitle}
                       </p>
                     </div>
 
                     <span
-                      className={`text-[10px] font-mono font-extrabold px-2 py-0.5 rounded-md border shrink-0 ${debtor.badgeClass}`}
+                      className={`text-[10px] font-mono font-extrabold px-2 py-0.5 rounded-md border self-start sm:self-auto shrink-0 ${debtor.badgeClass}`}
                     >
                       {debtor.badgeText}
                     </span>
@@ -480,7 +480,7 @@ export function GrottoCommandSimulation() {
                       <span className="text-[10px] text-zinc-500 block">
                         Já Recuperado:
                       </span>
-                      <span className="font-bold text-emerald-400 tabular-nums">
+                      <span className="font-bold text-emerald-400 tabular-nums whitespace-nowrap">
                         {formatCurrencyBRL(debtor.paidSoFar)}
                       </span>
                     </div>
@@ -489,7 +489,7 @@ export function GrottoCommandSimulation() {
                       <span className="text-[10px] text-zinc-500 block">
                         Falta Receber:
                       </span>
-                      <span className="font-bold text-white tabular-nums">
+                      <span className="font-bold text-white tabular-nums whitespace-nowrap">
                         {formatCurrencyBRL(debtor.remaining)}
                       </span>
                     </div>
@@ -502,14 +502,14 @@ export function GrottoCommandSimulation() {
                         style={{ width: `${debtor.progressPercent}%` }}
                       />
                     </div>
-                    <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400">
-                      <span className="truncate">{debtor.statusText}</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pt-1 text-[11px] font-mono text-zinc-400">
+                      <span className="leading-snug">{debtor.statusText}</span>
                       <a
                         href="#armas-whatsapp"
-                        className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-bold shrink-0"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 font-bold transition-colors cursor-pointer text-center"
                       >
-                        <FaWhatsapp className="size-3" />
-                        <span>Cobrar</span>
+                        <FaWhatsapp className="size-3.5" />
+                        <span>Cobrar no WhatsApp</span>
                       </a>
                     </div>
                   </div>

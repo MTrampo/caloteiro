@@ -3,6 +3,7 @@ import "@/commons/styles/globals.css";
 import { fontBody, fontTitle } from "@/commons/styles/fonts";
 import { cn } from "@/commons/lib/utils";
 import { Toaster } from "sonner";
+import { CookieConsentBanner } from "@/components/banners/cookie-consent-banner";
 
 export const metadata: Metadata = {
   title: "Caloteiro — Central de Cobrança e Gestão de Devedores",
@@ -18,12 +19,13 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={cn("dark", fontTitle.variable, fontBody.variable)}
+      className={cn("dark scroll-smooth", fontTitle.variable, fontBody.variable)}
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-background text-foreground antialiased font-sans flex flex-col">
         {children}
         <Toaster richColors theme="dark" position="top-right" />
+        <CookieConsentBanner />
       </body>
     </html>
   );

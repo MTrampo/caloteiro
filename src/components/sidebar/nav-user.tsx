@@ -26,6 +26,29 @@ import { ChevronsUpDown } from "lucide-react"
 import Link from "next/link"
 import { signOutAction } from "@/actions/auth"
 import { formatProperName, getNameInitials } from "@/commons/utils/format"
+import tlSvg from "@/commons/assets/svgs/tl.svg"
+import tbSvg from "@/commons/assets/svgs/tb.svg"
+import tccSvg from "@/commons/assets/svgs/tcc.svg"
+
+const SHARK_AVATARS: Record<string, string> = {
+  "tubarao-lixa": tlSvg.src,
+  "tubarao-branco": tbSvg.src,
+  "tubarao-cabeca-chato": tccSvg.src,
+}
+
+function resolveAvatarSrc(avatar?: string | null): string | undefined {
+  if (!avatar) return undefined
+  if (SHARK_AVATARS[avatar]) return SHARK_AVATARS[avatar]
+  if (
+    avatar.startsWith("http://") ||
+    avatar.startsWith("https://") ||
+    avatar.startsWith("/") ||
+    avatar.startsWith("data:")
+  ) {
+    return avatar
+  }
+  return undefined
+}
 
 export interface NavUserData {
   name: string
@@ -56,7 +79,8 @@ export function NavUser({
 
   // Dá preferência ao apelido/vulgo; se não tiver, usa o nome formatado
   const displayName = formattedNickname || formattedFullName
-  const initials = getNameInitials(displayName, "TB")
+  const initials = getNameInitials(user.nickname || displayName, "TB")
+  const resolvedAvatarSrc = resolveAvatarSrc(user.avatar)
 
   const handleSignOut = () => {
     startTransition(async () => {
@@ -78,8 +102,12 @@ export function NavUser({
               />
             }
           >
-            <Avatar className="size-8 rounded-lg shrink-0">
-              <AvatarImage src={user.avatar || undefined} alt={displayName} />
+            <Avatar className="size-8 rounded-lg shrink-0 bg-zinc-900 border border-zinc-700/60 overflow-hidden">
+              <AvatarImage
+                src={resolvedAvatarSrc}
+                alt={displayName}
+                className="object-contain p-0.5"
+              />
               <AvatarFallback className="rounded-lg bg-zinc-800 border border-zinc-700/80 text-zinc-100 font-bold font-mono text-xs">
                 {initials}
               </AvatarFallback>
@@ -101,8 +129,12 @@ export function NavUser({
             sideOffset={4}
           >
             <div className="flex items-center gap-2 px-2 py-2 text-left text-sm">
-              <Avatar className="size-8 rounded-lg shrink-0">
-                <AvatarImage src={user.avatar || undefined} alt={displayName} />
+              <Avatar className="size-8 rounded-lg shrink-0 bg-zinc-900 border border-zinc-700/60 overflow-hidden">
+                <AvatarImage
+                  src={resolvedAvatarSrc}
+                  alt={displayName}
+                  className="object-contain p-0.5"
+                />
                 <AvatarFallback className="rounded-lg bg-zinc-800 border border-zinc-700/80 text-zinc-100 font-bold font-mono text-xs">
                   {initials}
                 </AvatarFallback>
