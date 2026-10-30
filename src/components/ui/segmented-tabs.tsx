@@ -33,13 +33,15 @@ export function SegmentedTabs<T extends string = string>({
 }: SegmentedTabsProps<T>) {
   if (!items || items.length === 0) return null
 
-  const isCompactGrid = items.length <= 3
+  const isCompactGrid = items.length <= 4
 
   const gridColsClass =
     items.length === 2
       ? "grid-cols-2"
       : items.length === 3
       ? "grid-cols-3"
+      : items.length === 4
+      ? "grid-cols-2"
       : "grid-cols-1"
 
   return (
@@ -51,7 +53,7 @@ export function SegmentedTabs<T extends string = string>({
         fullWidthOnMobile
           ? isCompactGrid
             ? cn("grid w-full sm:w-auto sm:inline-flex", gridColsClass)
-            : "flex w-full sm:w-auto overflow-x-auto scrollbar-none pb-1 sm:pb-0"
+            : "flex w-full sm:w-auto overflow-x-auto scrollbar-none"
           : "inline-flex items-center",
         className
       )}
@@ -68,7 +70,7 @@ export function SegmentedTabs<T extends string = string>({
             onClick={() => onChange(tab.id)}
             className={cn(
               "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-1 text-[11px] sm:text-xs font-mono rounded-lg transition-all cursor-pointer whitespace-nowrap touch-manipulation min-w-0",
-              isCompactGrid ? "w-full" : "shrink-0",
+              isCompactGrid ? "w-full sm:w-auto" : "shrink-0",
               isActive
                 ? "bg-white text-zinc-950 font-bold shadow-xs"
                 : "text-zinc-400 hover:text-white"

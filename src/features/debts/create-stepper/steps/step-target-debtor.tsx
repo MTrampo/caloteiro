@@ -12,6 +12,8 @@ import {
   FaUser,
   FaPhone,
   FaKey,
+  FaGaugeHigh,
+  FaTriangleExclamation,
 } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 import { NewButton } from "@/components/buttons/new-button";
@@ -134,8 +136,23 @@ export function StepTargetDebtor({
                   </div>
                 </div>
 
-                {/* Dados de Contato e Chave Pix */}
+                {/* Dados de Contato, Chave Pix e Score */}
                 <div className="space-y-1.5 pt-2 border-t border-border/50 text-[11px] font-mono text-zinc-400">
+                  {debtor.riskScore && (
+                    <div className="flex items-center justify-between gap-2 pb-1">
+                      <span className="text-[10px] text-zinc-500 uppercase">
+                        Score na Gruta:
+                      </span>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border whitespace-nowrap flex items-center gap-1 ${debtor.riskScore.badgeClass}`}
+                      >
+                        <FaGaugeHigh className="size-2.5" />
+                        <span>
+                          {debtor.riskScore.score} pts • {debtor.riskScore.tierShortLabel}
+                        </span>
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 truncate">
                     <FaPhone className="size-2.5 text-zinc-500 shrink-0" />
                     <span className="truncate">{debtor.displayPhone || "Sem telefone"}</span>
@@ -186,6 +203,34 @@ export function StepTargetDebtor({
           >
             Limpar busca
           </Button>
+        </div>
+      )}
+
+      {/* Alerta Preventivo de Risco (quando a presa selecionada tem Score < 50) */}
+      {selectedDebtor?.riskScore && selectedDebtor.riskScore.score < 50 && (
+        <div className="rounded-2xl border border-amber-500/40 bg-amber-950/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="size-9 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+              <FaTriangleExclamation className="size-4" />
+            </div>
+            <div className="space-y-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-heading text-xs sm:text-sm font-bold text-amber-300">
+                  Alerta Preventivo da Gruta: {selectedDebtor.riskScore.tierLabel} ({selectedDebtor.riskScore.score}/100 pts)
+                </span>
+              </div>
+              <p className="text-zinc-300 leading-relaxed text-[11px] sm:text-xs">
+                Esta presa está abaixo da linha de segurança (50 pts)
+                {selectedDebtor.riskScore.overdueInstallmentsCount > 0
+                  ? `, possui ${selectedDebtor.riskScore.overdueInstallmentsCount} parcela(s) vencida(s)`
+                  : ""}
+                {selectedDebtor.riskScore.excusesCount > 0
+                  ? ` e já deu ${selectedDebtor.riskScore.excusesCount} caô(s)`
+                  : ""}
+                . Recomendação do Tubarão: aplique juros mensais/taxa fixa na próxima etapa e configure um gatilho curto de quebra de acordo.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 

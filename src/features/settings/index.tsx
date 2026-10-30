@@ -604,14 +604,14 @@ export function SettingsFeature({
               />
             </div>
 
-            {/* Modelo 3: Modo Julius */}
+            {/* Modelo 3: Modo Tio Patinhas */}
             <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-4 space-y-2.5">
               <div className="flex items-start justify-between gap-2">
                 <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="size-2 rounded-full bg-rose-500 shrink-0" />
                     <span className="text-xs font-mono font-bold text-rose-400 truncate">
-                      Nível 3 — Pressão Total / Modo Julius
+                      Nível 3 — Pressão Total / Modo Tio Patinhas
                     </span>
                   </div>
                   <span className="text-[10px] sm:text-[11px] font-mono text-zinc-500 block">

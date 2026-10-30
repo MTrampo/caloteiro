@@ -82,6 +82,7 @@ export interface UserPlanLimits {
   planSlug: string;
   planName: string;
   isFreePlan: boolean;
+  canRiskScore?: boolean;
 }
 
 /**

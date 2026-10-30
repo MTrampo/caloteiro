@@ -11,7 +11,14 @@ import { NavMain } from "./nav-main"
 import { NavUser } from "./nav-user"
 import type { NavRoot } from "@/commons/types/sidebar"
 import { Logo } from "@/components/ui/logo"
-import { FaClipboardList, FaCoins, FaGear, FaHouse, FaUsers } from "react-icons/fa6"
+import {
+  FaClipboardList,
+  FaCoins,
+  FaGaugeHigh,
+  FaGear,
+  FaHouse,
+  FaUsers,
+} from "react-icons/fa6"
 
 import type { UserPermissions } from "@/commons/models/subscription"
 
@@ -24,6 +31,7 @@ export function AppSidebar({ user, permissions, ...props }: AppSidebarProps) {
   const filteredNavigation = React.useMemo<NavRoot>(() => {
     const canAccessFinancial = Boolean(permissions?.canAccessFinancial)
     const canCustomTemplates = Boolean(permissions?.canCustomTemplates)
+    const canRiskScore = Boolean(permissions?.canRiskScore)
 
     const groups = [
       {
@@ -58,6 +66,15 @@ export function AppSidebar({ user, permissions, ...props }: AppSidebarProps) {
             url: "/painel/devedores",
             icon: <FaUsers className="size-3.5" />,
           },
+          ...(canRiskScore
+            ? [
+                {
+                  title: "Termômetro",
+                  url: "/painel/termometro",
+                  icon: <FaGaugeHigh className="size-3.5" />,
+                },
+              ]
+            : []),
         ],
       },
       {

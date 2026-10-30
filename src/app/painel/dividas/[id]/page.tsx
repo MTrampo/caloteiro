@@ -6,6 +6,7 @@ import {
   getCurrentUserSessionProfileApi,
 } from "@/server/account/service/auth.api";
 import { getDebtDetailsApi } from "@/server/debts/service/debt.api";
+import { enrichDebtorsWithRiskScoreApi } from "@/server/debtors/service/risk-score.api";
 import { DebtDetailsFeature } from "@/features/debts/details/debt-details-feature";
 
 interface DebtDetailsPageProps {
@@ -33,6 +34,15 @@ export default async function DebtDetailsPage({ params }: DebtDetailsPageProps) 
 
   if (!response.data) {
     notFound();
+  }
+
+  const [enrichedDebtor] = await enrichDebtorsWithRiskScoreApi(
+    userId,
+    [response.data.debtor],
+    Boolean(sessionProfile.permissions?.canRiskScore)
+  );
+  if (enrichedDebtor) {
+    response.data.debtor = enrichedDebtor;
   }
 
   return (

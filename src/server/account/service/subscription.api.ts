@@ -27,6 +27,7 @@ import {
   FREE_PLAN_PRICE,
   FREE_PLAN_DEFAULT_MAX_DEBTORS,
   FREE_PLAN_RESET_PAYLOAD,
+  getPlanBenefits,
 } from "@/commons/constants/subscription";
 import type { ResponseProps } from "@/commons/models/api";
 import type {
@@ -110,6 +111,7 @@ export const getPlanLimitsApi = async (
     planSlug: sub?.plan?.slug || "tubarao-lixa",
     planName: sub?.plan?.name || "Tubarão Lixa",
     isFreePlan: permissions.isFreePlan,
+    canRiskScore: Boolean(permissions.canRiskScore),
   };
 };
 
@@ -446,12 +448,14 @@ export const changeSubscriptionPlanApi = async (
     );
 
     // Dispara e-mail de alteração com aviso de cobrança na próxima fatura
+    const benefits = getPlanBenefits(targetPlan.name, targetPlan.config_plan);
     await sendPlanChangeEmailApi(userEmail, {
       previousPlanName: currentPlan?.name || DEFAULT_FREE_PLAN_NAME,
       newPlanName: targetPlan.name,
       isUpgrade,
       newPrice,
       maxDebtors: targetPlan.config_plan?.max_debtors,
+      benefits,
     });
 
     return ApiResponse.Ok({

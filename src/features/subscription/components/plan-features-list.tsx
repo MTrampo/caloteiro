@@ -106,7 +106,7 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
         </span>
       </div>
 
-      {/* 7. Nível de Cara de Pau (Score de Risco) - Exclusivo Tubarão Cabeça Chato */}
+      {/* 8. Termômetro da Gruta (/painel/termometro) - Exclusivo Tubarão Cabeça Chata */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck
           className={`size-3 shrink-0 ${
@@ -120,11 +120,29 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
               : "text-zinc-500 line-through"
           }
         >
-          Nível de Cara de Pau (Score de Risco) {config?.can_risk_score && <span className="text-[10px] text-amber-400 font-mono font-normal">(Em breve)</span>}
+          Termômetro da Gruta (/painel/termometro)
         </span>
       </div>
 
-      {/* 8. Arquivo de Provas (Anexo de Comprovantes) */}
+      {/* 9. Score de Risco da Mordida & Raio-X da Presa - Exclusivo Tubarão Cabeça Chata */}
+      <div className="flex items-center gap-2 text-zinc-300">
+        <FaCheck
+          className={`size-3 shrink-0 ${
+            config?.can_risk_score ? "text-emerald-400" : "text-zinc-600"
+          }`}
+        />
+        <span
+          className={
+            config?.can_risk_score
+              ? "text-white font-bold"
+              : "text-zinc-500 line-through"
+          }
+        >
+          Score de Risco &amp; Raio-X Comportamental
+        </span>
+      </div>
+
+      {/* 10. Arquivo de Provas (Anexo de Comprovantes) */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck
           className={`size-3 shrink-0 ${

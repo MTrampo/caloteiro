@@ -9,7 +9,7 @@ export interface RenewalFailedEmailData {
 }
 
 export function renderRenewalFailedHtml(data: RenewalFailedEmailData): { subject: string; html: string } {
-  const subject = "⚠️ Alerta no Cofre: A renovação do seu plano Caloteiro não passou"
+  const subject = "Alerta no Cofre: A renovação do seu plano Caloteiro não passou"
 
   const contentHtml = `
     <p style="margin: 0 0 14px 0;">
@@ -26,7 +26,7 @@ export function renderRenewalFailedHtml(data: RenewalFailedEmailData): { subject
   const highlightCardHtml = `
     <div style="background-color: #271418; border: 1px solid #7f1d1d; border-radius: 12px; padding: 14px; margin-bottom: 4px;">
       <div style="color: #f87171; font-weight: 800; font-size: 13px; margin-bottom: 6px; font-family: monospace;">
-        ⚠️ AÇÃO NECESSÁRIA NO COFRE:
+        AÇÃO NECESSÁRIA NO COFRE:
       </div>
       <div style="color: #fca5a5; font-size: 13px; line-height: 1.5;">
         Atualize a forma de pagamento na sua conta para manter o envio de mensagens, o monitoramento de promessas e a cobrança ativa.
@@ -42,7 +42,7 @@ export function renderRenewalFailedHtml(data: RenewalFailedEmailData): { subject
     name: data.recipientName,
     contentHtml,
     highlightCardHtml,
-    buttonText: "Atualizar Meu Cartão 💳",
+    buttonText: "Atualizar Meu Cartão",
     buttonUrl: `${APP_URL}/painel/conta`,
     footerNote: "Assim que a fatura for aprovada, sua blindagem financeira continuará normalmente sem nenhum impacto nas presas da sua gruta.",
   })

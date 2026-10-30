@@ -23,7 +23,7 @@ O dono da conta é chamado de **Tubarão** como uma forma de reconhecimento, car
 A linguagem deve ser **cínica, bem-humorada, cúmplice e ácida**. O app conversa diretamente com o **Tubarão** como aquele parceiro sincero que avisa: *"eu avisei para não emprestar pro seu cunhado, mas agora vamos rastrear até o último centavo"*.
 
 *   **Não use:** Termos corporativos frios ou distantes ("Credor", "Inadimplente em mora", "Contas a receber", "Gestão de carteira", "Liquidação de títulos").
-*   **Use:** Termos da caça bem-humorada, gírias clássicas de cobrança brasileira, analogias de tubarão farejando o Pix, referências de memes ("devo não nego, pago quando puder", Seu Madruga cobrando o aluguel, Julius contando centavos), ironia leve e celebração apoteótica quando o Pix finalmente cai na conta.
+*   **Use:** Termos da caça bem-humorada, gírias clássicas de cobrança brasileira, analogias de tubarão farejando o Pix, referências de memes ("devo não nego, pago quando puder", Seu Madruga cobrando o aluguel, Tio Patinhas cobrando cada centavo), ironia leve e celebração apoteótica quando o Pix finalmente cai na conta.
 
 Traduzimos burocracia para a "linguagem do povo", dando personalidade e arrancando risadas do usuário.
 

@@ -13,6 +13,7 @@ import {
   updateDebtorApi,
   deleteDebtorApi,
 } from '@/server/debtors/service/debtor.api';
+import { enrichDebtorsWithRiskScoreApi } from '@/server/debtors/service/risk-score.api';
 import { presentDebtorsList, presentDebtorItem } from '@/commons/utils/format';
 import type {
   CreateDebtorPayload,
@@ -59,8 +60,13 @@ export async function getDebtorsAction(params?: {
       search: validation.data.search,
     });
 
+    const enrichedItems = await enrichDebtorsWithRiskScoreApi(
+      userId,
+      presentDebtorsList(result.items)
+    );
+
     const formattedData: PaginatedDebtorsFormatted = {
-      items: presentDebtorsList(result.items),
+      items: enrichedItems,
       page: result.page,
       limit: result.limit,
       hasMore: result.hasMore,

@@ -8,14 +8,14 @@ export interface CancellationEmailData {
 }
 
 export function renderCancellationHtml(data: CancellationEmailData): { subject: string; html: string } {
-  const subject = "🚪 Confirmação de Cancelamento da sua Assinatura"
+  const subject = "Confirmação de Cancelamento da sua Assinatura"
 
   const contentHtml = `
     <p style="margin: 0 0 14px 0;">
       Confirmamos o cancelamento da sua assinatura <strong>${data.planName || "Caloteiro"}</strong>, conforme solicitado.
     </p>
     <p style="margin: 0 0 14px 0;">
-      Sentiremos sua falta na trincheira contra a inadimplência! Esperamos de verdade que seus devedores tenham quitado cada centavo antes de você ir embora.
+      Sentiremos sua falta na trincheira contra o calote! Esperamos de verdade que seus devedores tenham quitado cada centavo antes de você ir embora.
     </p>
     <p style="margin: 0;">
       Lembrando que não há nenhuma multa, fidelidade ou taxa de cancelamento.
@@ -24,7 +24,7 @@ export function renderCancellationHtml(data: CancellationEmailData): { subject: 
 
   const highlightCardHtml = `
     <div style="font-size: 12px; color: #a1a1aa; font-weight: 800; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.8px; font-family: monospace;">
-      📅 Informações sobre o seu Cofre:
+      Informações sobre o seu Cofre:
     </div>
     <div style="font-size: 13px; color: #d4d4d8; line-height: 1.6;">
       ${data.accessUntil ? `
@@ -43,7 +43,7 @@ export function renderCancellationHtml(data: CancellationEmailData): { subject: 
     name: data.recipientName,
     contentHtml,
     highlightCardHtml,
-    buttonText: "Acessar Meu Painel 🛡️",
+    buttonText: "Acessar Meu Painel",
     buttonUrl: `${APP_URL}/painel`,
     footerNote: "Mudou de ideia ou apareceu mais um devedor na praça? Você pode reativar seu plano a qualquer momento pelo painel.",
   })

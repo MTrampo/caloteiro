@@ -107,7 +107,7 @@ export function renderBaseEmailLayout(options: BaseEmailLayoutOptions): string {
           <tr>
             <td style="padding: 32px 30px 24px 30px; background-color: #18181b;">
               <h2 style="margin: 0 0 16px 0; color: #ffffff; font-size: 18px; font-weight: 700; line-height: 1.3;">
-                Fala, ${name}! 🤝
+                Fala, ${name}!
               </h2>
 
               <div style="color: #d4d4d8; font-size: 14px; line-height: 1.65; margin-bottom: 24px;">
@@ -150,7 +150,7 @@ export function renderBaseEmailLayout(options: BaseEmailLayoutOptions): string {
           <tr>
             <td style="background-color: #121214; border-top: 1px solid #27272a; padding: 24px 28px; text-align: center;">
               <p style="margin: 0; font-size: 13px; color: #34d399; font-weight: 700;">
-                Caloteiro • Cada centavo na pista tem seu dono 🛡️
+                Caloteiro • Cada centavo na pista tem seu dono
               </p>
               <p style="margin: 6px 0 0 0; font-size: 11px; color: #71717a; line-height: 1.5;">
                 Cobrança sem constrangimento, controle absoluto e precisão cirúrgica.<br/>

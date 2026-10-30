@@ -150,40 +150,46 @@ export function DebtsEfficiency({ data }: DebtsEfficiencyProps) {
       {/* Trio de Sub-Cards com Métricas de Eficiência e Tempo */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-2">
         {/* Sub-Card 1: Tempo Médio até o Pix */}
-        <div className="rounded-xl border border-border bg-zinc-950/60 p-4 space-y-2 hover:border-zinc-700 transition-colors">
-          <span className="text-[10px] sm:text-[11px] font-mono font-extrabold uppercase tracking-wider text-zinc-400 block">
-            TEMPO ATÉ O PIX
-          </span>
-          <div className="text-xl sm:text-2xl font-black font-heading text-white tabular-nums tracking-tight">
-            {metrics.averageTimeToPixDays} dias
+        <div className="rounded-xl border border-border bg-zinc-950/60 p-4 space-y-2 hover:border-zinc-700 transition-colors flex flex-col justify-between">
+          <div className="space-y-1.5">
+            <span className="text-[10px] sm:text-[11px] font-mono font-extrabold uppercase tracking-wider text-zinc-400 block">
+              TEMPO ATÉ O PIX
+            </span>
+            <div className="text-xl sm:text-2xl font-black font-heading text-white tabular-nums tracking-tight">
+              {metrics.averageTimeToPixDays} dias
+            </div>
           </div>
-          <p className="text-xs text-emerald-400/90 font-mono line-clamp-1 font-medium">
+          <p className="text-xs text-emerald-400/90 font-mono font-medium leading-relaxed">
             {metrics.averageTimeToPixDesc}
           </p>
         </div>
 
         {/* Sub-Card 2: Acordos Cumpridos */}
-        <div className="rounded-xl border border-border bg-zinc-950/60 p-4 space-y-2 hover:border-zinc-700 transition-colors">
-          <span className="text-[10px] sm:text-[11px] font-mono font-extrabold uppercase tracking-wider text-zinc-400 block">
-            ACORDOS CUMPRIDOS
-          </span>
-          <div className="text-xl sm:text-2xl font-black font-heading text-white tabular-nums tracking-tight">
-            {metrics.agreementsHonoredPercent}%
+        <div className="rounded-xl border border-border bg-zinc-950/60 p-4 space-y-2 hover:border-zinc-700 transition-colors flex flex-col justify-between">
+          <div className="space-y-1.5">
+            <span className="text-[10px] sm:text-[11px] font-mono font-extrabold uppercase tracking-wider text-zinc-400 block">
+              ACORDOS CUMPRIDOS
+            </span>
+            <div className="text-xl sm:text-2xl font-black font-heading text-white tabular-nums tracking-tight">
+              {metrics.agreementsHonoredPercent}%
+            </div>
           </div>
-          <p className="text-xs text-zinc-400 font-mono line-clamp-1 font-medium">
+          <p className="text-xs text-zinc-400 font-mono font-medium leading-relaxed">
             {metrics.agreementsHonoredDesc}
           </p>
         </div>
 
         {/* Sub-Card 3: Taxa de Retorno Real */}
-        <div className="rounded-xl border border-border bg-zinc-950/60 p-4 space-y-2 hover:border-zinc-700 transition-colors">
-          <span className="text-[10px] sm:text-[11px] font-mono font-extrabold uppercase tracking-wider text-zinc-400 block">
-            TAXA DE RETORNO
-          </span>
-          <div className="text-xl sm:text-2xl font-black font-heading text-white tabular-nums tracking-tight">
-            {metrics.returnRatePercent}%
+        <div className="rounded-xl border border-border bg-zinc-950/60 p-4 space-y-2 hover:border-zinc-700 transition-colors flex flex-col justify-between">
+          <div className="space-y-1.5">
+            <span className="text-[10px] sm:text-[11px] font-mono font-extrabold uppercase tracking-wider text-zinc-400 block">
+              TAXA DE RETORNO
+            </span>
+            <div className="text-xl sm:text-2xl font-black font-heading text-white tabular-nums tracking-tight">
+              {metrics.returnRatePercent}%
+            </div>
           </div>
-          <p className="text-xs text-zinc-400 font-mono line-clamp-1 font-medium">
+          <p className="text-xs text-zinc-400 font-mono font-medium leading-relaxed">
             {metrics.returnRateDesc}
           </p>
         </div>

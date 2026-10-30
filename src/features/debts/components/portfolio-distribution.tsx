@@ -63,7 +63,7 @@ export function PortfolioDistribution({ data }: PortfolioDistributionProps) {
             <div className="sm:px-3 first:sm:pl-1 flex items-center justify-between sm:flex-col sm:items-center sm:justify-center gap-1.5">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="size-2.5 rounded-full bg-emerald-400 shrink-0 shadow-xs shadow-emerald-500/20" />
-                <span className="text-xs font-mono font-bold text-zinc-300 truncate">
+                <span className="text-xs font-mono font-bold text-zinc-300">
                   Em Dia <span className="text-zinc-500 font-normal">({emDia.count})</span>
                 </span>
               </div>
@@ -81,7 +81,7 @@ export function PortfolioDistribution({ data }: PortfolioDistributionProps) {
             <div className="pt-2.5 sm:pt-0 sm:px-3 flex items-center justify-between sm:flex-col sm:items-center sm:justify-center gap-1.5">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="size-2.5 rounded-full bg-amber-400 shrink-0 shadow-xs shadow-amber-500/20" />
-                <span className="text-xs font-mono font-bold text-zinc-300 truncate">
+                <span className="text-xs font-mono font-bold text-zinc-300">
                   Atraso &lt; 30d <span className="text-zinc-500 font-normal">({emAtraso.count})</span>
                 </span>
               </div>
@@ -99,7 +99,7 @@ export function PortfolioDistribution({ data }: PortfolioDistributionProps) {
             <div className="pt-2.5 sm:pt-0 sm:px-3 last:sm:pr-1 flex items-center justify-between sm:flex-col sm:items-center sm:justify-center gap-1.5">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="size-2.5 rounded-full bg-rose-500 shrink-0 shadow-xs shadow-rose-500/20" />
-                <span className="text-xs font-mono font-bold text-zinc-300 truncate">
+                <span className="text-xs font-mono font-bold text-zinc-300">
                   Crítico &gt; 30d <span className="text-zinc-500 font-normal">({critico.count})</span>
                 </span>
               </div>
@@ -119,40 +119,46 @@ export function PortfolioDistribution({ data }: PortfolioDistributionProps) {
       {/* Trio de Sub-Cards com Métricas de Saúde Financeira */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-2">
         {/* Sub-Card 1: Liquidez Imediata */}
-        <div className="rounded-xl border border-border bg-zinc-950/60 p-4 space-y-2 hover:border-zinc-700 transition-colors">
-          <span className="text-[10px] sm:text-[11px] font-mono font-extrabold uppercase tracking-wider text-zinc-400 block">
-            {healthMetrics.immediateLiquidityLabel}
-          </span>
-          <div className="text-xl sm:text-2xl font-black font-heading text-white tabular-nums tracking-tight">
-            {healthMetrics.immediateLiquidity}%
+        <div className="rounded-xl border border-border bg-zinc-950/60 p-4 space-y-2 hover:border-zinc-700 transition-colors flex flex-col justify-between">
+          <div className="space-y-1.5">
+            <span className="text-[10px] sm:text-[11px] font-mono font-extrabold uppercase tracking-wider text-zinc-400 block">
+              {healthMetrics.immediateLiquidityLabel}
+            </span>
+            <div className="text-xl sm:text-2xl font-black font-heading text-white tabular-nums tracking-tight">
+              {healthMetrics.immediateLiquidity}%
+            </div>
           </div>
-          <p className="text-xs text-emerald-400/90 font-mono truncate font-medium">
+          <p className="text-xs text-emerald-400/90 font-mono font-medium leading-relaxed">
             {healthMetrics.immediateLiquidityDesc}
           </p>
         </div>
 
         {/* Sub-Card 2: Taxa de Resolução */}
-        <div className="rounded-xl border border-border bg-zinc-950/60 p-4 space-y-2 hover:border-zinc-700 transition-colors">
-          <span className="text-[10px] sm:text-[11px] font-mono font-extrabold uppercase tracking-wider text-zinc-400 block">
-            {healthMetrics.resolutionRateLabel}
-          </span>
-          <div className="text-xl sm:text-2xl font-black font-heading text-white tabular-nums tracking-tight">
-            {healthMetrics.resolutionRate}%
+        <div className="rounded-xl border border-border bg-zinc-950/60 p-4 space-y-2 hover:border-zinc-700 transition-colors flex flex-col justify-between">
+          <div className="space-y-1.5">
+            <span className="text-[10px] sm:text-[11px] font-mono font-extrabold uppercase tracking-wider text-zinc-400 block">
+              {healthMetrics.resolutionRateLabel}
+            </span>
+            <div className="text-xl sm:text-2xl font-black font-heading text-white tabular-nums tracking-tight">
+              {healthMetrics.resolutionRate}%
+            </div>
           </div>
-          <p className="text-xs text-zinc-400 font-mono truncate font-medium">
+          <p className="text-xs text-zinc-400 font-mono font-medium leading-relaxed">
             {healthMetrics.resolutionRateDesc}
           </p>
         </div>
 
         {/* Sub-Card 3: Ticket Médio Devedor */}
-        <div className="rounded-xl border border-border bg-zinc-950/60 p-4 space-y-2 hover:border-zinc-700 transition-colors">
-          <span className="text-[10px] sm:text-[11px] font-mono font-extrabold uppercase tracking-wider text-zinc-400 block">
-            {healthMetrics.averageTicketLabel}
-          </span>
-          <div className="text-xl sm:text-2xl font-black font-heading text-white tabular-nums tracking-tight">
-            {formatCompactCurrencyBRL(healthMetrics.averageTicket)}
+        <div className="rounded-xl border border-border bg-zinc-950/60 p-4 space-y-2 hover:border-zinc-700 transition-colors flex flex-col justify-between">
+          <div className="space-y-1.5">
+            <span className="text-[10px] sm:text-[11px] font-mono font-extrabold uppercase tracking-wider text-zinc-400 block">
+              {healthMetrics.averageTicketLabel}
+            </span>
+            <div className="text-xl sm:text-2xl font-black font-heading text-white tabular-nums tracking-tight">
+              {formatCompactCurrencyBRL(healthMetrics.averageTicket)}
+            </div>
           </div>
-          <p className="text-xs text-zinc-400 font-mono truncate font-medium">
+          <p className="text-xs text-zinc-400 font-mono font-medium leading-relaxed">
             {healthMetrics.averageTicketDesc}
           </p>
         </div>

@@ -355,7 +355,7 @@ export function AgreementRulesCard({
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
             {isFreePlan ? (
               <Link
-                href="/painel/assinatura"
+                href="/painel/conta/assinatura"
                 className="inline-flex items-center justify-center gap-1.5 h-9 sm:h-8 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 text-xs font-mono font-semibold transition-colors w-full sm:w-auto"
               >
                 <FaLock className="size-3" />

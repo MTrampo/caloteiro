@@ -11,6 +11,7 @@ import {
   FaPercent,
   FaWhatsapp,
   FaShieldHalved,
+  FaGaugeHigh,
 } from "react-icons/fa6";
 import { DocFaqCollapsible, type DocFaqItem } from "./components/doc-faq-collapsible";
 
@@ -64,14 +65,14 @@ const PLANS_DATA: PlanItem[] = [
     price: "R$ 49,90",
     period: "por mês",
     description:
-      "O topo da cadeia alimentar. Sem limites de presas ou dívidas ativas na gruta, com acesso a todos os recursos avançados de auditoria.",
+      "O topo da cadeia alimentar. Presas e dívidas ilimitadas na gruta, com Termômetro da Gruta (/painel/termometro), Score da Mordida Exploratória e Raio-X comportamental.",
     borderClass: "border-emerald-500/50 ring-1 ring-emerald-500/30 bg-card",
     badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     isPro: true,
     maxDebtors: "Presas Ilimitadas",
     maxDebts: "Dívidas Ilimitadas",
     maxInstallments: "Até 120x",
-    interestModes: "Todas as modalidades liberadas",
+    interestModes: "Todas as modalidades (+ % a.m. exclusivo)",
   },
 ];
 
@@ -162,7 +163,7 @@ const COMPARISON_CATEGORIES: ComparisonCategory[] = [
     rows: [
       {
         label: "3 Níveis de Mensagens no WhatsApp",
-        description: "Disparos automáticos: Lembrete (Nível 1), Ácido (Nível 2) e Julius (Nível 3)",
+        description: "Disparos automáticos: Lembrete (Nível 1), Ácido (Nível 2) e Tio Patinhas (Nível 3)",
         lixa: "Modelos Prontos",
         branco: "100% Editáveis",
         chato: "100% Editáveis",
@@ -213,6 +214,40 @@ const COMPARISON_CATEGORIES: ComparisonCategory[] = [
         description: "Anexo permanente de prints e recibos de pagamento nas parcelas",
         lixa: false,
         branco: true,
+        chato: true,
+      },
+    ],
+  },
+  {
+    categoryTitle: "5. Inteligência de Risco & Comportamento da Presa",
+    categoryIcon: FaGaugeHigh,
+    rows: [
+      {
+        label: "Termômetro da Gruta (/painel/termometro)",
+        description: "Visão consolidada da carteira, velocímetro geral de risco e diagnóstico financeiro de calote",
+        lixa: false,
+        branco: false,
+        chato: true,
+      },
+      {
+        label: "Score de Risco da Mordida Exploratória (0 a 100 pts)",
+        description: "Algoritmo comportamental de cara de pau calculando pontualidade, histórico e caôs",
+        lixa: false,
+        branco: false,
+        chato: true,
+      },
+      {
+        label: "Raio-X Comportamental da Presa (/painel/devedores/[id])",
+        description: "Extrato de cicatrização e sangramento de pontos, mural de caôs e armas automáticas",
+        lixa: false,
+        branco: false,
+        chato: true,
+      },
+      {
+        label: "Veredito Ácido da Gruta",
+        description: "Diagnósticos e alertas afiados sem rodeios para o Tubarão tomar postura e agir rápido",
+        lixa: false,
+        branco: false,
         chato: true,
       },
     ],
@@ -464,8 +499,8 @@ export function PlansDocFeature() {
                           <span className="font-semibold text-zinc-300 block truncate">
                             {typeof row.lixa === "boolean"
                               ? row.lixa
-                                ? "✓ Sim"
-                                : "✗ Não"
+                                ? "Sim"
+                                : "Não"
                               : row.lixa}
                           </span>
                         </div>
@@ -476,8 +511,8 @@ export function PlansDocFeature() {
                           <span className="font-semibold text-zinc-200 block truncate">
                             {typeof row.branco === "boolean"
                               ? row.branco
-                                ? "✓ Sim"
-                                : "✗ Não"
+                                ? "Sim"
+                                : "Não"
                               : row.branco}
                           </span>
                         </div>
@@ -490,8 +525,8 @@ export function PlansDocFeature() {
                           <span className="font-bold text-white block truncate">
                             {typeof row.chato === "boolean"
                               ? row.chato
-                                ? "✓ Sim"
-                                : "✗ Não"
+                                ? "Sim"
+                                : "Não"
                               : row.chato}
                           </span>
                         </div>

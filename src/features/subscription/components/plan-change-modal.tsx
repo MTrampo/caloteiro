@@ -14,6 +14,7 @@ import {
   FaInfo,
   FaXmark,
   FaSpinner,
+  FaShieldHalved,
 } from "react-icons/fa6";
 
 interface PlanChangeModalProps {
@@ -33,6 +34,14 @@ export function PlanChangeModal({
 }: PlanChangeModalProps) {
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
+  const [isConfirmed, setIsConfirmed] = React.useState(false);
+
+  // Sempre reseta a caixa de confirmação ao abrir o modal ou trocar o plano alvo
+  React.useEffect(() => {
+    if (isOpen) {
+      setIsConfirmed(false);
+    }
+  }, [isOpen, targetPlan?.id]);
 
   if (!isOpen || !targetPlan) return null;
 
@@ -53,7 +62,17 @@ export function PlanChangeModal({
     currency: "BRL",
   });
 
+  const isFromFreePlan = currentPrice === 0 || currentPlan?.slug === "tubarao-lixa";
+  const losingRiskScore =
+    Boolean(currentPlan?.config_plan?.can_risk_score) &&
+    !targetPlan.config_plan?.can_risk_score;
+
   const handleConfirmChange = () => {
+    if (!isConfirmed) {
+      toast.info("Marque a caixa de confirmação antes de prosseguir.");
+      return;
+    }
+
     startTransition(async () => {
       try {
         const response = await changeSubscriptionPlanAction(targetPlan.id);
@@ -72,7 +91,7 @@ export function PlanChangeModal({
 
         if (isUpgrade) {
           toast.success(
-            `Parabéns, Tubarão! Você subiu para o plano ${targetPlan.name}. A nova gruta fica liberada!`
+            `Parabéns, Tubarão! Você subiu para o plano ${targetPlan.name}. A nova gruta já está liberada!`
           );
         } else {
           toast.success(`Plano alterado para ${targetPlan.name} com sucesso.`);
@@ -86,30 +105,25 @@ export function PlanChangeModal({
     });
   };
 
-  const isFromFreePlan = currentPrice === 0 || currentPlan?.slug === "tubarao-lixa";
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-50">
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-[calc(100vw-1.5rem)] sm:w-full max-w-lg p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl animate-in zoom-in-95 max-h-[calc(100dvh-2.5rem)] overflow-y-auto overscroll-contain">
         {/* Cabeçalho do Modal */}
         <div className="flex items-start justify-between gap-3 border-b border-zinc-800 pb-3">
           <div className="space-y-1">
-            <h3 className="font-heading text-lg font-bold text-white flex items-center gap-2">
-              {isUpgrade ? (
-                <>
-                  <FaArrowUp className="size-4 text-emerald-400 shrink-0" />
-                  <span>Evolução de Predador: {targetPlan.name}</span>
-                </>
-              ) : (
-                <>
-                  <FaArrowDown className="size-4 text-amber-400 shrink-0" />
-                  <span>Vai afrouxar a mordida, Tubarão?</span>
-                </>
-              )}
+            <h3 className="font-heading text-lg font-bold text-white">
+              {isUpgrade
+                ? `Evolução de Predador: ${targetPlan.name}`
+                : "Vai afrouxar a mordida, Tubarão?"}
             </h3>
             <p className="text-xs font-mono text-zinc-400">
-              De <strong className="text-zinc-200">{currentPlan?.name || "Tubarão Lixa"}</strong> ({formattedCurrentPrice}) para{" "}
-              <strong className="text-white">{targetPlan.name}</strong> ({formattedTargetPrice}/mês)
+              De{" "}
+              <strong className="text-zinc-200">
+                {currentPlan?.name || "Tubarão Lixa"}
+              </strong>{" "}
+              ({formattedCurrentPrice}) para{" "}
+              <strong className="text-white">{targetPlan.name}</strong> (
+              {isFreePlan ? "Grátis" : `${formattedTargetPrice}/mês`})
             </p>
           </div>
 
@@ -118,6 +132,7 @@ export function PlanChangeModal({
             onClick={onClose}
             disabled={isPending}
             className="text-zinc-500 hover:text-white transition-colors p-1 rounded-lg hover:bg-zinc-800 cursor-pointer"
+            aria-label="Fechar modal"
           >
             <FaXmark className="size-4" />
           </button>
@@ -135,31 +150,88 @@ export function PlanChangeModal({
                 <span>
                   Capacidade da sua gruta:{" "}
                   <strong className="text-white">
-                    {targetMaxDebtors ? `Até ${targetMaxDebtors} presas marcadas simultaneamente` : "Presas ILIMITADAS"}
+                    {targetMaxDebtors
+                      ? `Até ${targetMaxDebtors} presas marcadas simultaneamente (até 36x)`
+                      : "Presas e dívidas ILIMITADAS na gruta (até 120x)"}
                   </strong>{" "}
                   {currentMaxDebtors ? `(você tinha ${currentMaxDebtors})` : ""}
                 </span>
               </li>
-              <li className="flex items-start gap-2">
-                <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Cálculo automático de juros, mora e correção monetária</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Modelos ácidos e personalizados de cobrança no WhatsApp</span>
-              </li>
-              {targetPlan.config_plan?.can_debtor_portal && (
-                <li className="flex items-start gap-2">
-                  <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>Link da Dívida para a Presa: página exclusiva para o caloteiro ver o estrago</span>
-                </li>
+
+              {targetPlan.config_plan?.can_risk_score && (
+                <>
+                  <li className="flex items-start gap-2">
+                    <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>
+                      <strong className="text-white">
+                        Velocímetro de Score de Risco &amp; Raio-X da Presa:
+                      </strong>{" "}
+                      página exclusiva de inteligência comportamental (0 a 100 pts)
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>
+                      <strong className="text-white">
+                        Termômetro Geral da Gruta:
+                      </strong>{" "}
+                      diagnóstico completo da sua carteira separando a Elite da Zona de Calote
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>
+                      <strong className="text-white">
+                        Juros ao Mês (% a.m.) &amp; Armas Automáticas:
+                      </strong>{" "}
+                      seleção automática do nível de cobrança no WhatsApp pelo Score
+                    </span>
+                  </li>
+                </>
               )}
-              {!isFreePlan && (
-                <li className="flex items-start gap-2">
-                  <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>Cláusulas do acordo, limite de tolerância e alerta automático de quebra</span>
-                </li>
-              )}
+
+              {targetPlan.config_plan?.can_access_financial &&
+                !currentPlan?.config_plan?.can_access_financial && (
+                  <li className="flex items-start gap-2">
+                    <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>
+                      <strong className="text-white">Painel Financeiro Consolidado:</strong>{" "}
+                      gráficos de liquidez, eficiência e próxima cobrança prioritária
+                    </span>
+                  </li>
+                )}
+
+              {targetPlan.config_plan?.can_debtor_portal &&
+                !currentPlan?.config_plan?.can_debtor_portal && (
+                  <li className="flex items-start gap-2">
+                    <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>
+                      <strong className="text-white">Link da Dívida para a Presa:</strong>{" "}
+                      fatura protegida por código com chave Pix 1-clique
+                    </span>
+                  </li>
+                )}
+
+              {targetPlan.config_plan?.can_attach_receipts &&
+                !currentPlan?.config_plan?.can_attach_receipts && (
+                  <li className="flex items-start gap-2">
+                    <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>
+                      <strong className="text-white">Arquivo de Provas:</strong>{" "}
+                      anexo de comprovantes de transferência e de parcelas pagas
+                    </span>
+                  </li>
+                )}
+
+              {targetPlan.config_plan?.custom_templates &&
+                !currentPlan?.config_plan?.custom_templates && (
+                  <li className="flex items-start gap-2">
+                    <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>
+                      Modelos ácidos personalizados de WhatsApp e cláusulas de quebra de acordo
+                    </span>
+                  </li>
+                )}
             </ul>
           </div>
         ) : (
@@ -172,18 +244,57 @@ export function PlanChangeModal({
                 <FaTriangleExclamation className="size-3.5 text-amber-400 shrink-0 mt-0.5" />
                 <span>
                   Capacidade da sua gruta reduzida para{" "}
-                  <strong className="text-white">{targetMaxDebtors ?? 2} presas simultâneas</strong>.
+                  <strong className="text-white">
+                    {targetMaxDebtors ?? 2} presas marcadas simultâneas
+                  </strong>{" "}
+                  (limite de até {isFreePlan ? "12x" : "36x"} parcelas).
                 </span>
               </li>
-              <li className="flex items-start gap-2">
-                <FaTriangleExclamation className="size-3.5 text-amber-400 shrink-0 mt-0.5" />
-                <span>Perda de modelos avançados e régua automática de pressão.</span>
-              </li>
+
+              {losingRiskScore && (
+                <>
+                  <li className="flex items-start gap-2">
+                    <FaTriangleExclamation className="size-3.5 text-amber-400 shrink-0 mt-0.5" />
+                    <span>
+                      <strong className="text-white">
+                        Bloqueio do Termômetro da Gruta e do Score de Risco:
+                      </strong>{" "}
+                      você perde o Velocímetro Biológico, o Raio-X da Presa e o ranking de caloteiros.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <FaTriangleExclamation className="size-3.5 text-amber-400 shrink-0 mt-0.5" />
+                    <span>
+                      Perda da modalidade de <strong className="text-white">Juros ao Mês (% a.m.)</strong> e da seleção automática de armas no WhatsApp.
+                    </span>
+                  </li>
+                </>
+              )}
+
+              {isFreePlan && (
+                <>
+                  <li className="flex items-start gap-2">
+                    <FaTriangleExclamation className="size-3.5 text-amber-400 shrink-0 mt-0.5" />
+                    <span>
+                      Bloqueio do <strong className="text-white">Painel Financeiro</strong>, do{" "}
+                      <strong className="text-white">Link da Dívida para a Presa</strong> e do{" "}
+                      <strong className="text-white">Anexo de Comprovantes</strong>.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <FaTriangleExclamation className="size-3.5 text-amber-400 shrink-0 mt-0.5" />
+                    <span>
+                      Perda dos modelos personalizados de cobrança e do gatilho de quebra de acordo.
+                    </span>
+                  </li>
+                </>
+              )}
             </ul>
 
-            {/* Aviso de Devedores Existentes */}
+            {/* Aviso de Presas Existentes */}
             <div className="rounded-xl bg-amber-950/30 border border-amber-900/50 p-3 text-xs font-mono text-amber-300 leading-relaxed">
-              <strong>Importante:</strong> Seus caloteiros cadastrados <strong>NÃO</strong> serão apagados. Porém, enquanto você tiver mais presas que o limite permitido ({targetMaxDebtors ?? 2}), não será possível marcar novos caloteiros.
+              <strong>Importante:</strong> Suas presas marcadas e dívidas atuais{" "}
+              <strong>NÃO</strong> serão apagadas. Porém, enquanto você tiver mais presas que o limite permitido ({targetMaxDebtors ?? 2}), não será possível marcar novos caloteiros.
             </div>
           </div>
         )}
@@ -194,31 +305,72 @@ export function PlanChangeModal({
             <FaInfo className="size-3 text-emerald-400 shrink-0" />
             <span>
               {isFromFreePlan
-                ? "Regra de Faturamento: Cobrança Imediata"
+                ? "Regra de Faturamento: Autorização no Mercado Pago"
                 : isFreePlan
                 ? "Regra de Faturamento: Cancelamento de Recorrência"
-                : "Regra de Faturamento: Próxima Fatura"}
+                : "Regra de Faturamento: Atualização na Próxima Fatura"}
             </span>
           </div>
           <p className="leading-relaxed">
             {isFromFreePlan
-              ? "Primeira cobrança realizada no ato da assinatura no Mercado Pago. A nova gruta fica liberada assim que o pagamento for aprovado."
+              ? "Você será encaminhado ao Mercado Pago para autorizar a assinatura. A nova gruta fica liberada assim que o pagamento for confirmado."
               : isUpgrade
-              ? `O valor de ${formattedTargetPrice}/mês será cobrado na sua próxima fatura do Mercado Pago. Os novos recursos ficam liberados imediatamente.`
+              ? `Sua assinatura ativa no Mercado Pago será atualizada para ${formattedTargetPrice}/mês (cobrado na próxima fatura) e todos os novos recursos são liberados imediatamente.`
               : isFreePlan
-              ? "A cobrança recorrente será cancelada no Mercado Pago e você não terá novas cobranças."
-              : `A redução do valor para ${formattedTargetPrice}/mês será aplicada no próximo ciclo de faturamento no Mercado Pago.`}
+              ? "Sua assinatura recorrente será cancelada no Mercado Pago imediatamente e você não terá novas cobranças."
+              : `O valor da sua assinatura no Mercado Pago será reduzido para ${formattedTargetPrice}/mês a partir do próximo ciclo de faturamento.`}
           </p>
         </div>
 
-        {/* Ações do Modal */}
-        <div className="flex items-center justify-end pt-3 border-t border-zinc-800">
+        {/* Trava de Confirmação Explícita Anti-Clique Acidental */}
+        <label
+          htmlFor="confirm-plan-change-checkbox"
+          className={`flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer select-none text-xs font-mono ${
+            isConfirmed
+              ? "border-emerald-500/40 bg-emerald-500/10 text-white"
+              : "border-zinc-700 bg-zinc-950/80 text-zinc-300 hover:border-zinc-600"
+          }`}
+        >
+          <input
+            id="confirm-plan-change-checkbox"
+            type="checkbox"
+            checked={isConfirmed}
+            onChange={(e) => setIsConfirmed(e.target.checked)}
+            disabled={isPending}
+            className="mt-0.5 size-4 rounded border-zinc-600 accent-emerald-500 shrink-0 cursor-pointer"
+          />
+          <span className="leading-snug">
+            {isUpgrade ? (
+              isFromFreePlan ? (
+                <>
+                  Confirmo que desejo assinar o plano{" "}
+                  <strong className="text-white">{targetPlan.name}</strong> por{" "}
+                  <strong className="text-emerald-400">{formattedTargetPrice}/mês</strong> no Mercado Pago.
+                </>
+              ) : (
+                <>
+                  Confirmo a evolução imediata para o plano{" "}
+                  <strong className="text-white">{targetPlan.name}</strong> e a atualização da minha assinatura para{" "}
+                  <strong className="text-emerald-400">{formattedTargetPrice}/mês</strong>.
+                </>
+              )
+            ) : (
+              <>
+                Estou ciente das regras acima e confirmo a mudança imediata do meu plano para{" "}
+                <strong className="text-white">{targetPlan.name}</strong>.
+              </>
+            )}
+          </span>
+        </label>
+
+        {/* Ação Principal no Rodapé (Único botão branco, habilitado somente após marcar o checkbox) */}
+        <div className="flex items-center justify-end pt-2 border-t border-zinc-800">
           <Button
             type="button"
             size="lg"
-            disabled={isPending}
+            disabled={isPending || !isConfirmed}
             onClick={handleConfirmChange}
-            className="w-full bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+            className="w-full bg-white hover:bg-zinc-200 disabled:opacity-40 text-zinc-950 font-heading font-bold rounded-xl shadow-xs transition-all cursor-pointer"
           >
             {isPending ? (
               <div className="flex items-center gap-2">
@@ -227,12 +379,21 @@ export function PlanChangeModal({
               </div>
             ) : isUpgrade ? (
               isFromFreePlan ? (
-                <span>Ir para Pagamento no Mercado Pago ({formattedTargetPrice}/mês)</span>
+                <div className="flex items-center gap-1.5">
+                  <FaShieldHalved className="size-3.5" />
+                  <span>Ir para o Mercado Pago ({formattedTargetPrice}/mês)</span>
+                </div>
               ) : (
-                <span>Confirmar Upgrade ({formattedTargetPrice}/mês)</span>
+                <div className="flex items-center gap-1.5">
+                  <FaArrowUp className="size-3.5" />
+                  <span>Confirmar Upgrade ({formattedTargetPrice}/mês)</span>
+                </div>
               )
             ) : (
-              <span>Confirmar Downgrade</span>
+              <div className="flex items-center gap-1.5">
+                <FaArrowDown className="size-3.5" />
+                <span>Confirmar Mudança para {targetPlan.name}</span>
+              </div>
             )}
           </Button>
         </div>
@@ -240,4 +401,3 @@ export function PlanChangeModal({
     </div>
   );
 }
-

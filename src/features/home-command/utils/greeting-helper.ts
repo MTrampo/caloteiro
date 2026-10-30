@@ -37,8 +37,43 @@ const EMPTY_PUNCHLINES = [
 
 export const CREDITOR_WISDOM_QUOTES = [
   {
+    quote: "Donald, o Pix da minha gruta venceu ontem! Se você não me transferir cada centavo até o pôr do sol, vou confiscar sua coleção de gibis, a sua rede de balanço e bloquear seu WhatsApp!",
+    author: "Tio Patinhas",
+    subtext: "Sem moleza para parente folgado.",
+  },
+  {
+    quote: "Não existem exceções para o atraso! Um centavo devido hoje são dois centavos de prejuízo amanhã. Abra o aplicativo do banco e pague o que me deve!",
+    author: "Tio Patinhas",
+    subtext: "Juros correndo, paciência acabando.",
+  },
+  {
+    quote: "Eu fiz a minha fortuna sendo mais esperto que os espertos e mais duro que os duros! E eu nunca, jamais, deixei um devedor sair andando com o meu dinheiro!",
+    author: "Tio Patinhas",
+    subtext: "Tubarão nada até a última moeda.",
+  },
+  {
+    quote: "Tempo é dinheiro! E o seu tempo acabou. Eu não aceito desculpas esfarrapadas nem comprovante agendado, aceito Pix caindo na conta!",
+    author: "Tio Patinhas",
+    subtext: "Moedas sonantes na mão do Tubarão.",
+  },
+  {
+    quote: "Se você acha que eu mergulhei de cabeça na minha caixa-forte para emprestar dinheiro de graça para cunhado fazer Stories no open bar, você está redondamente enganado.",
+    author: "Tio Patinhas",
+    subtext: "Caridade tem limite, Pix tem vencimento.",
+  },
+  {
+    quote: "O caloteiro diz: 'devo não nego, pago quando puder'. Eu digo: 'paga agora ou vai ver a bengala cantar no seu extrato bancário'.",
+    author: "Tio Patinhas",
+    subtext: "Cobrança com rigor aristocrático.",
+  },
+  {
+    quote: "Amigos, amigos... moedas à parte! Quem tem vergonha de cobrar o que emprestou acaba passando o fim de semana comendo pão com ovo.",
+    author: "Tio Patinhas",
+    subtext: "Regra de ouro de Patópolis.",
+  },
+  {
     quote: "Quem tem vergonha de cobrar passa o fim de semana comendo pão com ovo enquanto o devedor faz Stories no open bar.",
-    author: "Julius, Pai do Chris",
+    author: "Tio Patinhas",
     subtext: "Lembre-se: o dinheiro era seu antes de sair da sua conta.",
   },
   {

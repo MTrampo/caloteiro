@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { FaMagnifyingGlass, FaUserPlus, FaRotateRight } from "react-icons/fa6"
+import { FaMagnifyingGlass, FaUserPlus, FaRotateRight, FaGaugeHigh } from "react-icons/fa6"
 import { Button } from "@/components/ui/button"
 import { NewButton } from "@/components/buttons/new-button"
 import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action"
@@ -113,6 +113,22 @@ export function DebtorsFeature({
     }
   }, [loadMoreDebtors, hasMore, isLoadingMore, isSearching])
 
+  const handleDebtorUpdated = React.useCallback(
+    (updatedDebtor: DebtorItemFormatted) => {
+      setDebtors((prev) =>
+        prev.map((d) =>
+          d.id === updatedDebtor.id ? { ...d, ...updatedDebtor } : d
+        )
+      )
+    },
+    []
+  )
+
+  const handleDebtorDeleted = React.useCallback((deletedId: string) => {
+    setDebtors((prev) => prev.filter((d) => d.id !== deletedId))
+    setTotalCount((prev) => Math.max(0, prev - 1))
+  }, [])
+
   return (
     <div className="flex-1 p-4 sm:p-6 space-y-6 w-full pb-24 sm:pb-6">
       {/* Cabeçalho da Lista de Devedores (Solto, sem card, sem ícones no título h2) */}
@@ -126,17 +142,30 @@ export function DebtorsFeature({
           </p>
         </div>
 
-        {/* Botão Cadastrar Devedor Padronizado (NewButton - Desktop) */}
-        <div className="hidden sm:inline-flex">
-          <NewButton
-            href="/painel/devedores/novo"
-            label="Cadastrar Devedor"
-            icon="user-plus"
-            isLocked={planLimits?.isDebtorLimitReached}
-            lockReason="debtor"
-            maxAllowed={planLimits?.maxDebtors ?? 2}
-            planName={planLimits?.planName ?? "Tubarão Lixa"}
-          />
+        {/* Botão Cadastrar Devedor Padronizado (NewButton - Desktop) + Atalho p/ Termômetro */}
+        <div className="flex flex-wrap items-center gap-2">
+          {planLimits?.canRiskScore && (
+            <Button
+              variant="outline"
+              size="sm"
+              render={<Link href="/painel/termometro" />}
+              className="w-full sm:w-auto h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white justify-center"
+            >
+              <FaGaugeHigh className="size-3.5 text-amber-400 mr-1.5" />
+              <span>Termômetro da Gruta</span>
+            </Button>
+          )}
+          <div className="hidden sm:inline-flex">
+            <NewButton
+              href="/painel/devedores/novo"
+              label="Cadastrar Devedor"
+              icon="user-plus"
+              isLocked={planLimits?.isDebtorLimitReached}
+              lockReason="debtor"
+              maxAllowed={planLimits?.maxDebtors ?? 2}
+              planName={planLimits?.planName ?? "Tubarão Lixa"}
+            />
+          </div>
         </div>
       </div>
 
@@ -186,7 +215,12 @@ export function DebtorsFeature({
           {/* Grid Responsivo de Cards de Devedores */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {debtors.map((debtor) => (
-              <DebtorCard key={debtor.id} debtor={debtor} />
+              <DebtorCard
+                key={debtor.id}
+                debtor={debtor}
+                onDebtorUpdated={handleDebtorUpdated}
+                onDebtorDeleted={handleDebtorDeleted}
+              />
             ))}
 
             {/* Skeletons adicionais durante o Infinite Scroll */}

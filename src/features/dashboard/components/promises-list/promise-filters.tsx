@@ -3,7 +3,7 @@
 import { PromiseFilterTab, PromiseSortBy } from "./types";
 import type { TrackingCounts } from "@/commons/models/tracking";
 import { FaMagnifyingGlass, FaArrowDownWideShort } from "react-icons/fa6";
-import { cn } from "@/commons/lib/utils";
+import { SectionTabs, type SectionTabItem } from "@/components/ui/section-tabs";
 import {
   Select,
   SelectContent,
@@ -45,45 +45,22 @@ export function PromiseFilters({
   onSortChange,
   counts,
 }: PromiseFiltersProps) {
-  const tabs: { key: PromiseFilterTab; label: string; count: number; accent?: string }[] = [
-    { key: "OPEN", label: "Em Aberto", count: counts.open, accent: "text-zinc-300" },
-    { key: "ON_TIME", label: "Em Dia", count: counts.onTime, accent: "text-emerald-400" },
-    { key: "OVERDUE", label: "Em Atraso", count: counts.overdue, accent: "text-amber-400" },
-    { key: "DEFAULTED", label: "Caloteiros", count: counts.defaulted, accent: "text-rose-400" },
+  const tabs: SectionTabItem<PromiseFilterTab>[] = [
+    { id: "OPEN", label: "Em Aberto", count: counts.open, accent: "text-zinc-300" },
+    { id: "ON_TIME", label: "Em Dia", count: counts.onTime, accent: "text-emerald-400" },
+    { id: "OVERDUE", label: "Em Atraso", count: counts.overdue, accent: "text-amber-400" },
+    { id: "DEFAULTED", label: "Caloteiros", count: counts.defaulted, accent: "text-rose-400" },
   ];
 
   return (
     <div className="space-y-3 w-full">
-      {/* Linha 1: Abas de Gravidade livres e confortáveis */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none w-full">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.key;
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => onTabChange(tab.key)}
-              className={cn(
-                "inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-[13px] font-mono font-bold transition-all whitespace-nowrap cursor-pointer shrink-0",
-                isActive
-                  ? "bg-zinc-800 text-white border border-zinc-700/90 shadow-sm shadow-black/40"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border border-transparent"
-              )}
-            >
-              <span>{tab.label}</span>
-              <span
-                className={cn(
-                  "px-2 py-0.5 rounded-md text-[11px] font-mono font-black",
-                  isActive ? "bg-zinc-950 text-zinc-100" : "bg-zinc-800/80 text-zinc-400",
-                  tab.accent && !isActive && tab.accent
-                )}
-              >
-                {tab.count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Linha 1: Abas de Gravidade reutilizáveis via SectionTabs */}
+      <SectionTabs<PromiseFilterTab>
+        items={tabs}
+        value={activeTab}
+        onChange={onTabChange}
+        ariaLabel="Filtro de promessas por status"
+      />
 
       {/* Linha 2: Busca Ampla e Seletor de Ordenação sem overflow */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full">

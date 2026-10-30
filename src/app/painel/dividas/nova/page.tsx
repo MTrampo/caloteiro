@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Header from "@/components/header/dashboard";
 import { getUserLoggedApi } from "@/server/account/service/auth.api";
 import { getDebtorsApi } from "@/server/debtors/service/debtor.api";
+import { enrichDebtorsWithRiskScoreApi } from "@/server/debtors/service/risk-score.api";
 import { getCreditorSettingsApi } from "@/server/account/service/creditor-settings.api";
 import { presentDebtorsList } from "@/commons/utils/format";
 import { CreateDebtStepperFeature } from "@/features/debts/create-stepper";
@@ -39,8 +40,6 @@ export default async function NovaDividaPage({ searchParams }: NovaDividaPagePro
     getPlanLimitsApi(userId),
   ]);
 
-  const debtorsFormatted = presentDebtorsList(debtorsResult.items);
-
   const permissions = settingsResult.data?.permissions || {
     maxDebtors: 2,
     canCustomTemplates: false,
@@ -52,6 +51,12 @@ export default async function NovaDividaPage({ searchParams }: NovaDividaPagePro
     isFreePlan: true,
     isSubscriptionActive: false,
   };
+
+  const debtorsFormatted = await enrichDebtorsWithRiskScoreApi(
+    userId,
+    presentDebtorsList(debtorsResult.items),
+    Boolean(permissions.canRiskScore)
+  );
 
   const defaultSettings = settingsResult.data?.settings
     ? {

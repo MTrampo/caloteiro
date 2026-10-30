@@ -1,4 +1,5 @@
 import * as React from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import type { DebtorItemFormatted } from "@/commons/models/debtor";
 import { getNameInitials } from "@/commons/utils/format";
@@ -10,6 +11,7 @@ import {
   FaPhone,
   FaIdCard,
   FaLocationDot,
+  FaGaugeHigh,
 } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 import { DebtorDetailsDialog } from "@/features/debtors/components/debtor-details-dialog";
@@ -45,9 +47,21 @@ export function DebtorSummaryCard({ debtor }: DebtorSummaryCardProps) {
               <h4 className="font-heading text-base font-bold text-white">
                 {debtor.formattedName}
               </h4>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 whitespace-nowrap w-fit">
-                {debtor.relationshipLabel}
-              </span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 whitespace-nowrap w-fit">
+                  {debtor.relationshipLabel}
+                </span>
+                {debtor.riskScore && (
+                  <span
+                    className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border whitespace-nowrap w-fit flex items-center gap-1 ${debtor.riskScore.badgeClass}`}
+                  >
+                    <FaGaugeHigh className="size-2.5" />
+                    <span>
+                      Score {debtor.riskScore.score} • {debtor.riskScore.tierShortLabel}
+                    </span>
+                  </span>
+                )}
+              </div>
             </div>
             {debtor.formattedNickname && (
               <p className="text-xs font-mono text-zinc-400">
@@ -71,16 +85,28 @@ export function DebtorSummaryCard({ debtor }: DebtorSummaryCardProps) {
             </a>
           )}
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setIsDetailsOpen(true)}
-            className="h-9 sm:h-8 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all cursor-pointer w-full sm:w-auto justify-center"
-          >
-            <FaEye className="size-3 text-zinc-400" />
-            <span>Verificar</span>
-          </Button>
+          {debtor.riskScore ? (
+            <Button
+              variant="outline"
+              size="sm"
+              render={<Link href={`/painel/devedores/${debtor.id}`} />}
+              className="h-9 sm:h-8 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all cursor-pointer w-full sm:w-auto justify-center"
+            >
+              <FaEye className="size-3 text-zinc-400" />
+              <span>Raio-X</span>
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsDetailsOpen(true)}
+              className="h-9 sm:h-8 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all cursor-pointer w-full sm:w-auto justify-center"
+            >
+              <FaEye className="size-3 text-zinc-400" />
+              <span>Verificar</span>
+            </Button>
+          )}
         </div>
       </div>
 

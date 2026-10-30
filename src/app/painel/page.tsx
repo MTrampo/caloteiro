@@ -42,7 +42,7 @@ export default async function PainelPage() {
           wisdomQuote: {
             quote:
               "Quem tem vergonha de cobrar passa o fim de semana comendo pão com ovo enquanto o devedor faz Stories no open bar.",
-            author: "Julius, Pai do Chris",
+            author: "Tio Patinhas",
             subtext: "Lembre-se: o dinheiro era seu antes de sair da sua conta.",
           },
           counts: {

@@ -2,6 +2,7 @@ import Header from "@/components/header/dashboard"
 import { DebtorsFeature } from "@/features/debtors"
 import { getUserLoggedApi } from "@/server/account/service/auth.api"
 import { getDebtorsApi } from "@/server/debtors/service/debtor.api"
+import { enrichDebtorsWithRiskScoreApi } from "@/server/debtors/service/risk-score.api"
 import { getPlanLimitsApi } from "@/server/account/service/subscription.api"
 import type { DebtorItemFormatted } from "@/commons/models/debtor"
 import type { UserPlanLimits } from "@/commons/models/subscription"
@@ -30,7 +31,11 @@ export default async function DevedoresPage() {
       }),
       getPlanLimitsApi(userId),
     ])
-    initialDebtors = presentDebtorsList(res.items)
+    initialDebtors = await enrichDebtorsWithRiskScoreApi(
+      userId,
+      presentDebtorsList(res.items),
+      Boolean(limits.canRiskScore)
+    )
     initialHasMore = res.hasMore
     initialTotalCount = res.totalCount
     planLimits = limits

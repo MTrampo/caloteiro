@@ -9,6 +9,7 @@ import {
   FaInstagram,
   FaWhatsapp,
   FaUserCheck,
+  FaCheck,
 } from "react-icons/fa6";
 
 const PRIVACY_NAV = [
@@ -407,23 +408,29 @@ export function PrivacyDocFeature() {
             Em conformidade com o Artigo 18 da LGPD, o Usuário Credor possui o direito de solicitar a qualquer momento:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-            <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60">
-              ✓ Confirmação da existência de tratamento e acesso às informações;
+            <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60 flex items-start gap-2">
+              <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
+              <span>Confirmação da existência de tratamento e acesso às informações;</span>
             </div>
-            <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60">
-              ✓ Correção de dados incompletos, inexatos ou desatualizados;
+            <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60 flex items-start gap-2">
+              <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
+              <span>Correção de dados incompletos, inexatos ou desatualizados;</span>
             </div>
-            <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60">
-              ✓ Anonimização, bloqueio ou eliminação de dados excessivos;
+            <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60 flex items-start gap-2">
+              <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
+              <span>Anonimização, bloqueio ou eliminação de dados excessivos;</span>
             </div>
-            <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60">
-              ✓ Portabilidade dos dados cadastrais a outro prestador de serviços;
+            <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60 flex items-start gap-2">
+              <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
+              <span>Portabilidade dos dados cadastrais a outro prestador de serviços;</span>
             </div>
-            <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60">
-              ✓ Informação sobre entidades com as quais houve compartilhamento;
+            <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60 flex items-start gap-2">
+              <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
+              <span>Informação sobre entidades com as quais houve compartilhamento;</span>
             </div>
-            <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60">
-              ✓ Revogação do consentimento, quando legalmente aplicável.
+            <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60 flex items-start gap-2">
+              <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
+              <span>Revogação do consentimento, quando legalmente aplicável.</span>
             </div>
           </div>
 

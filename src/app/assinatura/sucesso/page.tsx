@@ -11,6 +11,7 @@ import { SubscriptionSuccessScreen } from "@/features/subscription";
 import { Logo } from "@/components/ui/logo";
 import { SignOutButton } from "@/components/buttons/sign-out-button";
 import { toIsoOrNull } from "@/commons/utils/helper";
+import { getPlanBenefits } from "@/commons/constants/subscription";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -87,42 +88,7 @@ export default async function AssinaturaSucessoPage({
   const planPrice = Number(plan.price ?? subscription.base_value ?? 0);
   const maxDebtors = config?.max_debtors ?? null;
 
-  const benefits: string[] = [];
-  if (maxDebtors !== null && maxDebtors !== undefined) {
-    benefits.push(`Capacidade da Gruta: até ${maxDebtors} presas marcadas simultâneas`);
-  } else {
-    benefits.push("Capacidade da Gruta: presas marcadas ilimitadas");
-  }
-
-  if (config?.can_debtor_portal) {
-    benefits.push(
-      "Link da Dívida para a Presa: link público e seguro para o devedor acompanhar em tempo real e pagar no Pix"
-    );
-  }
-
-  if (config?.can_access_financial) {
-    benefits.push(
-      "Inteligência Financeira: cálculo automático de juros e multas diárias que atualizam o saldo"
-    );
-  }
-
-  if (config?.custom_templates) {
-    benefits.push(
-      "Modelos Personalizados: scripts afiados de cobrança no WhatsApp com seus dados bancários"
-    );
-  }
-
-  if (config?.can_risk_score) {
-    benefits.push(
-      "Score de Risco da Presa: histórico e confiabilidade dos seus devedores"
-    );
-  }
-
-  if (config?.can_attach_receipts) {
-    benefits.push(
-      "Anexo de Comprovantes: centralização de recibos e comprovantes de pagamento"
-    );
-  }
+  const benefits = getPlanBenefits(planName, config);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white flex flex-col">

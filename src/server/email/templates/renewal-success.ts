@@ -9,7 +9,7 @@ export interface RenewalSuccessEmailData {
 }
 
 export function renderRenewalSuccessHtml(data: RenewalSuccessEmailData): { subject: string; html: string } {
-  const subject = "✨ Assinatura Renovada! Sua mensalidade Caloteiro foi confirmada"
+  const subject = "Assinatura Renovada! Sua mensalidade Caloteiro foi confirmada"
 
   const contentHtml = `
     <p style="margin: 0 0 14px 0;">
@@ -40,7 +40,7 @@ export function renderRenewalSuccessHtml(data: RenewalSuccessEmailData): { subje
       ` : ""}
       <tr>
         <td style="padding: 6px 0; color: #a1a1aa; font-weight: 500;">Status do Pagamento:</td>
-        <td align="right" style="font-weight: 800; color: #10b981;">Pago e Confirmado ✅</td>
+        <td align="right" style="font-weight: 800; color: #10b981;">Pago e Confirmado</td>
       </tr>
     </table>
   `
@@ -53,7 +53,7 @@ export function renderRenewalSuccessHtml(data: RenewalSuccessEmailData): { subje
     name: data.recipientName,
     contentHtml,
     highlightCardHtml,
-    buttonText: "Acessar Painel de Controle 🛡️",
+    buttonText: "Acessar Painel de Controle",
     buttonUrl: `${APP_URL}/painel`,
     footerNote: "O histórico completo de faturas e comprovantes fica sempre disponível na aba de conta do seu painel.",
   })

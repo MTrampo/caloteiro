@@ -30,12 +30,16 @@ export function PlanChangeManager({
 
   return (
     <div className="space-y-6">
-      <ResponsiveCardsCarousel desktopColumns={4} tabletColumns={2}>
+      <ResponsiveCardsCarousel desktopColumns={3} tabletColumns={2}>
         {plans.map((plan) => {
           const planPrice = Number(plan.price);
           const isCurrent = currentPlanSlug === plan.slug;
           const isUpgrade = planPrice > currentPrice;
           const maxDebtors = plan.config_plan?.max_debtors;
+          const canRiskScore = Boolean(plan.config_plan?.can_risk_score);
+          const canAccessFinancial = Boolean(plan.config_plan?.can_access_financial);
+          const canDebtorPortal = Boolean(plan.config_plan?.can_debtor_portal);
+          const canAttachReceipts = Boolean(plan.config_plan?.can_attach_receipts);
 
           return (
             <div
@@ -53,13 +57,13 @@ export function PlanChangeManager({
                     <h4 className="font-heading text-base font-bold text-white">
                       {plan.name}
                     </h4>
-                    <p className="text-xs font-mono text-zinc-400">
+                    <p className="text-xs font-mono text-zinc-400 leading-relaxed">
                       {plan.description || "Recursos de cobrança"}
                     </p>
                   </div>
 
                   {isCurrent && (
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0 self-start sm:self-auto">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0 self-start sm:self-auto whitespace-nowrap">
                       Plano Atual
                     </span>
                   )}
@@ -68,7 +72,7 @@ export function PlanChangeManager({
                 {/* Preço */}
                 <div className="pt-1">
                   <div className="flex items-baseline gap-1">
-                    <span className="font-heading text-2xl font-bold text-white">
+                    <span className="font-heading text-2xl font-bold text-white whitespace-nowrap">
                       {planPrice === 0
                         ? "Grátis"
                         : planPrice.toLocaleString("pt-BR", {
@@ -82,31 +86,80 @@ export function PlanChangeManager({
                   </div>
                 </div>
 
-                {/* Resumo de Benefícios */}
+                {/* Resumo Completo de Benefícios da Espécie */}
                 <div className="space-y-2 pt-2 border-t border-zinc-800 text-xs font-mono text-zinc-300">
-                  <div className="flex items-center gap-2">
-                    <FaCheck className="size-3 text-emerald-400 shrink-0" />
+                  <div className="flex items-start gap-2">
+                    <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
                     <span>
-                      {maxDebtors ? `${maxDebtors} presas na gruta` : "Presas ilimitadas na gruta"}
+                      {maxDebtors
+                        ? `${maxDebtors} presas na gruta (até ${planPrice === 0 ? "12x" : "36x"})`
+                        : "Presas ilimitadas na gruta (até 120x)"}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <FaCheck className="size-3 text-emerald-400 shrink-0" />
+
+                  <div className="flex items-start gap-2">
+                    <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
                     <span>
-                      {plan.config_plan?.custom_templates ? "Templates afiados liberados" : "Templates padrão"}
+                      {canRiskScore
+                        ? "Juros ao mês (% a.m.) e Taxa Fixa liberados"
+                        : planPrice > 0
+                        ? "Taxa Fixa do Tubarão liberada"
+                        : "Apenas valor original (Sem juros)"}
                     </span>
                   </div>
-                  {plan.config_plan?.can_debtor_portal && (
-                    <div className="flex items-center gap-2">
-                      <FaCheck className="size-3 text-emerald-400 shrink-0" />
+
+                  <div className="flex items-start gap-2">
+                    <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>
+                      {plan.config_plan?.custom_templates
+                        ? "Templates afiados de WhatsApp liberados"
+                        : "Templates padrão de WhatsApp"}
+                    </span>
+                  </div>
+
+                  {canAccessFinancial && (
+                    <div className="flex items-start gap-2">
+                      <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
+                      <span>Painel Financeiro consolidado</span>
+                    </div>
+                  )}
+
+                  {canDebtorPortal && (
+                    <div className="flex items-start gap-2">
+                      <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
                       <span>Link da Dívida para a Presa incluso</span>
                     </div>
                   )}
+
+                  {canAttachReceipts && (
+                    <div className="flex items-start gap-2">
+                      <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
+                      <span>Arquivo de Provas (Comprovantes)</span>
+                    </div>
+                  )}
+
                   {planPrice > 0 && (
-                    <div className="flex items-center gap-2">
-                      <FaCheck className="size-3 text-emerald-400 shrink-0" />
+                    <div className="flex items-start gap-2">
+                      <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
                       <span>Cláusulas e alerta de quebra de acordo</span>
                     </div>
+                  )}
+
+                  {canRiskScore && (
+                    <>
+                      <div className="flex items-start gap-2">
+                        <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
+                        <span className="text-white font-bold">
+                          Termômetro da Gruta (/painel/termometro)
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
+                        <span className="text-white font-bold">
+                          Score de Risco &amp; Raio-X Comportamental da Presa
+                        </span>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
@@ -146,7 +199,7 @@ export function PlanChangeManager({
         })}
       </ResponsiveCardsCarousel>
 
-      {/* Modal de Confirmação com Impacto (Ganhos vs Perdas) */}
+      {/* Modal de Confirmação com Impacto (Ganhos vs Perdas) e Trava Anti-Clique Acidental */}
       <PlanChangeModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -157,4 +210,3 @@ export function PlanChangeManager({
     </div>
   );
 }
-

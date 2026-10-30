@@ -1,4 +1,5 @@
 import type { Database } from "@/commons/types/database.types";
+import type { DebtorRiskScoreSummary } from "@/commons/models/risk-score";
 
 /**
  * Enum numérico nativo de relacionamento do devedor (inicia em 0)
@@ -72,6 +73,7 @@ export interface DebtorItemFormatted extends DebtorRow {
   whatsAppUrl: string;
   relationshipLabel: string;
   relationshipDesc: string;
+  riskScore?: DebtorRiskScoreSummary | null;
 }
 
 /**

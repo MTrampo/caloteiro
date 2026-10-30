@@ -111,7 +111,7 @@ export function DebtorForm() {
         toast.warning(res.error || "Sua gruta atingiu a capacidade máxima de presas!", {
           action: {
             label: "Fazer Upgrade",
-            onClick: () => router.push("/painel/assinatura"),
+            onClick: () => router.push("/painel/conta/assinatura"),
           },
           duration: 8000,
         })
@@ -249,7 +249,14 @@ export function DebtorForm() {
                       size="lg"
                       className="bg-zinc-950/60 border-zinc-800 text-zinc-200 font-mono text-xs sm:text-sm h-11 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/30"
                     >
-                      <SelectValue placeholder="Selecione o relacionamento" />
+                      <SelectValue placeholder="Selecione o relacionamento">
+                        {(val) => {
+                          if (val === undefined || val === null || val === "") return "Selecione o relacionamento";
+                          const num = Number(val);
+                          const meta = DEBTOR_RELATIONSHIP_METADATA[num as DebtorRelationshipEnum];
+                          return meta?.label || "Outro";
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="bg-zinc-900 border border-zinc-800 text-zinc-200">
                       {relationshipOptions.map((opt) => (
@@ -369,7 +376,12 @@ export function DebtorForm() {
                       size="lg"
                       className="bg-zinc-950/60 border-zinc-800 text-zinc-200 font-mono text-xs sm:text-sm h-11 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/30"
                     >
-                      <SelectValue placeholder="Tipo de Chave" />
+                      <SelectValue placeholder="Tipo de Chave">
+                        {(val) => {
+                          const found = PIX_KEY_TYPES.find((t) => t.value === val);
+                          return found?.label || "CPF";
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="bg-zinc-900 border border-zinc-800 text-zinc-200">
                       {PIX_KEY_TYPES.map((type) => (

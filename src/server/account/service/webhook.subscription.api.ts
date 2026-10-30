@@ -7,6 +7,7 @@ import { getPreapprovalApi, getAuthorizedPaymentApi } from "@/server/payment/ser
 import type { PreApprovalResponse } from "mercadopago/dist/clients/preApproval/commonTypes";
 import type { InvoiceResponse } from "mercadopago/dist/clients/invoice/commonTypes";
 import { toIsoOrNull } from "@/commons/utils/helper";
+import { getPlanBenefits } from "@/commons/constants/subscription";
 import { formatBRL, formatDate } from "@/commons/utils/format";
 import {
   sendRenewalSuccessEmailApi,
@@ -178,27 +179,7 @@ const webhookUpdateSubscriptionPreapprovalApi = async (preapproval: PreApprovalR
     // 1. Autorização inicial ou Upgrade de plano (ex: Tubarão Lixa -> Tubarão Branco) confirmado no Mercado Pago
     if (shouldSendUpgradeEmail) {
       const config = resolvedConfig;
-      const benefits: string[] = [];
-      if (config?.max_debtors) {
-        benefits.push(`Capacidade da Gruta: ${config.max_debtors} presas marcadas simultâneas`);
-      } else {
-        benefits.push("Capacidade da Gruta: Presas marcadas ilimitadas");
-      }
-      if (config?.can_debtor_portal) {
-        benefits.push("Link da Dívida para a Presa: Link público e exclusivo para a presa acompanhar e pagar via Pix");
-      }
-      if (config?.can_access_financial) {
-        benefits.push("Inteligência Financeira: Cálculo automático de juros e multas diárias em tempo real");
-      }
-      if (config?.custom_templates) {
-        benefits.push("Modelos Personalizados: Scripts afiados de cobrança no WhatsApp com chave Pix");
-      }
-      if (config?.can_risk_score) {
-        benefits.push("Score de Risco da Presa: Avaliação de histórico e confiabilidade");
-      }
-      if (config?.can_attach_receipts) {
-        benefits.push("Anexo de Comprovantes: Centralização dos recibos de pagamento");
-      }
+      const benefits = getPlanBenefits(targetPlanName, config);
 
       if (preapproval.id) {
         recentlyNotifiedUpgrades.set(preapproval.id, Date.now());

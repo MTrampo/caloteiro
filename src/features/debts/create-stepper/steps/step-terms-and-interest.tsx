@@ -463,7 +463,7 @@ export function StepTermsAndInterest({
               </p>
             </div>
             <Link
-              href="/painel/assinatura"
+              href="/painel/conta/assinatura"
               className="inline-flex items-center justify-center h-9 px-4 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold text-xs shrink-0 transition-colors"
             >
               Liberar Recurso

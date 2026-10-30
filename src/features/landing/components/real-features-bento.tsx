@@ -23,7 +23,8 @@ interface InterestModeSimulation {
   planBadge: string;
   badgeClass: string;
   principalText: string;
-  additionText: string;
+  additionValue: string;
+  additionDetail: string;
   finalTotalText: string;
   installmentValueText: string;
   explanation: string;
@@ -36,7 +37,8 @@ const INTEREST_MODES_DEMO: Record<InterestModeKey, InterestModeSimulation> = {
     planBadge: "Liberado no Tubarão Lixa",
     badgeClass: "bg-zinc-800 text-zinc-300 border-zinc-700",
     principalText: "R$ 1.000,00",
-    additionText: "+ R$ 0,00 (0%)",
+    additionValue: "+ R$ 0,00",
+    additionDetail: "0% de acréscimo",
     finalTotalText: "R$ 1.000,00",
     installmentValueText: "5x de R$ 200,00",
     explanation:
@@ -48,7 +50,8 @@ const INTEREST_MODES_DEMO: Record<InterestModeKey, InterestModeSimulation> = {
     planBadge: "Liberado no Tubarão Lixa",
     badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     principalText: "R$ 1.000,00",
-    additionText: "+ R$ 200,00 (20% sobre o total)",
+    additionValue: "+ R$ 200,00",
+    additionDetail: "+20% sobre o principal",
     finalTotalText: "R$ 1.200,00",
     installmentValueText: "5x de R$ 240,00",
     explanation:
@@ -60,7 +63,8 @@ const INTEREST_MODES_DEMO: Record<InterestModeKey, InterestModeSimulation> = {
     planBadge: "Exclusivo Tubarão Branco+",
     badgeClass: "bg-amber-500/10 text-amber-300 border-amber-500/30",
     principalText: "R$ 1.000,00",
-    additionText: "+ R$ 150,00 (Taxa Fixa R$)",
+    additionValue: "+ R$ 150,00",
+    additionDetail: "Taxa fixa combinada",
     finalTotalText: "R$ 1.150,00",
     installmentValueText: "5x de R$ 230,00",
     explanation:
@@ -345,7 +349,7 @@ export function RealFeaturesBento() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 font-mono text-xs">
+          <div className="grid grid-cols-1 gap-2.5 sm:gap-3 font-mono text-xs">
             <div className="rounded-xl bg-zinc-950/80 border border-emerald-500/20 p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="min-w-0">
                 <span className="text-white font-bold block">
@@ -401,7 +405,7 @@ export function RealFeaturesBento() {
 
         {/* Simulador Interativo das 3 Modalidades de Taxa do Tubarão */}
         <div className="bento-animate-block rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-xs space-y-4 sm:space-y-5">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 sm:gap-4 pb-4 border-b border-border/60">
+          <div className="space-y-3.5 pb-4 border-b border-border/60">
             <div className="space-y-1">
               <div className="flex items-center gap-2.5">
                 <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
@@ -418,8 +422,8 @@ export function RealFeaturesBento() {
               </p>
             </div>
 
-            {/* Botões das 3 Modalidades (Grade responsiva no mobile) */}
-            <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-2">
+            {/* Botões das 3 Modalidades (Grid simétrica 1 col no mobile, 3 colunas iguais no desktop) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5 w-full">
               {(
                 ["none", "percentage_total", "fixed_fee"] as InterestModeKey[]
               ).map((key) => {
@@ -430,9 +434,9 @@ export function RealFeaturesBento() {
                     key={key}
                     type="button"
                     onClick={() => setSelectedInterestMode(key)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-mono font-bold border transition-all cursor-pointer text-left sm:text-center ${
+                    className={`h-11 px-3 sm:px-4 rounded-xl text-xs font-mono font-bold border transition-all cursor-pointer flex items-center justify-center text-center ${
                       isSelected
-                        ? "bg-white text-zinc-950 border-white shadow-xs"
+                        ? "bg-white text-zinc-950 border-white shadow-xs font-black"
                         : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:text-white hover:border-zinc-700"
                     }`}
                   >
@@ -443,53 +447,78 @@ export function RealFeaturesBento() {
             </div>
           </div>
 
-          {/* Resultado Instantâneo do Simulador (1 coluna no mobile 320px / iPhone 5, 3 colunas em tablet/desktop) */}
-          <div
-            ref={calcResultRef}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-center"
-          >
-            <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 font-mono">
-              <div className="rounded-xl bg-zinc-950/80 border border-zinc-800/80 p-3 sm:p-3.5 space-y-1">
-                <span className="text-[10px] sm:text-[11px] text-zinc-500 block">
-                  Valor Emprestado
-                </span>
-                <span className="text-base sm:text-xl font-heading font-bold text-white block whitespace-nowrap">
-                  {currentMode.principalText}
-                </span>
-                <span className="text-[10px] sm:text-[11px] text-zinc-400 block">
-                  Saiu do seu bolso
-                </span>
+          {/* Resultado Instantâneo do Simulador (3 colunas completas + barra explicativa) */}
+          <div ref={calcResultRef} className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3.5 font-mono">
+              {/* Card 1: Valor Emprestado */}
+              <div className="rounded-xl bg-zinc-950/80 border border-zinc-800/80 p-3.5 sm:p-4 flex flex-col justify-between gap-2.5">
+                <div className="space-y-1">
+                  <span className="text-[10px] sm:text-[11px] text-zinc-500 uppercase tracking-wider block">
+                    Valor Emprestado
+                  </span>
+                  <span className="text-xl sm:text-2xl font-heading font-bold text-white block whitespace-nowrap">
+                    {currentMode.principalText}
+                  </span>
+                  <span className="text-xs text-zinc-400 block">
+                    Saiu do seu bolso
+                  </span>
+                </div>
+                <div className="pt-1">
+                  <span className="inline-block text-[10px] px-2 py-0.5 rounded font-bold border bg-zinc-900 text-zinc-400 border-zinc-800">
+                    Montante Original
+                  </span>
+                </div>
               </div>
 
-              <div className="rounded-xl bg-zinc-950/80 border border-zinc-800/80 p-3 sm:p-3.5 space-y-1">
-                <span className="text-[10px] sm:text-[11px] text-zinc-500 block">
-                  Acréscimo
-                </span>
-                <span className="text-base sm:text-xl font-heading font-bold text-emerald-400 block whitespace-nowrap">
-                  {currentMode.additionText}
-                </span>
-                <span
-                  className={`inline-block text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded border ${currentMode.badgeClass}`}
-                >
-                  {currentMode.planBadge}
-                </span>
+              {/* Card 2: Acréscimo */}
+              <div className="rounded-xl bg-zinc-950/80 border border-zinc-800/80 p-3.5 sm:p-4 flex flex-col justify-between gap-2.5">
+                <div className="space-y-1">
+                  <span className="text-[10px] sm:text-[11px] text-zinc-500 uppercase tracking-wider block">
+                    Acréscimo
+                  </span>
+                  <span className="text-xl sm:text-2xl font-heading font-bold text-emerald-400 block whitespace-nowrap">
+                    {currentMode.additionValue}
+                  </span>
+                  <span className="text-xs text-zinc-400 block">
+                    {currentMode.additionDetail}
+                  </span>
+                </div>
+                <div className="pt-1">
+                  <span
+                    className={`inline-block text-[10px] px-2 py-0.5 rounded font-bold border ${currentMode.badgeClass}`}
+                  >
+                    {currentMode.planBadge}
+                  </span>
+                </div>
               </div>
 
-              <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 sm:p-3.5 space-y-1">
-                <span className="text-[10px] sm:text-[11px] text-emerald-300/80 block">
-                  Total a Voltar para a Gruta
-                </span>
-                <span className="text-lg sm:text-xl font-heading font-bold text-white block whitespace-nowrap">
-                  {currentMode.finalTotalText}
-                </span>
-                <span className="text-[11px] font-bold text-emerald-400 block">
-                  Cronograma: {currentMode.installmentValueText}
-                </span>
+              {/* Card 3: Total a Voltar para a Gruta */}
+              <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3.5 sm:p-4 flex flex-col justify-between gap-2.5">
+                <div className="space-y-1">
+                  <span className="text-[10px] sm:text-[11px] text-emerald-300/80 uppercase tracking-wider block">
+                    Total a Voltar para a Gruta
+                  </span>
+                  <span className="text-xl sm:text-2xl font-heading font-bold text-white block whitespace-nowrap">
+                    {currentMode.finalTotalText}
+                  </span>
+                  <span className="text-xs font-bold text-emerald-400 block">
+                    Cronograma: {currentMode.installmentValueText}
+                  </span>
+                </div>
+                <div className="pt-1">
+                  <span className="inline-block text-[10px] px-2 py-0.5 rounded font-bold border bg-emerald-500/15 text-emerald-300 border-emerald-500/30">
+                    Retorno em 5x
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="lg:col-span-4 rounded-xl bg-zinc-950/60 border border-zinc-800/80 p-3.5 sm:p-4 text-xs font-mono text-zinc-300 leading-relaxed">
-              {currentMode.explanation}
+            {/* Barra de Explicação da Modalidade Selecionada */}
+            <div className="rounded-xl bg-zinc-950/60 border border-zinc-800/80 p-3.5 sm:p-4 text-xs font-mono text-zinc-300 leading-relaxed flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+              <span className="text-emerald-400 font-bold shrink-0">
+                Como funciona:
+              </span>
+              <span>{currentMode.explanation}</span>
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { APP_URL } from "@/commons/constants/env"
+import { getPlanBenefits } from "@/commons/constants/subscription"
 import { renderBaseEmailLayout } from "./base-layout"
 
 export interface PlanChangeEmailData {
@@ -21,16 +22,11 @@ export function renderPlanChangeHtml(data: PlanChangeEmailData): { subject: stri
   })
 
   const subject = isUpgrade
-    ? `🦈 Evolução de Tubarão! Você subiu para o plano ${data.newPlanName}`
-    : `🦈 Caloteiro: Confirmação de alteração para o plano ${data.newPlanName}`
+    ? `Evolução de Tubarão! Você subiu para o plano ${data.newPlanName}`
+    : `Caloteiro: Confirmação de alteração para o plano ${data.newPlanName}`
 
   const defaultBenefits = isUpgrade
-    ? [
-        `Capacidade da Gruta: ${data.maxDebtors ? `${data.maxDebtors} presas marcadas simultâneas` : "Presas ilimitadas"}`,
-        "Link da Dívida para a Presa: Link público e exclusivo para o devedor acompanhar o saldo atualizado e pagar via Pix",
-        "Inteligência Financeira: Cálculo automático de juros e multas diárias em tempo real",
-        "Modelos Personalizados: Scripts afiados de cobrança no WhatsApp com seus dados bancários",
-      ]
+    ? getPlanBenefits(data.newPlanName, { max_debtors: data.maxDebtors })
     : []
 
   const activeBenefits = data.benefits && data.benefits.length > 0 ? data.benefits : defaultBenefits
@@ -38,7 +34,7 @@ export function renderPlanChangeHtml(data: PlanChangeEmailData): { subject: stri
   const contentHtml = isUpgrade
     ? `
       <p style="margin: 0 0 14px 0; font-size: 15px; color: #ffffff; font-weight: 700;">
-        Evolução de predador confirmada! 🦈⚡
+        Evolução de predador confirmada!
       </p>
       <p style="margin: 0 0 14px 0;">
         <strong>Obrigado pela sua confiança no Caloteiro!</strong> É uma honra ter você no comando dessa nova fase. Agora você tem em mãos a artilharia definitiva para rastrear cada centavo e recuperar o que é seu por direito, sem vergonha e sem enrolação.
@@ -63,7 +59,7 @@ export function renderPlanChangeHtml(data: PlanChangeEmailData): { subject: stri
     ? `
       <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid #27272a;">
         <div style="font-size: 12px; color: #ffffff; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
-          🚀 Principais Benefícios Desbloqueados:
+          Principais Benefícios Desbloqueados:
         </div>
         <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #d4d4d8; line-height: 1.6;">
           ${activeBenefits.map(b => `<li style="margin-bottom: 6px;">${b}</li>`).join("")}
@@ -73,12 +69,12 @@ export function renderPlanChangeHtml(data: PlanChangeEmailData): { subject: stri
     : ""
 
   const chargeNoteHtml = data.chargedNow
-    ? `✅ <strong>Pagamento Aprovado:</strong> O valor de <strong>${formattedPrice}</strong> foi processado com sucesso no Mercado Pago e sua assinatura já está ativa.`
-    : `ℹ️ <strong>Importante sobre a cobrança:</strong> O valor do novo plano (<strong>${formattedPrice}</strong>) será cobrado <strong>somente na sua próxima fatura</strong>, no ciclo seguinte do Mercado Pago. Até lá, nenhum valor adicional será debitado.`
+    ? `<strong>Pagamento Aprovado:</strong> O valor de <strong>${formattedPrice}</strong> foi processado com sucesso no Mercado Pago e sua assinatura já está ativa.`
+    : `<strong>Importante sobre a cobrança:</strong> O valor do novo plano (<strong>${formattedPrice}</strong>) será cobrado <strong>somente na sua próxima fatura</strong>, no ciclo seguinte do Mercado Pago. Até lá, nenhum valor adicional será debitado.`
 
   const highlightCardHtml = `
     <div style="font-size: 12px; color: #ffffff; font-weight: 800; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.8px; font-family: monospace;">
-      📋 Detalhes da sua assinatura:
+      Detalhes da sua assinatura:
     </div>
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px; color: #d4d4d8; line-height: 1.6;">
       <tr>
@@ -108,7 +104,7 @@ export function renderPlanChangeHtml(data: PlanChangeEmailData): { subject: stri
     name: data.recipientName,
     contentHtml,
     highlightCardHtml,
-    buttonText: "Entrar na Minha Gruta 🦈",
+    buttonText: "Entrar na Minha Gruta",
     buttonUrl: `${APP_URL}/painel`,
     footerNote: "Você tem liberdade total para gerenciar ou ajustar sua assinatura quando quiser diretamente pelo seu painel.",
   })

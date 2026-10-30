@@ -61,7 +61,7 @@ export default async function NovoDevedorPage() {
                 Voltar aos Devedores
               </Link>
               <Link
-                href="/painel/assinatura"
+                href="/painel/conta/assinatura"
                 className="w-full sm:w-auto inline-flex items-center justify-center h-10 px-6 text-xs sm:text-sm font-bold font-heading rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 shadow-md"
               >
                 Fazer Upgrade

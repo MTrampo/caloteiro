@@ -262,15 +262,15 @@ describe("financial.api - Inteligência Financeira do Tubarão", () => {
     expect(yearResult.efficiency.series).toHaveLength(12);
   });
 
-  it("REGRESSÃO: formatRelativeDueDate e parseDateOnly devem interpretar '2026-11-05' sem recuo de fuso e sem repetir a data entre parênteses", () => {
-    const parsed = parseDateOnly("2026-11-05");
+  it("REGRESSÃO: formatRelativeDueDate e parseDateOnly devem interpretar data futura (> 7 dias) sem recuo de fuso e sem repetir a data entre parênteses", () => {
+    const parsed = parseDateOnly("2026-12-25");
     expect(parsed.getFullYear()).toBe(2026);
-    expect(parsed.getMonth()).toBe(10); // Novembro
-    expect(parsed.getDate()).toBe(5);
+    expect(parsed.getMonth()).toBe(11); // Dezembro
+    expect(parsed.getDate()).toBe(25);
 
-    const relative = formatRelativeDueDate("2026-11-05");
-    expect(relative.formatted).toBe("05/11/2026");
-    expect(relative.detail).not.toContain("(05/11)");
+    const relative = formatRelativeDueDate("2026-12-25");
+    expect(relative.formatted).toBe("25/12/2026");
+    expect(relative.detail).not.toContain("(25/12)");
   });
 
   it("REGRESSÃO: deve priorizar a data de vencimento mais próxima (ex: 30/10 antes de 05/11) mesmo que o valor seja menor", async () => {

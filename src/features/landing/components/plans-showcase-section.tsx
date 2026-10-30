@@ -69,6 +69,7 @@ const SHARK_SPECIES_STEPS: SharkSpeciesStep[] = [
       { label: "3 níveis de mensagens prontas no WhatsApp", included: true },
       { label: "Taxa Fixa em R$ e Templates Editáveis", included: false },
       { label: "Link da Dívida e Cofre de Comprovantes Pix", included: false },
+      { label: "Termômetro da Gruta e Raio-X Comportamental", included: false },
     ],
   },
   {
@@ -104,6 +105,7 @@ const SHARK_SPECIES_STEPS: SharkSpeciesStep[] = [
       { label: "Edição livre dos 3 templates de WhatsApp", included: true },
       { label: "Painel Financeiro Consolidado liberado", included: true },
       { label: "Link da Dívida + Cofre de Comprovantes Pix", included: true },
+      { label: "Termômetro da Gruta e Raio-X Comportamental", included: false },
     ],
   },
   {
@@ -124,10 +126,10 @@ const SHARK_SPECIES_STEPS: SharkSpeciesStep[] = [
       "Tubarão-cabeça-chata: O predador mais agressivo do mar — sobe até rio de água doce para caçar quem sumiu.",
     typicalScenarios: [
       "Tem mais de 10 caloteiros ou clientes na rua e precisa de capacidade ILIMITADA na sua gruta.",
-      "Fecha acordos longos parcelados em até 120x e monitora o risco de quebra mês a mês.",
-      "Precisa do Painel Financeiro Consolidado para cruzar tudo que está em aberto vs. recuperado no ano.",
+      "Acesso ao Termômetro da Gruta (/painel/termometro): velocímetro geral de risco, divisão biológica e veredito ácido.",
+      "Score de Risco da Mordida Exploratória (0 a 100 pts) e Raio-X comportamental com mural de caôs da presa.",
+      "Fecha acordos longos parcelados em até 120x com 4 modalidades (+ juros ao mês % a.m. exclusivo).",
       "Mantém um arquivo completo de comprovantes Pix de todas as parcelas sem limite de contratos.",
-      "Quer acesso prioritário e imediato a todas as próximas armas pesadas do ecossistema Caloteiro.",
     ],
     buttonLabel: "Cavar a Terra",
     isFeatured: false,
@@ -135,10 +137,11 @@ const SHARK_SPECIES_STEPS: SharkSpeciesStep[] = [
       { label: "Presas marcadas ILIMITADAS na gruta", included: true },
       { label: "Dívidas ativas ILIMITADAS simultâneas", included: true },
       { label: "Parcelamento máximo em até 120x", included: true },
-      { label: "Todas as modalidades de juros e taxas", included: true },
+      { label: "Todas as 4 modalidades (+ % ao mês exclusivo)", included: true },
       { label: "Edição livre dos 3 templates de WhatsApp", included: true },
       { label: "Painel Financeiro Consolidado completo", included: true },
       { label: "Link da Dívida + Cofre de Comprovantes Pix", included: true },
+      { label: "Termômetro da Gruta e Raio-X Comportamental", included: true },
     ],
   },
 ];
@@ -381,9 +384,15 @@ export function PlansShowcaseSection() {
                     }
                     className="w-full sm:w-auto text-xs font-mono font-bold text-zinc-300 hover:text-white bg-zinc-900/80 sm:bg-transparent border border-zinc-800 sm:border-0 rounded-xl px-4 py-2.5 sm:p-2 transition-colors cursor-pointer text-center"
                   >
-                    {currentShark.stepIndex < 2
-                      ? "Próxima espécie de Tubarão ➔"
-                      : "Ver comparativo dos 3 planos ➔"}
+                    {currentShark.stepIndex < 2 ? (
+                      <span className="inline-flex items-center gap-1.5">
+                        Próxima espécie de Tubarão <FaArrowRight className="size-3" />
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5">
+                        Ver comparativo dos 3 planos <FaArrowRight className="size-3" />
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>

@@ -75,7 +75,7 @@ const WEAPON_LEVELS: Record<
     signature: "_(Cobrança calculada • Sistema Caloteiro)_",
   },
   3: {
-    title: "Nível 3 — Pressão Total / Modo Julius",
+    title: "Nível 3 — Pressão Total / Modo Tio Patinhas",
     subtitle: "Atraso Crítico (> 15 dias)",
     dotClass: "bg-rose-500",
     activeBorderClass: "border-rose-500/50 bg-rose-500/5",
@@ -248,7 +248,7 @@ export function WhatsappWeaponsSimulator() {
                 ? "Nível 1 • Amistoso"
                 : level === 2
                 ? "Nível 2 • Firme"
-                : "Nível 3 • Modo Julius";
+                : "Nível 3 • Modo Tio Patinhas";
 
             return (
               <button
