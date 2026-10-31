@@ -23,6 +23,7 @@ import {
   updateDebtBreachStatusApi,
   attachInstallmentReceiptApi,
   getPublicDebtInvoiceDataApi,
+  deleteDebtApi,
 } from '@/server/debts/service/debt.api';
 import { uploadDebtReceiptApi } from '@/server/debts/service/receipt-upload.api';
 import {
@@ -558,5 +559,46 @@ export async function attachInstallmentReceiptAction(
     return { success: false, error: 'Ocorreu um erro ao anexar o comprovante à parcela.' };
   }
 }
+
+/**
+ * Remove uma dívida e suas parcelas da gruta
+ * Libera automaticamente a cota de dívidas ativas
+ */
+export async function deleteDebtAction(
+  debtId: string
+): Promise<{ success: boolean; error?: string; message?: string }> {
+  try {
+    const userRes = await getUserLoggedApi();
+    const userId = userRes.data?.user?.id;
+    if (!userId) {
+      return { success: false, error: 'Acesso não autorizado. Faça login novamente.' };
+    }
+
+    if (!debtId || typeof debtId !== 'string') {
+      return { success: false, error: 'Identificador de dívida inválido.' };
+    }
+
+    const result = await deleteDebtApi(debtId, userId);
+    if (!result.data) {
+      return {
+        success: false,
+        error: result.message || 'Não foi possível remover a dívida.',
+      };
+    }
+
+    revalidatePath('/painel');
+    revalidatePath('/painel/dividas');
+    revalidatePath('/painel/dividas/acompanhamento');
+
+    return {
+      success: true,
+      message: result.message || 'Dívida removida da gruta com sucesso.',
+    };
+  } catch (error) {
+    console.error('[deleteDebtAction] Erro inesperado:', error);
+    return { success: false, error: 'Ocorreu um erro ao excluir a dívida.' };
+  }
+}
+
 
 

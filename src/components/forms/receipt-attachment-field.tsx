@@ -169,7 +169,7 @@ export function ReceiptAttachmentField({
               {fileName || "Comprovante Anexado"}
             </AttachmentTitle>
             <AttachmentDescription className="text-[11px] text-zinc-400">
-              {isUploading ? "Comprimindo em WebP..." : fileSizeText || "Salvo na Gruta"}
+              {isUploading ? "Processando comprovante..." : fileSizeText || "Salvo na Gruta"}
             </AttachmentDescription>
           </AttachmentContent>
           <AttachmentActions>

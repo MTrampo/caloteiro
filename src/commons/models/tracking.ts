@@ -1,3 +1,5 @@
+import type { LockedQuotaSummary } from "./quota";
+
 export type PromiseGravity =
   | "ON_TIME"
   | "LIGHT_DELAY"
@@ -25,6 +27,8 @@ export interface PromiseItemFormatted {
   gravity: PromiseGravity;
   url: string;
   createdAt?: string;
+  isLocked?: boolean;
+  lockedReason?: string;
 }
 
 export interface TrackingSummaryCardData {
@@ -55,6 +59,7 @@ export interface PaginatedPromisesResult {
   limit: number;
   hasMore: boolean;
   counts: TrackingCounts;
+  lockedQuotaSummary?: LockedQuotaSummary;
 }
 
 export interface GetPromisesQueryPayload {

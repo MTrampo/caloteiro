@@ -4,7 +4,7 @@ import Link from "next/link"
 import { PromiseItem } from "./types"
 import { GRAVITY_CONFIGS } from "@/commons/utils/promise-status-map"
 import { Progress } from "@/components/ui/progress"
-import { FaArrowRight, FaClock } from "react-icons/fa6"
+import { FaArrowRight, FaClock, FaLock } from "react-icons/fa6"
 import { cn } from "@/commons/lib/utils"
 
 function getInitials(name: string) {
@@ -18,15 +18,16 @@ export function PromiseCardItem({ promise }: { promise: PromiseItem }) {
   const GravityIcon = config.icon
   const percentage = Math.round((promise.paidInstallments / Math.max(1, promise.totalInstallments)) * 100)
   const initials = promise.debtorInitials || getInitials(promise.debtorName)
+  const isLocked = Boolean(promise.isLocked)
 
   return (
     <Link
       href={promise.url}
       className={cn(
-        "group block rounded-xl sm:rounded-2xl border border-border bg-card p-4 sm:p-5 transition-all duration-200 hover:border-zinc-700 hover:shadow-md hover:shadow-black/40 shadow-xs overflow-hidden",
-        config.leftBorder,
-        config.cardBg,
-        config.borderHover
+        "group block rounded-xl sm:rounded-2xl border bg-card p-4 sm:p-5 transition-all duration-200 shadow-xs overflow-hidden",
+        isLocked
+          ? "border-rose-900/60 bg-zinc-950/70 border-l-4 border-l-rose-500 opacity-75 hover:opacity-100 hover:border-rose-700 hover:shadow-md hover:shadow-black/60"
+          : cn("border-border hover:border-zinc-700 hover:shadow-md hover:shadow-black/40", config.leftBorder, config.cardBg, config.borderHover)
       )}
     >
       {/* Container Principal Adaptável com Grid de 12 Colunas */}
@@ -60,8 +61,14 @@ export function PromiseCardItem({ promise }: { promise: PromiseItem }) {
             Situação do Prazo
           </span>
           <div className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-zinc-200">
-            <FaClock className="size-3.5 text-zinc-400 shrink-0" />
-            <span>{promise.dueStatusText}</span>
+            {isLocked ? (
+              <FaLock className="size-3.5 text-rose-400 shrink-0" />
+            ) : (
+              <FaClock className="size-3.5 text-zinc-400 shrink-0" />
+            )}
+            <span className={isLocked ? "text-rose-300" : ""}>
+              {isLocked ? "Na Jaula (Bloqueada)" : promise.dueStatusText}
+            </span>
           </div>
         </div>
 
@@ -77,25 +84,32 @@ export function PromiseCardItem({ promise }: { promise: PromiseItem }) {
           </div>
           <Progress
             value={percentage}
-            indicatorClassName={config.progressColor}
+            indicatorClassName={isLocked ? "bg-rose-500" : config.progressColor}
             className="h-2.5 w-full bg-zinc-950 border border-zinc-800"
           />
         </div>
 
         {/* Bloco 4: Gravidade & Botão Ver Dívida (2 colunas no desktop) */}
         <div className="flex items-center justify-between md:flex-col md:items-end md:justify-center gap-2 md:col-span-2 md:pl-2 shrink-0">
-          <div
-            className={cn(
-              "inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs sm:text-[13px] font-mono font-bold border shrink-0",
-              config.badgeClass
-            )}
-          >
-            <GravityIcon className="size-3.5" />
-            <span>{config.label}</span>
-          </div>
+          {isLocked ? (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs sm:text-[13px] font-mono font-bold border shrink-0 bg-rose-500/10 text-rose-400 border-rose-500/30">
+              <FaLock className="size-3" />
+              <span>Na Jaula</span>
+            </div>
+          ) : (
+            <div
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs sm:text-[13px] font-mono font-bold border shrink-0",
+                config.badgeClass
+              )}
+            >
+              <GravityIcon className="size-3.5" />
+              <span>{config.label}</span>
+            </div>
+          )}
 
           <div className="flex items-center gap-1.5 text-xs sm:text-[13px] font-bold text-zinc-400 group-hover:text-zinc-100 group-hover:translate-x-0.5 transition-all">
-            <span>Ver Dívida</span>
+            <span>{isLocked ? "Ver Detalhes" : "Ver Dívida"}</span>
             <FaArrowRight className="size-3.5" />
           </div>
         </div>

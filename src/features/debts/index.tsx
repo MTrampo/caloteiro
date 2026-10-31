@@ -9,7 +9,8 @@ import { PriorityDebtorCard } from "./components/priority-debtor-card"
 import { PortfolioDistribution } from "./components/portfolio-distribution"
 import { DebtsEfficiency } from "./components/debts-efficiency"
 import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action"
-import { FaFileCirclePlus } from "react-icons/fa6"
+import { FaFileCirclePlus, FaLock } from "react-icons/fa6"
+import Link from "next/link"
 import { getFinancialAnalyticsAction } from "@/actions/financial"
 import type { UserPlanLimits } from "@/commons/models/subscription"
 import { cn } from "@/commons/lib/utils"
@@ -46,6 +47,36 @@ export function DebtsFeature({ initialData, planLimits }: DebtsFeatureProps) {
         onPeriodChange={handlePeriodChange}
         planLimits={planLimits}
       />
+
+      {/* Banner de Presas Trancadas na Jaula (Cota Excedida) */}
+      {data.lockedQuotaSummary?.isOverQuota && (
+        <div className="rounded-2xl border border-rose-900/60 bg-rose-950/30 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm shadow-black/40">
+          <div className="flex items-start gap-3">
+            <div className="size-9 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0 mt-0.5">
+              <FaLock className="size-4" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-heading text-sm sm:text-base font-bold text-white">
+                ⚠️ {data.lockedQuotaSummary.lockedDebtsCount}{" "}
+                {data.lockedQuotaSummary.lockedDebtsCount === 1 ? "presa trancada" : "presas trancadas"} na Jaula do Tubarão
+              </h4>
+              <p className="text-xs font-mono text-zinc-300 leading-relaxed">
+                Os números consolidados abaixo refletem apenas sua dívida ativa liberada. Um total de{" "}
+                <strong className="text-rose-400">
+                  R$ {data.lockedQuotaSummary.lockedTotalAmount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </strong>{" "}
+                está retido na jaula e não entra nos KPIs até que você faça o upgrade.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/painel/planos"
+            className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold text-xs shrink-0 transition-colors cursor-pointer w-full sm:w-auto"
+          >
+            Soltar a Fera &amp; Destravar
+          </Link>
+        </div>
+      )}
 
       {/* 2. Grid dos 4 Cards Financeiros em R$ (A Receber, Já no Bolso, Travado, Prejuízo) */}
       <FinancialKpiGrid kpis={data.kpis} />

@@ -7,6 +7,7 @@ create table if not exists public.subscriptions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references public.profiles(id) on delete cascade not null unique,
   plan_id uuid references public.plans(id) on delete set null,
+  scheduled_plan_id uuid references public.plans(id) on delete set null,
   mp_subscription_id text unique,        -- ID da assinatura no Mercado Pago
   mp_payer_id int8,
   mp_payer_email text,

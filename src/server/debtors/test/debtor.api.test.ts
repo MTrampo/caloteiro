@@ -6,6 +6,7 @@ import type { UserPermissions } from "@/commons/models/subscription";
 import {
   createDebtorApi,
   getDebtorByIdApi,
+  updateDebtorApi,
   deleteDebtorApi,
 } from "../service/debtor.api";
 import * as debtorSupabase from "../repository/debtor.supabase";
@@ -193,6 +194,70 @@ describe("Serviço de Devedores (debtor.api.ts)", () => {
       expect(response.status).toBe(HttpStatusEnum.Ok);
       expect(response.message).toContain("Devedor removido do tanque");
       expect(debtorSupabase.deleteDebtorSupabase).toHaveBeenCalledWith("debtor-del", userId);
+    });
+  });
+
+  describe("updateDebtorApi (Blindagem Anti-Reciclagem de Presas)", () => {
+    const existingDebtor: DebtorItem = {
+      id: "debtor-reciclar",
+      user_id: userId,
+      name: "João Antigo",
+      nickname: null,
+      relationship: DebtorRelationshipEnum.FRIEND,
+      phone: "11988887777",
+      document: "12345678901",
+      address: null,
+      pix_key: null,
+      pix_key_type: null,
+      notes: null,
+      is_archived: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    it("ANTI-RECICLAGEM: deve barrar alteração de nome de presa que possui dívidas ativas", async () => {
+      vi.mocked(debtorSupabase.getDebtorByIdSupabase).mockResolvedValue(existingDebtor);
+      vi.mocked(debtorSupabase.countActiveDebtsByDebtorIdSupabase).mockResolvedValue(1);
+
+      const response = await updateDebtorApi("debtor-reciclar", userId, {
+        name: "Maria Nova",
+      });
+
+      expect(response.status).toBe(HttpStatusEnum.Forbidden);
+      expect(response.message).toContain("Não é permitido alterar o nome ou documento");
+      expect(debtorSupabase.updateDebtorSupabase).not.toHaveBeenCalled();
+    });
+
+    it("ANTI-RECICLAGEM: deve permitir alterar apelido, telefone ou notas mesmo com dívida ativa", async () => {
+      vi.mocked(debtorSupabase.getDebtorByIdSupabase).mockResolvedValue(existingDebtor);
+      vi.mocked(debtorSupabase.updateDebtorSupabase).mockResolvedValue({
+        data: { ...existingDebtor, nickname: "Joãozinho" },
+        error: null,
+      });
+
+      const response = await updateDebtorApi("debtor-reciclar", userId, {
+        nickname: "Joãozinho",
+        phone: "11999998888",
+      });
+
+      expect(response.status).toBe(HttpStatusEnum.Ok);
+      expect(debtorSupabase.updateDebtorSupabase).toHaveBeenCalled();
+    });
+
+    it("ANTI-RECICLAGEM: deve permitir alterar nome de presa que NÃO possui dívidas ativas", async () => {
+      vi.mocked(debtorSupabase.getDebtorByIdSupabase).mockResolvedValue(existingDebtor);
+      vi.mocked(debtorSupabase.countActiveDebtsByDebtorIdSupabase).mockResolvedValue(0);
+      vi.mocked(debtorSupabase.updateDebtorSupabase).mockResolvedValue({
+        data: { ...existingDebtor, name: "João Corrigido" },
+        error: null,
+      });
+
+      const response = await updateDebtorApi("debtor-reciclar", userId, {
+        name: "João Corrigido",
+      });
+
+      expect(response.status).toBe(HttpStatusEnum.Ok);
+      expect(debtorSupabase.updateDebtorSupabase).toHaveBeenCalled();
     });
   });
 });

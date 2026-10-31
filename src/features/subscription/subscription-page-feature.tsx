@@ -164,6 +164,24 @@ export function SubscriptionPageFeature({
           </div>
         </div>
 
+        {/* Banner de Plano Agendado / Aviso Prévio com Carência */}
+        {subscription?.scheduled_plan_id && subscription.current_period_end && (
+          <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3.5 flex items-start gap-3">
+            <FaShieldHalved className="size-4 text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5 text-xs font-mono">
+              <span className="font-bold text-amber-300 block">
+                Alteração de plano agendada
+              </span>
+              <p className="text-zinc-300 leading-relaxed">
+                Você continuará com todos os benefícios do plano <strong className="text-white">{planName}</strong> até{" "}
+                <strong className="text-white">
+                  {new Date(subscription.current_period_end).toLocaleDateString("pt-BR")}
+                </strong>. Após essa data, sua conta passará para o plano {subscription.scheduled_plan?.name || "Tubarão Lixa"}.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Rodapé do Card com Links e Cancelamento se ativo */}
         {isAuthorized ? (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-zinc-800">
@@ -334,6 +352,14 @@ export function SubscriptionPageFeature({
               >
                 <FaXmark className="size-4" />
               </button>
+            </div>
+
+            {/* Aviso da Jaula do Tubarão no Cancelamento */}
+            <div className="rounded-xl bg-rose-950/40 border border-rose-900/60 p-3 text-xs font-mono text-rose-300 leading-relaxed space-y-1">
+              <span className="font-bold text-white block">⚠️ A Jaula do Tubarão será acionada</span>
+              <p>
+                Quando seu período vigente terminar e você retornar ao plano gratuito (limite de 1 presa ativa), suas dívidas de maior valor em aberto serão trancadas na jaula e não poderão ser cobradas até você assinar novamente.
+              </p>
             </div>
 
             <div className="space-y-1.5">

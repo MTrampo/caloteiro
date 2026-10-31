@@ -47,19 +47,6 @@ export function CreditorWisdom({ initialWisdom }: CreditorWisdomProps) {
           </p>
         </div>
       </div>
-
-      <div className="shrink-0 self-end sm:self-center">
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={handleShuffle}
-          className="text-xs font-mono text-zinc-400 hover:text-white hover:bg-zinc-900 gap-1.5 h-8"
-          title="Outra dica ácida"
-        >
-          <FaRotate className="size-3" />
-          <span>Outra Dica</span>
-        </Button>
-      </div>
     </div>
   )
 }

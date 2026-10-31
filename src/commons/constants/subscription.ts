@@ -68,16 +68,19 @@ export function getPlanBenefits(
     );
   }
 
-  // 3. Termômetro da Gruta & Inteligência de Risco (Exclusivo Tubarão Cabeça Chata)
+  // 3. Termômetro da Gruta, Raio-X Comportamental & Mural de Caôs (Exclusivo Tubarão Cabeça Chata)
   if (config?.can_risk_score || isTCC) {
     benefits.push(
-      "Termômetro da Gruta (/painel/termometro): velocímetro geral de risco, divisão biológica e veredito ácido"
+      "Termômetro da Gruta: velocímetro geral de risco, divisão biológica e veredito"
     );
     benefits.push(
       "Score de Risco da Mordida Exploratória: pontuação comportamental (0 a 100 pts) e arma de WhatsApp automática"
     );
     benefits.push(
-      "Raio-X Comportamental da Presa: extrato profundo de sangramento/cicatrização e mural de caôs"
+      "Raio-X Comportamental da Presa: extrato detalhado de cicatrização e sangramento de reputação"
+    );
+    benefits.push(
+      "Mural de Caôs e Desculpas: histórico carimbado de cada promessa furada para nunca mais cair em conversa"
     );
   }
 
@@ -98,7 +101,7 @@ export function getPlanBenefits(
   // 6. Scripts de WhatsApp e Cláusulas
   if (config?.custom_templates || isTB || isTCC) {
     benefits.push(
-      "Modelos 100% Personalizados: edição livre dos 3 scripts ácidos de WhatsApp e gatilho de quebra de acordo"
+      "Modelos 100% Personalizados: edição livre das mensagens de WhatsApp e gatilho de quebra de acordo"
     );
   } else {
     benefits.push(
@@ -109,7 +112,7 @@ export function getPlanBenefits(
   // 7. Arquivo de Provas (Comprovantes Pix)
   if (config?.can_attach_receipts || isTB || isTCC) {
     benefits.push(
-      "Arquivo de Provas: cofre permanente de anexos de comprovantes e recibos Pix WebP"
+      "Arquivo de Provas: cofre permanente de anexos de comprovantes e recibos de pagamento"
     );
   }
 

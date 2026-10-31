@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { FaWhatsapp, FaCopy, FaCheck, FaUser } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
+import { trackSimulator } from "@/commons/utils/analytics";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -189,6 +190,7 @@ export function WhatsappWeaponsSimulator() {
     }`;
     navigator.clipboard.writeText(fullText);
     setCopiedDemo(true);
+    trackSimulator("whatsapp_weapon", "copy_preview", selectedLevel);
     setTimeout(() => setCopiedDemo(false), 2000);
   };
 
@@ -221,7 +223,10 @@ export function WhatsappWeaponsSimulator() {
                 <button
                   key={preset.id}
                   type="button"
-                  onClick={() => setSelectedDebtorId(preset.id)}
+                  onClick={() => {
+                    setSelectedDebtorId(preset.id);
+                    trackSimulator("whatsapp_weapon", "select_preset", preset.name);
+                  }}
                   className={`inline-flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 rounded-xl text-xs font-mono border transition-all cursor-pointer w-full sm:w-auto ${
                     isSelected
                       ? "bg-white text-zinc-950 font-bold border-white"
@@ -257,6 +262,7 @@ export function WhatsappWeaponsSimulator() {
                 onClick={() => {
                   lastScrollLevelRef.current = level;
                   setSelectedLevel(level);
+                  trackSimulator("whatsapp_weapon", "select_level", level);
                 }}
                 className={`rounded-xl border p-3 text-left transition-all cursor-pointer ${
                   isActive
@@ -300,6 +306,7 @@ export function WhatsappWeaponsSimulator() {
                   onClick={() => {
                     lastScrollLevelRef.current = level;
                     setSelectedLevel(level);
+                    trackSimulator("whatsapp_weapon", "select_level", level);
                   }}
                   className={`wa-level-btn rounded-2xl border p-4 sm:p-5 text-left transition-all cursor-pointer space-y-2 ${
                     isActive

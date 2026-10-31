@@ -15,6 +15,8 @@ import type {
   EfficiencyTimePoint,
 } from "@/commons/models/financial";
 import { calculateDaysDifference, getNameInitials } from "@/commons/utils/format";
+import { getUserPermissionsOrCacheApi } from "@/server/account/service/subscription.api";
+import { partitionDebtsByQuota } from "./debt-quota.api";
 
 interface DateWindow {
   startDate: string;
@@ -159,7 +161,8 @@ export const getFinancialAnalyticsApi = async (
 ): Promise<FinancialAnalyticsResult> => {
   const windowConfig = getPeriodWindow(period);
 
-  const [debts, payments, creditorPixKey] = await Promise.all([
+  const [permissions, debts, payments, creditorPixKey] = await Promise.all([
+    getUserPermissionsOrCacheApi(userId),
     getFinancialDebtsWithRelationsSupabase(userId),
     getFinancialPaymentsSupabase(userId, windowConfig.startDate),
     getCreditorPixKeySupabase(userId),
@@ -168,6 +171,9 @@ export const getFinancialAnalyticsApi = async (
   if (debts.length === 0) {
     return createEmptyFinancialResult(period);
   }
+
+  // Particiona a cota: dívidas de maior valor excedentes vão para a Jaula e NÃO inflam os KPIs
+  const quotaPartition = partitionDebtsByQuota(debts, permissions.maxDebtors);
 
   // Agregações de parcelas e contratos
   let totalPendingAmount = 0;
@@ -201,6 +207,11 @@ export const getFinancialAnalyticsApi = async (
   const upcomingCandidates: PriorityCandidate[] = [];
 
   for (const debt of debts) {
+    // Se a dívida estiver trancada na jaula, ela é expurgada do resumo financeiro oficial
+    if (quotaPartition.lockedDebtIds.has(debt.id)) {
+      continue;
+    }
+
     if (debt.debtor_id) {
       uniqueDebtorsSet.add(debt.debtor_id);
     }
@@ -352,12 +363,17 @@ export const getFinancialAnalyticsApi = async (
   }
 
   // KPIs: No banco public.debts, dívidas ativas têm status 'pending' (ou diferente de 'settled')
-  const activeDebtsCount = debts.filter((d) => d.status !== "settled").length;
+  const allowedDebts = debts.filter((d) => !quotaPartition.lockedDebtIds.has(d.id));
+  const activeDebtsCount = allowedDebts.filter((d) => d.status !== "settled").length;
   const totalVolume = effectivePaid + totalPendingAmount;
   const pendingVolumePercent =
     totalVolume > 0 ? Math.round((totalPendingAmount / totalVolume) * 100) : 0;
   const paidVolumePercent =
     totalVolume > 0 ? Math.round((effectivePaid / totalVolume) * 100) : 0;
+
+  const footnoteEmAberto = quotaPartition.isOverQuota
+    ? `${activeDebtsCount} ${activeDebtsCount === 1 ? "acordo ativo" : "acordos ativos"} (⚠️ ${quotaPartition.lockedDebtsCount} na jaula)`
+    : `${activeDebtsCount} ${activeDebtsCount === 1 ? "acordo ativo" : "acordos ativos"} na gruta`;
 
   const kpis = {
     emAberto: {
@@ -365,7 +381,7 @@ export const getFinancialAnalyticsApi = async (
       title: "Em Aberto",
       natureLabel: "Total a Receber na Pista",
       description: "Promessas e pendências ativas nos prazos",
-      footnote: `${activeDebtsCount} ${activeDebtsCount === 1 ? "acordo ativo" : "acordos ativos"} na gruta`,
+      footnote: footnoteEmAberto,
       changePercent: pendingVolumePercent,
       isGainOrLoss: "neutral" as const,
     },
@@ -513,5 +529,11 @@ export const getFinancialAnalyticsApi = async (
     priorityDebtor,
     portfolio,
     efficiency,
+    lockedQuotaSummary: {
+      lockedDebtsCount: quotaPartition.lockedDebtsCount,
+      lockedTotalAmount: quotaPartition.lockedTotalAmount,
+      isOverQuota: quotaPartition.isOverQuota,
+      maxAllowed: quotaPartition.maxAllowed,
+    },
   };
 };

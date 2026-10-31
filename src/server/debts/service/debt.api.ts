@@ -51,6 +51,7 @@ import {
   updateDebtAgreementRulesSupabase,
   getPublicDebtByIdSupabase,
   getPublicDebtContextByIdSupabase,
+  deleteDebtSupabase,
 } from "../repository/debt.supabase";
 import {
   createSignedReceiptUrlsSupabase,
@@ -59,6 +60,7 @@ import {
   getUserPermissionsOrCacheApi,
   getUserPermissionsApi,
 } from "@/server/account/service/subscription.api";
+import { checkDebtLockedStatusApi } from "./debt-quota.api";
 
 const ACCESS_CODE_CHARS = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 
@@ -442,6 +444,8 @@ export const getDebtDetailsApi = async (
     lateInstallmentsCount,
   });
 
+  const lockStatus = await checkDebtLockedStatusApi(debtId, userId);
+
   const formattedData: DebtDetailsFormatted = {
     ...debt,
     publicLinkEnabled: Boolean(debt.public_link_enabled),
@@ -449,6 +453,8 @@ export const getDebtDetailsApi = async (
     maxLateInstallments,
     showNotesOnInvoice,
     breachStatus,
+    isLocked: lockStatus.isLocked,
+    lockedReason: lockStatus.reason,
     loanReceiptUrl: debt.loan_receipt_path ? signedUrlsMap.get(debt.loan_receipt_path) || null : null,
     formattedOriginalAmount: formatBRL(originalAmount),
     formattedTotalAmount: formatBRL(totalDebtAmount),
@@ -490,6 +496,16 @@ export const registerDebtPaymentApi = async (
   userId: string,
   payload: RegisterPaymentPayload
 ): Promise<ResponseProps<{ settled: boolean; amortizedAmount: number }>> => {
+  const lockStatus = await checkDebtLockedStatusApi(debtId, userId);
+  if (lockStatus.isLocked) {
+    return ApiResponse.Forbidden({
+      message:
+        lockStatus.reason ||
+        "Presa trancada na jaula! Esta dívida possui maior valor em aberto e foi bloqueada devido ao limite do seu plano atual.",
+      error: "DEBT_LOCKED_BY_PLAN",
+    });
+  }
+
   const debt = await getDebtByIdSupabase(debtId, userId);
   if (!debt) {
     return ApiResponse.NotFound({
@@ -592,6 +608,16 @@ export const registerDebtExcuseApi = async (
     });
   }
 
+  const lockStatus = await checkDebtLockedStatusApi(installment.debt_id, userId);
+  if (lockStatus.isLocked) {
+    return ApiResponse.Forbidden({
+      message:
+        lockStatus.reason ||
+        "Presa trancada na jaula! Esta dívida possui maior valor em aberto e foi bloqueada devido ao limite do seu plano atual.",
+      error: "DEBT_LOCKED_BY_PLAN",
+    });
+  }
+
   const { data, error } = await createExcuseSupabase({
     installment_id: payload.installment_id,
     debtor_id: installment.debtor_id,
@@ -620,6 +646,16 @@ export const registerDebtExcuseApi = async (
 export const updateDebtPortalConfigApi = async (
   payload: UpdateDebtPortalConfigPayload
 ): Promise<ResponseProps<{ publicLinkEnabled: boolean; publicAccessCode: string }>> => {
+  const lockStatus = await checkDebtLockedStatusApi(payload.debtId, payload.userId);
+  if (lockStatus.isLocked) {
+    return ApiResponse.Forbidden({
+      message:
+        lockStatus.reason ||
+        "Presa trancada na jaula! Esta dívida possui maior valor em aberto e foi bloqueada devido ao limite do seu plano atual.",
+      error: "DEBT_LOCKED_BY_PLAN",
+    });
+  }
+
   const permissions = await getUserPermissionsOrCacheApi(payload.userId);
   if (!permissions.canDebtorPortal) {
     return ApiResponse.Forbidden({
@@ -687,8 +723,12 @@ export const checkPublicDebtGateApi = async (
     });
   }
 
-  const permissions = await getUserPermissionsApi(debt.user_id);
-  if (!permissions.canDebtorPortal) {
+  const [permissions, lockStatus] = await Promise.all([
+    getUserPermissionsApi(debt.user_id),
+    checkDebtLockedStatusApi(debt.id, debt.user_id),
+  ]);
+
+  if (!permissions.canDebtorPortal || lockStatus.isLocked) {
     return ApiResponse.Forbidden({
       message: "Este link de fatura não está ativo no momento.",
     });
@@ -713,8 +753,12 @@ export const verifyPublicDebtInvoiceAccessApi = async (
     });
   }
 
-  const permissions = await getUserPermissionsApi(debt.user_id);
-  if (!permissions.canDebtorPortal) {
+  const [permissions, lockStatus] = await Promise.all([
+    getUserPermissionsApi(debt.user_id),
+    checkDebtLockedStatusApi(debt.id, debt.user_id),
+  ]);
+
+  if (!permissions.canDebtorPortal || lockStatus.isLocked) {
     return ApiResponse.Forbidden({
       message: "Este link de fatura não está disponível no plano atual do credor.",
     });
@@ -987,6 +1031,16 @@ export const updateDebtAgreementRulesApi = async (
     showNotesOnInvoice: boolean;
   }>
 > => {
+  const lockStatus = await checkDebtLockedStatusApi(payload.debtId, payload.userId);
+  if (lockStatus.isLocked) {
+    return ApiResponse.Forbidden({
+      message:
+        lockStatus.reason ||
+        "Presa trancada na jaula! Esta dívida possui maior valor em aberto e foi bloqueada devido ao limite do seu plano atual.",
+      error: "DEBT_LOCKED_BY_PLAN",
+    });
+  }
+
   const permissions = await getUserPermissionsOrCacheApi(payload.userId);
   if (permissions.isFreePlan) {
     return ApiResponse.Forbidden({
@@ -1044,6 +1098,16 @@ export const updateDebtAgreementRulesApi = async (
 export const updateDebtBreachStatusApi = async (
   payload: UpdateDebtBreachStatusPayload
 ): Promise<ResponseProps<{ status: DebtStatus }>> => {
+  const lockStatus = await checkDebtLockedStatusApi(payload.debtId, payload.userId);
+  if (lockStatus.isLocked) {
+    return ApiResponse.Forbidden({
+      message:
+        lockStatus.reason ||
+        "Presa trancada na jaula! Esta dívida possui maior valor em aberto e foi bloqueada devido ao limite do seu plano atual.",
+      error: "DEBT_LOCKED_BY_PLAN",
+    });
+  }
+
   const permissions = await getUserPermissionsOrCacheApi(payload.userId);
   if (permissions.isFreePlan) {
     return ApiResponse.Forbidden({
@@ -1095,6 +1159,16 @@ export const attachInstallmentReceiptApi = async (
   userId: string,
   payload: AttachInstallmentReceiptPayload
 ): Promise<ResponseProps<{ success: boolean; installmentId: string }>> => {
+  const lockStatus = await checkDebtLockedStatusApi(payload.debtId, userId);
+  if (lockStatus.isLocked) {
+    return ApiResponse.Forbidden({
+      message:
+        lockStatus.reason ||
+        "Presa trancada na jaula! Esta dívida possui maior valor em aberto e foi bloqueada devido ao limite do seu plano atual.",
+      error: "DEBT_LOCKED_BY_PLAN",
+    });
+  }
+
   // 1. Verificação de permissões do plano (Planos pagos)
   const permissions = await getUserPermissionsOrCacheApi(userId);
   const canAttach = !permissions.isFreePlan || Boolean(permissions.canAttachReceipts);
@@ -1141,4 +1215,34 @@ export const attachInstallmentReceiptApi = async (
     message: "Comprovante anexado à parcela com sucesso!",
   });
 };
+
+/**
+ * Remove uma dívida da gruta (e suas parcelas em cascata)
+ * A exclusão é sempre permitida e libera espaço para promover automaticamente outra dívida
+ */
+export const deleteDebtApi = async (
+  debtId: string,
+  userId: string
+): Promise<ResponseProps<{ deleted: boolean }>> => {
+  const debt = await getDebtByIdSupabase(debtId, userId);
+  if (!debt) {
+    return ApiResponse.NotFound({
+      message: "Dívida não encontrada na gruta deste Tubarão.",
+    });
+  }
+
+  const { success, error } = await deleteDebtSupabase(debtId, userId);
+  if (!success) {
+    return ApiResponse.BadRequest({
+      message: "Não foi possível remover a dívida no momento.",
+      error: error || undefined,
+    });
+  }
+
+  return ApiResponse.Ok({
+    data: { deleted: true },
+    message: "Dívida removida da gruta com sucesso.",
+  });
+};
+
 

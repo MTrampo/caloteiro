@@ -9,6 +9,7 @@ import { useGSAP } from "@gsap/react";
 import { Button } from "@/components/ui/button";
 import heroIllustration from "@/commons/assets/svgs/hero.svg";
 import { FaArrowRight, FaCheck } from "react-icons/fa6";
+import { trackAccountIntent } from "@/commons/utils/analytics";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -75,6 +76,9 @@ export function HeroCommandShowcase() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1">
             <Button
               render={<Link href="/cadastrar" />}
+              onClick={() =>
+                trackAccountIntent("hero_cta", "Abrir Minha Gruta Grátis")
+              }
               size="lg"
               className="bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl h-11 sm:h-12 px-6 text-xs sm:text-sm shadow-sm cursor-pointer justify-center"
             >

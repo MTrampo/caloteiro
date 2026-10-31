@@ -228,6 +228,8 @@ export interface DebtDetailsFormatted extends DebtRow {
   formattedLoanDate: string;
   formattedFirstDueDate: string;
   statusLabel: string;
+  isLocked?: boolean;
+  lockedReason?: string;
   statusBadgeClass: string;
   categoryLabel: string;
   interestLabel: string;

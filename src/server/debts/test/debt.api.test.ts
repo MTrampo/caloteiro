@@ -28,12 +28,14 @@ import {
 import * as debtSupabase from "../repository/debt.supabase";
 import * as debtorSupabase from "@/server/debtors/repository/debtor.supabase";
 import * as subscriptionService from "@/server/account/service/subscription.api";
+import * as debtQuotaService from "../service/debt-quota.api";
 
 // Mocks dos Repositories e Serviços externos
 vi.mock("../repository/debt.supabase");
 vi.mock("../repository/receipt-storage.supabase");
 vi.mock("@/server/debtors/repository/debtor.supabase");
 vi.mock("@/server/account/service/subscription.api");
+vi.mock("../service/debt-quota.api");
 
 describe("Serviço de Dívidas (debt.api.ts)", () => {
   const userId = "tubarao-user-123";
@@ -81,6 +83,7 @@ describe("Serviço de Dívidas (debt.api.ts)", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(debtQuotaService.checkDebtLockedStatusApi).mockResolvedValue({ isLocked: false });
   });
 
   describe("createDebtApi (Criação de Dívida e Regras de Negócio)", () => {
@@ -1610,6 +1613,74 @@ describe("Serviço de Dívidas (debt.api.ts)", () => {
         userId,
         { receipt_path: "tubarao/payment/proof.webp" }
       );
+    });
+  });
+
+  describe("Jaula do Tubarão e Travas Zero Trust (Dívidas Trancadas)", () => {
+    it("deve barrar registerDebtPaymentApi com 403 Forbidden se a dívida estiver trancada na jaula", async () => {
+      vi.mocked(debtQuotaService.checkDebtLockedStatusApi).mockResolvedValue({
+        isLocked: true,
+        reason: "Presa trancada na jaula!",
+      });
+
+      const res = await registerDebtPaymentApi("debt-trancada", userId, {
+        amount: 200,
+      });
+
+      expect(res.status).toBe(HttpStatusEnum.Forbidden);
+      expect(res.message).toContain("Presa trancada na jaula!");
+    });
+
+    it("deve barrar registerDebtExcuseApi com 403 Forbidden se a dívida estiver trancada na jaula", async () => {
+      vi.mocked(debtSupabase.getInstallmentByIdSupabase).mockResolvedValue({
+        id: "inst-1",
+        debt_id: "debt-trancada",
+        debtor_id: "debtor-1",
+        user_id: userId,
+        installment_number: 1,
+        nominal_amount: 500,
+        paid_amount: 0,
+        due_date: "2026-10-01",
+        status: "pending",
+        receipt_path: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      vi.mocked(debtQuotaService.checkDebtLockedStatusApi).mockResolvedValue({
+        isLocked: true,
+        reason: "Presa trancada na jaula!",
+      });
+
+      const res = await registerDebtExcuseApi(userId, {
+        installment_id: "inst-1",
+        excuse_text: "Vou pagar semana que vem",
+        promised_date: "2026-11-10",
+      });
+
+      expect(res.status).toBe(HttpStatusEnum.Forbidden);
+      expect(res.message).toContain("Presa trancada na jaula!");
+    });
+
+    it("deleteDebtApi deve permitir excluir a dívida a qualquer momento para liberar espaço honestamente", async () => {
+      vi.mocked(debtSupabase.getDebtByIdSupabase).mockResolvedValue({
+        id: "debt-123",
+        user_id: userId,
+        debtor_id: "debtor-1",
+        title: "Dívida",
+        original_amount: 500,
+        total_amount: 500,
+        installments_count: 1,
+        status: "pending",
+      } as any);
+
+      vi.mocked(debtSupabase.deleteDebtSupabase).mockResolvedValue({
+        success: true,
+        error: null,
+      });
+
+      const res = await debtSupabase.deleteDebtSupabase("debt-123", userId);
+      expect(res.success).toBe(true);
     });
   });
 });

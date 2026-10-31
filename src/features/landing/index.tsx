@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { PublicHeader } from "@/components/headers/public-header";
 import { HeroCommandShowcase } from "./components/hero-command-showcase";
+import { NotebookVsGrottoComparison } from "./components/notebook-vs-grotto-comparison";
 import { GrottoCommandSimulation } from "./components/grotto-command-simulation";
 import { WhatsappWeaponsSimulator } from "./components/whatsapp-weapons-simulator";
 import { DebtorPortalShowcase } from "./components/debtor-portal-showcase";
@@ -13,6 +14,7 @@ import {
   GrottoVisualShowcase,
   FinalClosingBanner,
 } from "./components/grotto-manifesto-banner";
+import { RoiAndTrustSection } from "./components/roi-and-trust-section";
 import { PlansShowcaseSection } from "./components/plans-showcase-section";
 import { LandingFaqSection } from "./components/landing-faq-section";
 import {
@@ -34,11 +36,13 @@ export function LandingFeature({ isLoggedIn = false }: LandingFeatureProps) {
       {/* Conteúdo Principal da Apresentação (Seções 100% Full-Width com contraste e bordas de ponta a ponta) */}
       <main className="flex-1 w-full overflow-x-clip">
         <HeroCommandShowcase />
+        <NotebookVsGrottoComparison />
         <GrottoCommandSimulation />
         <WhatsappWeaponsSimulator />
         <DebtorPortalShowcase />
         <RealFeaturesBento />
         <GrottoVisualShowcase />
+        <RoiAndTrustSection />
         <PlansShowcaseSection />
         <LandingFaqSection />
         <FinalClosingBanner />
@@ -95,6 +99,14 @@ export function LandingFeature({ isLoggedIn = false }: LandingFeatureProps) {
               <ul className="space-y-2 text-zinc-400">
                 <li>
                   <a
+                    href="#comparativo"
+                    className="hover:text-white transition-colors"
+                  >
+                    Caderninho vs. Gruta
+                  </a>
+                </li>
+                <li>
+                  <a
                     href="#central-gruta"
                     className="hover:text-white transition-colors"
                   >
@@ -115,6 +127,14 @@ export function LandingFeature({ isLoggedIn = false }: LandingFeatureProps) {
                     className="hover:text-white transition-colors"
                   >
                     Motor e Recursos
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#provas-e-garantias"
+                    className="hover:text-white transition-colors"
+                  >
+                    Provas & Garantias
                   </a>
                 </li>
                 <li>

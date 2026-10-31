@@ -5,6 +5,7 @@ import { getUserLoggedApi } from "@/server/account/service/auth.api";
 import { FaInstagram, FaWhatsapp, FaArrowUpRightFromSquare } from "react-icons/fa6";
 import { DocNav } from "@/features/documents/components/doc-nav";
 import { PublicHeader } from "@/components/headers/public-header";
+import { LegalDocReadingTracker } from "@/components/analytics/legal-doc-reading-tracker";
 
 export default async function DocumentosLayout({
   children,
@@ -25,6 +26,7 @@ export default async function DocumentosLayout({
           <DocNav />
         </div>
       </div>
+      <LegalDocReadingTracker />
 
       {/* Conteúdo Principal */}
       <main className="flex-1 w-full mx-auto px-4 sm:px-6 py-8 sm:py-16 max-w-5xl md:max-w-7xl space-y-6">

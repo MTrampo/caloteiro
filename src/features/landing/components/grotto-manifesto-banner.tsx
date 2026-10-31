@@ -9,6 +9,7 @@ import { useGSAP } from "@gsap/react";
 import backgroundIllustration from "@/commons/assets/svgs/background.svg";
 import { Button } from "@/components/ui/button";
 import { FaArrowRight } from "react-icons/fa6";
+import { trackAccountIntent, trackLoginIntent } from "@/commons/utils/analytics";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -130,7 +131,7 @@ export function GrottoVisualShowcase() {
       ref={sectionRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full bg-[#070b12] border-b border-border/60 overflow-hidden"
+      className="relative w-full bg-[#070b12] overflow-hidden"
     >
       {/* Bloco de Texto no Mobile (Acima da arte para não cobrir os personagens) */}
       <div className="lg:hidden px-4 sm:px-6 pt-10 pb-5 space-y-3.5">
@@ -144,6 +145,9 @@ export function GrottoVisualShowcase() {
         <div className="pt-1">
           <Button
             render={<Link href="/cadastrar" />}
+            onClick={() =>
+              trackAccountIntent("manifesto_mobile", "Abrir Minha Gruta Grátis")
+            }
             size="lg"
             className="w-full sm:w-auto bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl h-11 px-6 text-xs sm:text-sm shadow-lg cursor-pointer justify-center"
           >
@@ -226,6 +230,12 @@ export function GrottoVisualShowcase() {
               <div className="flex items-center gap-3 pt-1">
                 <Button
                   render={<Link href="/cadastrar" />}
+                  onClick={() =>
+                    trackAccountIntent(
+                      "manifesto_desktop",
+                      "Abrir Minha Gruta Grátis"
+                    )
+                  }
                   size="lg"
                   className="bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl h-11 px-6 text-xs xl:text-sm shadow-xl cursor-pointer justify-center"
                 >
@@ -263,6 +273,12 @@ export function FinalClosingBanner() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Button
             render={<Link href="/cadastrar" />}
+            onClick={() =>
+              trackAccountIntent(
+                "final_banner",
+                "Abrir Minha Gruta Grátis"
+              )
+            }
             size="lg"
             className="w-full sm:w-auto bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl h-12 px-7 text-sm shadow-lg cursor-pointer justify-center"
           >
@@ -272,6 +288,7 @@ export function FinalClosingBanner() {
 
           <Button
             render={<Link href="/entrar" />}
+            onClick={() => trackLoginIntent("final_banner")}
             variant="outline"
             size="lg"
             className="w-full sm:w-auto border-zinc-700 bg-zinc-950/75 hover:bg-zinc-900 text-zinc-100 font-mono text-xs sm:text-sm rounded-xl h-12 px-6 cursor-pointer justify-center"

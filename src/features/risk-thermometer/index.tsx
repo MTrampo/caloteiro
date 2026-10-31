@@ -164,7 +164,7 @@ export function RiskThermometerFeature({ data }: RiskThermometerFeatureProps) {
         </div>
       </div>
 
-      {/* Alerta Ácido de Veredito da Gruta */}
+      {/* Alerta de Veredito da Gruta */}
       <GrottoVerdictAlert data={data} />
 
       {/* Linha Analítica Principal: Velocímetro Geral da Gruta + Diagnóstico de Risco Financeiro */}

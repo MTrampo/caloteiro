@@ -17,6 +17,7 @@ import {
   updateDebtorSupabase,
   deleteDebtorSupabase,
   countDebtorsByUserIdSupabase,
+  countActiveDebtsByDebtorIdSupabase,
 } from "../repository/debtor.supabase";
 import { getUserPermissionsOrCacheApi } from "@/server/account/service/subscription.api";
 
@@ -124,6 +125,34 @@ export const updateDebtorApi = async (
   userId: string,
   payload: UpdateDebtorPayload
 ): Promise<ResponseProps<DebtorItem>> => {
+  // Anti-Reciclagem: Não permite alterar nome ou CPF de presa que possui dívidas ativas
+  const existingDebtor = await getDebtorByIdSupabase(id, userId);
+  if (!existingDebtor) {
+    return ApiResponse.NotFound({
+      message: "Devedor não encontrado na sua gruta.",
+    });
+  }
+
+  const isChangingName =
+    payload.name !== undefined &&
+    formatProperName(payload.name) !== existingDebtor.name;
+
+  const cleanDoc = payload.document ? sanitizeDigits(payload.document) : null;
+  const isChangingDocument =
+    payload.document !== undefined &&
+    cleanDoc !== (existingDebtor.document ? sanitizeDigits(existingDebtor.document) : null);
+
+  if (isChangingName || isChangingDocument) {
+    const activeDebtsCount = await countActiveDebtsByDebtorIdSupabase(id, userId);
+    if (activeDebtsCount > 0) {
+      return ApiResponse.Forbidden({
+        message:
+          "Presa com dívida ativa! Não é permitido alterar o nome ou documento de um devedor com pendências em aberto na gruta para evitar reciclagem de cadastro.",
+        error: "DEBTOR_RECYCLING_PROHIBITED",
+      });
+    }
+  }
+
   const sanitizedPayload: UpdateDebtorPayload = {
     ...payload,
     name: payload.name ? formatProperName(payload.name) : undefined,

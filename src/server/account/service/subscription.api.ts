@@ -42,6 +42,7 @@ import type {
 import { countDebtorsByUserIdSupabase } from "@/server/debtors/repository/debtor.supabase";
 import { countActiveDebtsByUserIdSupabase } from "@/server/debts/repository/debt.supabase";
 import { updateProfileAvatarSupabase } from "../repository/auth.supabase";
+import { formatDate, formatBRL } from "@/commons/utils/format";
 
 /**
  * Retorna as permissões e limites ativos do credor no servidor
@@ -112,6 +113,24 @@ export const getPlanLimitsApi = async (
     planName: sub?.plan?.name || "Tubarão Lixa",
     isFreePlan: permissions.isFreePlan,
     canRiskScore: Boolean(permissions.canRiskScore),
+    scheduledPlanName:
+      sub?.scheduled_plan_id &&
+      sub.current_period_end &&
+      new Date(sub.current_period_end).getTime() > Date.now()
+        ? sub.scheduled_plan?.name || null
+        : null,
+    scheduledPlanSlug:
+      sub?.scheduled_plan_id &&
+      sub.current_period_end &&
+      new Date(sub.current_period_end).getTime() > Date.now()
+        ? sub.scheduled_plan?.slug || null
+        : null,
+    scheduledPeriodEnd:
+      sub?.scheduled_plan_id &&
+      sub.current_period_end &&
+      new Date(sub.current_period_end).getTime() > Date.now()
+        ? sub.current_period_end
+        : null,
   };
 };
 
@@ -351,15 +370,74 @@ export const changeSubscriptionPlanApi = async (
       await cancelPreApprovalApi(currentSub.mp_subscription_id);
     }
 
+    const hasActivePeriod = Boolean(
+      currentSub?.current_period_end &&
+      new Date(currentSub.current_period_end).getTime() > Date.now()
+    );
+
+    if (hasActivePeriod && currentSub) {
+      // 🛡️ DOWNGRADE COM CARÊNCIA ATÉ A EXPIRAÇÃO:
+      // Mantém o plano pago atual ativo no plan_id e agenda o plano gratuito em scheduled_plan_id
+      await updateSubscriptionByIdSupabase(currentSub.id, {
+        scheduled_plan_id: targetPlan.id,
+        mp_status: "cancelled",
+        mp_subscription_id: null,
+      });
+
+      const currentPermissions = await getUserPermissionsByUserIdSupabase(userId);
+      await setCookieSubscription(
+        {
+          subscriptionId: currentSub.id,
+          status: "cancelled",
+          currentPeriodEnd: currentSub.current_period_end,
+          userId,
+          planSlug: currentPlan?.slug || "tubarao-lixa",
+          planName: currentPlan?.name || "Tubarão",
+          permissions: currentPermissions,
+        },
+        userId
+      );
+
+      await sendPlanChangeEmailApi(userEmail, {
+        previousPlanName: currentPlan?.name || DEFAULT_FREE_PLAN_NAME,
+        newPlanName: targetPlan.name,
+        isUpgrade: false,
+        newPrice: FREE_PLAN_PRICE,
+        maxDebtors: targetPlan.config_plan?.max_debtors ?? FREE_PLAN_DEFAULT_MAX_DEBTORS,
+      });
+
+      const formattedEndDate = formatDate(currentSub.current_period_end);
+
+      const message = `Assinatura cancelada no Mercado Pago. Seus benefícios do plano ${currentPlan?.name} continuam ativos até ${formattedEndDate}. Após essa data, sua conta passará para o ${DEFAULT_FREE_PLAN_NAME}.`;
+
+      return ApiResponse.Ok({
+        message,
+        data: {
+          isUpgrade: false,
+          previousPlanName: currentPlan?.name || DEFAULT_FREE_PLAN_NAME,
+          newPlanName: targetPlan.name,
+          newPrice: FREE_PLAN_PRICE,
+          effectiveNextBilling: true,
+          isFreePlan: true,
+          initPoint: null,
+          scheduledPeriodEnd: currentSub.current_period_end,
+          message,
+        },
+      });
+    }
+
+    // Sem ciclo futuro ativo: transição imediata para plano gratuito
     if (currentSub) {
       await updateSubscriptionByIdSupabase(currentSub.id, {
         plan_id: targetPlan.id,
+        scheduled_plan_id: null,
         ...FREE_PLAN_RESET_PAYLOAD,
       });
     } else {
       await upsertSubscriptionSupabase({
         user_id: userId,
         plan_id: targetPlan.id,
+        scheduled_plan_id: null,
         mp_payer_email: userEmail,
         ...FREE_PLAN_RESET_PAYLOAD,
       });
@@ -426,8 +504,66 @@ export const changeSubscriptionPlanApi = async (
       });
     }
 
+    const hasActivePeriod = Boolean(
+      currentSub.current_period_end &&
+      new Date(currentSub.current_period_end).getTime() > Date.now()
+    );
+
+    if (!isUpgrade && hasActivePeriod) {
+      // 🛡️ DOWNGRADE ENTRE PLANOS PAGOS:
+      // Mantém o plano superior atual e agenda o plano menor para a virada do ciclo
+      await updateSubscriptionByIdSupabase(currentSub.id, {
+        scheduled_plan_id: targetPlan.id,
+      });
+
+      const currentPermissions = await getUserPermissionsByUserIdSupabase(userId);
+      await setCookieSubscription(
+        {
+          subscriptionId: currentSub.id,
+          status: currentSub.mp_status,
+          currentPeriodEnd: currentSub.current_period_end,
+          userId,
+          planSlug: currentPlan?.slug || "tubarao-cabeca-chato",
+          planName: currentPlan?.name || "Tubarão Cabeça Chato",
+          permissions: currentPermissions,
+        },
+        userId
+      );
+
+      const benefits = getPlanBenefits(targetPlan.name, targetPlan.config_plan);
+      await sendPlanChangeEmailApi(userEmail, {
+        previousPlanName: currentPlan?.name || DEFAULT_FREE_PLAN_NAME,
+        newPlanName: targetPlan.name,
+        isUpgrade: false,
+        newPrice,
+        maxDebtors: targetPlan.config_plan?.max_debtors,
+        benefits,
+      });
+
+      const formattedEndDate = formatDate(currentSub.current_period_end);
+
+      const message = `Alteração agendada para ${targetPlan.name}. Você continuará utilizando os benefícios do ${currentPlan?.name} até ${formattedEndDate}. A partir da próxima fatura, o novo valor será de ${formatBRL(newPrice)}.`;
+
+      return ApiResponse.Ok({
+        message,
+        data: {
+          isUpgrade: false,
+          previousPlanName: currentPlan?.name || DEFAULT_FREE_PLAN_NAME,
+          newPlanName: targetPlan.name,
+          newPrice,
+          effectiveNextBilling: true,
+          isFreePlan: false,
+          initPoint: null,
+          scheduledPeriodEnd: currentSub.current_period_end,
+          message,
+        },
+      });
+    }
+
+    // UPGRADE IMEDIATO:
     await updateSubscriptionByIdSupabase(currentSub.id, {
       plan_id: targetPlan.id,
+      scheduled_plan_id: null,
       base_value: newPrice,
     });
 
@@ -452,18 +588,16 @@ export const changeSubscriptionPlanApi = async (
     await sendPlanChangeEmailApi(userEmail, {
       previousPlanName: currentPlan?.name || DEFAULT_FREE_PLAN_NAME,
       newPlanName: targetPlan.name,
-      isUpgrade,
+      isUpgrade: true,
       newPrice,
       maxDebtors: targetPlan.config_plan?.max_debtors,
       benefits,
     });
 
     return ApiResponse.Ok({
-      message: isUpgrade
-        ? `Parabéns, Tubarão! Você subiu para o plano ${targetPlan.name}!`
-        : `Plano alterado para ${targetPlan.name}.`,
+      message: `Parabéns, Tubarão! Você subiu para o plano ${targetPlan.name}!`,
       data: {
-        isUpgrade,
+        isUpgrade: true,
         previousPlanName: currentPlan?.name || DEFAULT_FREE_PLAN_NAME,
         newPlanName: targetPlan.name,
         newPrice,

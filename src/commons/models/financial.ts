@@ -1,3 +1,5 @@
+import type { LockedQuotaSummary } from "./quota";
+
 export type FinancialPeriod = "month" | "six_months" | "year";
 
 export type FinancialKpiNature = "pending" | "received" | "overdue" | "lost";
@@ -93,6 +95,7 @@ export interface FinancialAnalyticsResult {
   priorityDebtor: PriorityDebtorData | null;
   portfolio: PortfolioDistributionData;
   efficiency: DebtEfficiencyData;
+  lockedQuotaSummary?: LockedQuotaSummary;
 }
 
 export interface GetFinancialAnalyticsPayload {

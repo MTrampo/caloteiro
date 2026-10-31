@@ -11,6 +11,7 @@ import { createDebtApi, registerDebtPaymentApi } from "@/server/debts/service/de
 import * as debtSupabase from "@/server/debts/repository/debt.supabase";
 import * as debtorSupabase from "@/server/debtors/repository/debtor.supabase";
 import * as subscriptionService from "@/server/account/service/subscription.api";
+import * as debtQuotaService from "@/server/debts/service/debt-quota.api";
 import type { DebtRow, InstallmentRow } from "@/commons/models/debt";
 import { HttpStatusEnum } from "@/commons/enums/http";
 import { NextRequest, NextResponse } from "next/server";
@@ -18,6 +19,7 @@ import { NextRequest, NextResponse } from "next/server";
 vi.mock("@/server/debts/repository/debt.supabase");
 vi.mock("@/server/debtors/repository/debtor.supabase");
 vi.mock("@/server/account/service/subscription.api");
+vi.mock("@/server/debts/service/debt-quota.api");
 
 describe("Blindagem de Segurança, Anti-Bypass e Zero Trust", () => {
   const userIdA = "user-tubarao-legitimo";
@@ -25,6 +27,7 @@ describe("Blindagem de Segurança, Anti-Bypass e Zero Trust", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(debtQuotaService.checkDebtLockedStatusApi).mockResolvedValue({ isLocked: false });
   });
 
   describe("Regra de Carência e Status da Assinatura (isSubscriptionActive)", () => {

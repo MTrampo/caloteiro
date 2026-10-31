@@ -25,6 +25,7 @@ import {
   FaLink,
   FaWhatsapp,
   FaArrowUpRightFromSquare,
+  FaLock,
 } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 
@@ -63,16 +64,28 @@ export function DebtDetailsFeature({
   const [viewerImageUrl, setViewerImageUrl] = React.useState<string | null>(null);
 
   const handleOpenGeneralPayment = () => {
+    if (debt.isLocked) {
+      toast.error("Esta presa está trancada na jaula! Faça upgrade para registrar pagamentos.");
+      return;
+    }
     setSelectedInstallmentForPayment(null);
     setIsPaymentModalOpen(true);
   };
 
   const handleOpenInstallmentPayment = (installment: InstallmentFormatted) => {
+    if (debt.isLocked) {
+      toast.error("Esta presa está trancada na jaula! Faça upgrade para registrar pagamentos.");
+      return;
+    }
     setSelectedInstallmentForPayment(installment);
     setIsPaymentModalOpen(true);
   };
 
   const handleOpenExcuseModal = (installment: InstallmentFormatted) => {
+    if (debt.isLocked) {
+      toast.error("Esta presa está trancada na jaula! Faça upgrade para registrar desculpas.");
+      return;
+    }
     setSelectedInstallmentForExcuse(installment);
     setIsExcuseModalOpen(true);
   };
@@ -91,6 +104,31 @@ export function DebtDetailsFeature({
 
   return (
     <div className="flex-1 p-4 sm:p-6 space-y-6 w-full pb-32 sm:pb-6">
+      {/* Banner da Jaula do Tubarão (quando a dívida estiver trancada por cota do plano) */}
+      {debt.isLocked && (
+        <div className="rounded-2xl border border-rose-900/60 bg-rose-950/40 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm shadow-black/40">
+          <div className="flex items-start gap-3">
+            <div className="size-9 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0 mt-0.5">
+              <FaLock className="size-4" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-heading text-sm sm:text-base font-bold text-white">
+                Presa Trancada na Jaula do Tubarão
+              </h4>
+              <p className="text-xs font-mono text-zinc-300 leading-relaxed">
+                {debt.lockedReason || "Esta dívida possui maior valor em aberto e foi bloqueada pelo limite do seu plano atual. Você não pode dar baixa no Pix, enviar recados nem editar este acordo até fazer o upgrade."}
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/painel/planos"
+            className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold text-xs shrink-0 transition-colors cursor-pointer w-full sm:w-auto"
+          >
+            Destravar Presa Agora
+          </Link>
+        </div>
+      )}
+
       {/* Cabeçalho da Dívida (Solto, sem card, sem ícones no título h2) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="space-y-1">
@@ -133,7 +171,7 @@ export function DebtDetailsFeature({
             onMobileDialogOpenChange={setIsPortalModalOpen}
           />
 
-          {!debt.isFullySettled && (
+          {!debt.isFullySettled && !debt.isLocked && (
             <Button
               type="button"
               variant="default"

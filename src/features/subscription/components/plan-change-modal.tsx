@@ -89,7 +89,9 @@ export function PlanChangeModal({
           return;
         }
 
-        if (isUpgrade) {
+        if (data.message) {
+          toast.success(data.message);
+        } else if (isUpgrade) {
           toast.success(
             `Parabéns, Tubarão! Você subiu para o plano ${targetPlan.name}. A nova gruta já está liberada!`
           );
@@ -228,7 +230,7 @@ export function PlanChangeModal({
                   <li className="flex items-start gap-2">
                     <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
                     <span>
-                      Modelos ácidos personalizados de WhatsApp e cláusulas de quebra de acordo
+                      Modelos personalizados de mensagens de WhatsApp e cláusulas de quebra de acordo
                     </span>
                   </li>
                 )}
@@ -257,9 +259,9 @@ export function PlanChangeModal({
                     <FaTriangleExclamation className="size-3.5 text-amber-400 shrink-0 mt-0.5" />
                     <span>
                       <strong className="text-white">
-                        Bloqueio do Termômetro da Gruta e do Score de Risco:
+                        Bloqueio do Termômetro da Gruta, Raio-X e Mural de Caôs:
                       </strong>{" "}
-                      você perde o Velocímetro Biológico, o Raio-X da Presa e o ranking de caloteiros.
+                      você perde o Velocímetro Biológico, o Raio-X da Presa e o histórico de caôs e promessas furadas.
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -291,10 +293,20 @@ export function PlanChangeModal({
               )}
             </ul>
 
-            {/* Aviso de Presas Existentes */}
-            <div className="rounded-xl bg-amber-950/30 border border-amber-900/50 p-3 text-xs font-mono text-amber-300 leading-relaxed">
-              <strong>Importante:</strong> Suas presas marcadas e dívidas atuais{" "}
-              <strong>NÃO</strong> serão apagadas. Porém, enquanto você tiver mais presas que o limite permitido ({targetMaxDebtors ?? 2}), não será possível marcar novos caloteiros.
+            {/* Aviso da Jaula do Tubarão para Downgrade */}
+            <div className="rounded-xl bg-rose-950/40 border border-rose-900/60 p-3 text-xs font-mono text-rose-300 leading-relaxed space-y-1.5">
+              <div className="font-bold text-white flex items-center gap-1.5">
+                <span>⚠️ A Jaula do Tubarão será acionada</span>
+              </div>
+              <p>
+                Ao reduzir sua capacidade para <strong>{targetMaxDebtors ?? 1} presa ativa</strong>, suas dívidas de <strong>maior valor em aberto serão trancadas na jaula</strong> (você não poderá dar baixa no Pix, registrar desculpas nem emitir faturas delas até voltar para o plano pago).
+              </p>
+              <p className="text-zinc-400">
+                Apenas a sua dívida de menor valor permanecerá liberada para cobrança. Seus dados continuam salvos com segurança, mas bloqueados.
+              </p>
+              <p className="text-emerald-400 font-bold pt-1">
+                🛡️ Carência garantida: seus benefícios atuais continuam 100% liberados até a data de expiração da sua fatura já paga. A Jaula só trancará as dívidas excedentes após o término do período!
+              </p>
             </div>
           </div>
         )}
@@ -307,7 +319,7 @@ export function PlanChangeModal({
               {isFromFreePlan
                 ? "Regra de Faturamento: Autorização no Mercado Pago"
                 : isFreePlan
-                ? "Regra de Faturamento: Cancelamento de Recorrência"
+                ? "Regra de Faturamento: Cancelamento com Carência"
                 : "Regra de Faturamento: Atualização na Próxima Fatura"}
             </span>
           </div>
@@ -317,8 +329,8 @@ export function PlanChangeModal({
               : isUpgrade
               ? `Sua assinatura ativa no Mercado Pago será atualizada para ${formattedTargetPrice}/mês (cobrado na próxima fatura) e todos os novos recursos são liberados imediatamente.`
               : isFreePlan
-              ? "Sua assinatura recorrente será cancelada no Mercado Pago imediatamente e você não terá novas cobranças."
-              : `O valor da sua assinatura no Mercado Pago será reduzido para ${formattedTargetPrice}/mês a partir do próximo ciclo de faturamento.`}
+              ? "Sua assinatura recorrente será cancelada no Mercado Pago para evitar novas cobranças. Seu plano atual permanece ativo com todos os benefícios até o fim do ciclo vigente já pago."
+              : `O valor da sua assinatura no Mercado Pago será reduzido para ${formattedTargetPrice}/mês na próxima fatura, mantendo seu plano atual liberado até a virada.`}
           </p>
         </div>
 

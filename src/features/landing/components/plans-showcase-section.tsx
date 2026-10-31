@@ -13,6 +13,7 @@ import tlSvg from "@/commons/assets/svgs/tl.svg";
 import tbSvg from "@/commons/assets/svgs/tb.svg";
 import tccSvg from "@/commons/assets/svgs/tcc.svg";
 import { FaArrowRight, FaCheck, FaXmark } from "react-icons/fa6";
+import { trackPlanIntent, trackSimulator } from "@/commons/utils/analytics";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -69,7 +70,9 @@ const SHARK_SPECIES_STEPS: SharkSpeciesStep[] = [
       { label: "3 níveis de mensagens prontas no WhatsApp", included: true },
       { label: "Taxa Fixa em R$ e Templates Editáveis", included: false },
       { label: "Link da Dívida e Cofre de Comprovantes Pix", included: false },
-      { label: "Termômetro da Gruta e Raio-X Comportamental", included: false },
+      { label: "Termômetro da Gruta (Risco Geral)", included: false },
+      { label: "Raio-X Comportamental e Score da Presa", included: false },
+      { label: "Mural de Caôs e Desculpas Furadas", included: false },
     ],
   },
   {
@@ -92,7 +95,7 @@ const SHARK_SPECIES_STEPS: SharkSpeciesStep[] = [
       "Tem até 10 presas marcadas rodando ao mesmo tempo e não pode deixar nenhum vencimento passar batido.",
       "Quer cobrar Taxa Fixa em Reais (R$) ou deixar sua taxa padrão já engatilhada para novas dívidas.",
       "Cansou de ouvir 'me manda sua chave Pix de novo' e quer enviar o Link Externo da Dívida pronto.",
-      "Quer personalizar com as próprias palavras os 3 níveis de mensagens ácidas do WhatsApp.",
+      "Quer personalizar com as próprias palavras os 3 níveis de mensagens do WhatsApp.",
       "Faz questão de anexar o print do comprovante Pix em cada parcela para acabar com discussões.",
     ],
     buttonLabel: "Dar o Bote",
@@ -105,7 +108,9 @@ const SHARK_SPECIES_STEPS: SharkSpeciesStep[] = [
       { label: "Edição livre dos 3 templates de WhatsApp", included: true },
       { label: "Painel Financeiro Consolidado liberado", included: true },
       { label: "Link da Dívida + Cofre de Comprovantes Pix", included: true },
-      { label: "Termômetro da Gruta e Raio-X Comportamental", included: false },
+      { label: "Termômetro da Gruta (Risco Geral)", included: false },
+      { label: "Raio-X Comportamental e Score da Presa", included: false },
+      { label: "Mural de Caôs e Desculpas Furadas", included: false },
     ],
   },
   {
@@ -125,9 +130,10 @@ const SHARK_SPECIES_STEPS: SharkSpeciesStep[] = [
     sharkBehaviorText:
       "Tubarão-cabeça-chata: O predador mais agressivo do mar — sobe até rio de água doce para caçar quem sumiu.",
     typicalScenarios: [
-      "Tem mais de 10 caloteiros ou clientes na rua e precisa de capacidade ILIMITADA na sua gruta.",
-      "Acesso ao Termômetro da Gruta (/painel/termometro): velocímetro geral de risco, divisão biológica e veredito ácido.",
-      "Score de Risco da Mordida Exploratória (0 a 100 pts) e Raio-X comportamental com mural de caôs da presa.",
+      "Tem mais de 10 presas marcadas ou clientes na rua e precisa de capacidade ILIMITADA na sua gruta.",
+      "Acesso ao Termômetro da Gruta: velocímetro geral de risco, divisão biológica e veredito do mar.",
+      "Score de Risco da Mordida Exploratória (0 a 100 pts) e Raio-X comportamental detalhado.",
+      "Mural de Caôs e Desculpas: carimbo e histórico de cada promessa furada da presa.",
       "Fecha acordos longos parcelados em até 120x com 4 modalidades (+ juros ao mês % a.m. exclusivo).",
       "Mantém um arquivo completo de comprovantes Pix de todas as parcelas sem limite de contratos.",
     ],
@@ -141,7 +147,9 @@ const SHARK_SPECIES_STEPS: SharkSpeciesStep[] = [
       { label: "Edição livre dos 3 templates de WhatsApp", included: true },
       { label: "Painel Financeiro Consolidado completo", included: true },
       { label: "Link da Dívida + Cofre de Comprovantes Pix", included: true },
-      { label: "Termômetro da Gruta e Raio-X Comportamental", included: true },
+      { label: "Termômetro da Gruta (Risco Geral)", included: true },
+      { label: "Raio-X Comportamental e Score da Presa", included: true },
+      { label: "Mural de Caôs e Desculpas Furadas", included: true },
     ],
   },
 ];
@@ -370,6 +378,13 @@ export function PlansShowcaseSection() {
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 pt-1">
                   <Button
                     render={<Link href="/cadastrar" />}
+                    onClick={() =>
+                      trackPlanIntent(
+                        currentShark.slug,
+                        currentShark.name,
+                        "landing_plans_stepper"
+                      )
+                    }
                     size="lg"
                     className="bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold rounded-xl h-11 px-5 sm:px-6 text-xs sm:text-sm cursor-pointer justify-center w-full sm:w-auto"
                   >
@@ -472,6 +487,13 @@ export function PlansShowcaseSection() {
                   <div className="pt-2">
                     <Button
                       render={<Link href="/cadastrar" />}
+                      onClick={() =>
+                        trackPlanIntent(
+                          plan.slug,
+                          plan.name,
+                          "landing_plans_carousel"
+                        )
+                      }
                       size="lg"
                       className={
                         plan.isFeatured

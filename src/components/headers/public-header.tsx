@@ -22,13 +22,47 @@ import {
   FaCrown,
   FaArrowRight,
   FaRightToBracket,
+  FaCompass,
+  FaWhatsapp,
+  FaQrcode,
+  FaBoxesStacked,
+  FaBookOpen,
 } from "react-icons/fa6";
+import { trackAccountIntent, trackLoginIntent } from "@/commons/utils/analytics";
 
-const LANDING_NAV_LINKS = [
-  { href: "#central-gruta", label: "Central da Gruta" },
-  { href: "#armas-whatsapp", label: "Armas de WhatsApp" },
-  { href: "#portal-devedor", label: "Link do Devedor" },
-  { href: "#arsenal", label: "Recursos" },
+const RESOURCE_LINKS = [
+  {
+    href: "#central-gruta",
+    title: "Central da Gruta",
+    description: "Visão panorâmica de prazos e acompanhamento de presas.",
+    icon: FaCompass,
+    iconColor: "text-amber-400",
+  },
+  {
+    href: "#armas-whatsapp",
+    title: "Armas de WhatsApp",
+    description: "Cobrança ágil em 3 níveis com mensagens prontas.",
+    icon: FaWhatsapp,
+    iconColor: "text-emerald-400",
+  },
+  {
+    href: "#portal-devedor",
+    title: "Link do Devedor",
+    description: "Fatura externa com código Pix Copia e Cola em 1 clique.",
+    icon: FaQrcode,
+    iconColor: "text-sky-400",
+  },
+  {
+    href: "#arsenal",
+    title: "Recursos da Gruta",
+    description: "Juros automáticos, arquivo de comprovantes e controle total.",
+    icon: FaBoxesStacked,
+    iconColor: "text-purple-400",
+  },
+];
+
+const DIRECT_NAV_LINKS = [
+  { href: "#comparativo", label: "Caderninho vs. Gruta" },
   { href: "#planos", label: "Planos" },
   { href: "#faq", label: "Dúvidas" },
 ];
@@ -111,7 +145,50 @@ export function PublicHeader({ isLoggedIn = false }: PublicHeaderProps) {
         <div className="hidden lg:flex items-center">
           <NavigationMenu>
             <NavigationMenuList className="gap-1">
-              {LANDING_NAV_LINKS.map((link) => (
+              {/* Dropdown de Recursos da Gruta */}
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className="px-2.5 py-1.5 text-xs font-mono text-zinc-400 hover:text-white hover:bg-zinc-900 data-popup-open:bg-zinc-900 data-popup-open:text-white data-open:bg-zinc-900 data-open:text-white">
+                  Recursos
+                </NavigationMenuTrigger>
+                <NavigationMenuContent className="p-3 w-[340px] sm:w-[380px] bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl">
+                  <div className="space-y-1">
+                    <div className="px-2 py-1.5 text-[11px] font-mono font-bold text-zinc-500 uppercase tracking-wider">
+                      Arsenal de Cobrança
+                    </div>
+                    {RESOURCE_LINKS.map((res) => {
+                      const Icon = res.icon;
+
+                      return (
+                        <NavigationMenuLink
+                          key={res.href}
+                          render={
+                            <a
+                              href={resolveLinkHref(res.href)}
+                              onClick={(e) => handleAnchorClick(e, res.href)}
+                            />
+                          }
+                          className="flex items-start gap-3 p-2.5 rounded-xl transition-all cursor-pointer group hover:bg-zinc-900/80 text-zinc-300 hover:text-white"
+                        >
+                          <div className="size-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 mt-0.5 group-hover:border-zinc-700">
+                            <Icon className={cn("size-4", res.iconColor)} />
+                          </div>
+                          <div className="space-y-0.5 min-w-0">
+                            <span className="font-heading text-xs font-bold text-white block">
+                              {res.title}
+                            </span>
+                            <span className="text-[11px] font-mono text-zinc-400 leading-tight block">
+                              {res.description}
+                            </span>
+                          </div>
+                        </NavigationMenuLink>
+                      );
+                    })}
+                  </div>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+
+              {/* Links Diretos */}
+              {DIRECT_NAV_LINKS.map((link) => (
                 <NavigationMenuItem key={link.href}>
                   <NavigationMenuLink
                     render={
@@ -188,6 +265,7 @@ export function PublicHeader({ isLoggedIn = false }: PublicHeaderProps) {
           ) : (
             <Link
               href="/entrar"
+              onClick={() => trackLoginIntent("header_desktop")}
               className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 text-xs font-mono text-zinc-300 hover:text-white hover:bg-zinc-900 rounded-xl transition-all"
             >
               <FaUser className="size-3 text-zinc-400" />
@@ -220,7 +298,23 @@ export function PublicHeader({ isLoggedIn = false }: PublicHeaderProps) {
               Navegação
             </span>
             <div className="grid grid-cols-1 gap-1">
-              {LANDING_NAV_LINKS.map((link) => (
+              <span className="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-wider block px-2 pt-1">
+                Recursos
+              </span>
+              {RESOURCE_LINKS.map((link) => (
+                <a
+                  key={link.href}
+                  href={resolveLinkHref(link.href)}
+                  onClick={(e) => handleAnchorClick(e, link.href)}
+                  className="px-3 py-2 text-xs font-mono text-zinc-300 hover:text-white hover:bg-zinc-900 rounded-lg transition-colors block"
+                >
+                  {link.title}
+                </a>
+              ))}
+              <span className="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-wider block px-2 pt-2">
+                Comparativo & Planos
+              </span>
+              {DIRECT_NAV_LINKS.map((link) => (
                 <a
                   key={link.href}
                   href={resolveLinkHref(link.href)}
@@ -268,7 +362,10 @@ export function PublicHeader({ isLoggedIn = false }: PublicHeaderProps) {
             <div className="pt-3 border-t border-zinc-800/80 grid grid-cols-2 gap-2">
               <Link
                 href="/entrar"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  trackLoginIntent("header_mobile");
+                }}
                 className="inline-flex items-center justify-center gap-2 h-10 px-4 text-xs font-mono text-zinc-300 hover:text-white bg-zinc-900 border border-zinc-800 rounded-xl transition-all"
               >
                 <FaUser className="size-3.5 text-zinc-400" />
@@ -276,7 +373,10 @@ export function PublicHeader({ isLoggedIn = false }: PublicHeaderProps) {
               </Link>
               <Link
                 href="/cadastrar"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  trackAccountIntent("header_mobile", "Criar Gruta");
+                }}
                 className="inline-flex items-center justify-center gap-2 h-10 px-4 text-xs font-heading font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl transition-all"
               >
                 <span>Criar Gruta</span>

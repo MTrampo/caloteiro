@@ -16,6 +16,7 @@ import {
   FaTriangleExclamation,
   FaWhatsapp,
 } from "react-icons/fa6";
+import { trackSimulator } from "@/commons/utils/analytics";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -89,6 +90,7 @@ export function GrottoCommandSimulation() {
   const triggerPixSettlement = React.useCallback((settled: boolean) => {
     setIsSettledDemo(settled);
     setActionToast(null);
+    trackSimulator("grotto_demo", settled ? "simulate_pix_settled" : "undo_pix_settled");
 
     const counters = {
       open: settled ? 2450 : 1850,
@@ -201,6 +203,7 @@ export function GrottoCommandSimulation() {
   );
 
   const handleManualExcuse = () => {
+    trackSimulator("grotto_demo", "add_excuse_demo");
     setActionToast(
       "Caô registrado no histórico da parcela! O Tubarão guarda cada desculpa com data e hora."
     );
@@ -262,8 +265,7 @@ export function GrottoCommandSimulation() {
 
           {/* Botão Interativo de Cenário (100% Width no Mobile para toque rápido) */}
           <div className="flex items-center gap-3 w-full sm:w-auto self-start lg:self-auto">
-            <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-zinc-400">
-              <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="hidden sm:block text-xs font-mono text-zinc-400">
               <span>Painel interativo ao vivo:</span>
             </div>
 
@@ -410,11 +412,12 @@ export function GrottoCommandSimulation() {
                   triggerPixSettlement(true);
                 }}
                 onAddExcuse={handleManualExcuse}
-                onViewReceipt={() =>
+                onViewReceipt={() => {
+                  trackSimulator("grotto_demo", "view_receipt_demo");
                   setActionToast(
                     "Comprovante Pix verificado e arquivado no cofre da parcela #2!"
-                  )
-                }
+                  );
+                }}
               />
             </div>
           </div>

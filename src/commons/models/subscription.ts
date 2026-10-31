@@ -37,6 +37,7 @@ export interface Subscription {
   id: string;
   user_id: string;
   plan_id?: string | null;
+  scheduled_plan_id?: string | null;
   mp_subscription_id?: string | null;
   mp_payer_id?: number | null;
   mp_payer_email?: string | null;
@@ -47,6 +48,7 @@ export interface Subscription {
   created_at?: string | null;
   updated_at?: string | null;
   plan?: Plan | null;
+  scheduled_plan?: Plan | null;
 }
 
 export interface SubscriptionPayloadCookie {
@@ -83,6 +85,9 @@ export interface UserPlanLimits {
   planName: string;
   isFreePlan: boolean;
   canRiskScore?: boolean;
+  scheduledPlanName?: string | null;
+  scheduledPlanSlug?: string | null;
+  scheduledPeriodEnd?: string | null;
 }
 
 /**
@@ -105,6 +110,8 @@ export interface PlanChangeResult {
   effectiveNextBilling: boolean;
   isFreePlan: boolean;
   initPoint?: string | null;
+  scheduledPeriodEnd?: string | null;
+  message?: string;
 }
 
 /**

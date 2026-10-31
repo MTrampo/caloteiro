@@ -8,6 +8,7 @@ import type {
   UserPermissions,
 } from "@/commons/models/subscription";
 import type { SubscriptionCancellation } from "@/commons/models/payment";
+import { updateProfileAvatarSupabase } from "./auth.supabase";
 
 async function getClient() {
   try {
@@ -29,7 +30,9 @@ export const getSubscriptionByUserIdSupabase = async (
 
   const { data, error } = await supabase
     .from("subscriptions")
-    .select("*, plan:plans(*, config_plan:config_plans(*))")
+    .select(
+      "*, plan:plans!subscriptions_plan_id_fkey(*, config_plan:config_plans(*)), scheduled_plan:plans!subscriptions_scheduled_plan_id_fkey(*, config_plan:config_plans(*))"
+    )
     .eq("user_id", userId)
     .maybeSingle();
 
@@ -50,7 +53,9 @@ export const getSubscriptionByMpSubscriptionIdSupabase = async (
 
   const { data, error } = await supabase
     .from("subscriptions")
-    .select("*, plan:plans(*, config_plan:config_plans(*))")
+    .select(
+      "*, plan:plans!subscriptions_plan_id_fkey(*, config_plan:config_plans(*)), scheduled_plan:plans!subscriptions_scheduled_plan_id_fkey(*, config_plan:config_plans(*))"
+    )
     .eq("mp_subscription_id", mpSubscriptionId)
     .maybeSingle();
 
@@ -68,8 +73,9 @@ export const upsertSubscriptionSupabase = async (
   payload: Partial<Subscription> & { user_id: string; base_value?: number }
 ) => {
   const supabase = await getClient();
-  const { plan: _plan, ...cleanPayload } = payload;
+  const { plan: _plan, scheduled_plan: _scheduledPlan, ...cleanPayload } = payload;
   void _plan;
+  void _scheduledPlan;
 
   const { data, error } = await supabase
     .from("subscriptions")
@@ -95,8 +101,9 @@ export const updateSubscriptionByIdSupabase = async (
   payload: Partial<Subscription>
 ) => {
   const supabase = await getClient();
-  const { plan: _plan, ...subscriptionColumns } = payload;
+  const { plan: _plan, scheduled_plan: _scheduledPlan, ...subscriptionColumns } = payload;
   void _plan;
+  void _scheduledPlan;
 
   const { data, error } = await supabase
     .from("subscriptions")
@@ -149,10 +156,52 @@ export const getUserPermissionsByUserIdSupabase = async (
   };
 
   try {
-    const subscription = await getSubscriptionByUserIdSupabase(userId);
+    let subscription = await getSubscriptionByUserIdSupabase(userId);
 
     if (!subscription) {
       return fallbackPermissions;
+    }
+
+    // ⚡ RESOLUÇÃO LAZY EM TEMPO REAL:
+    // Se o usuário possui um downgrade agendado e o período vigente expirou:
+    if (subscription.scheduled_plan_id) {
+      const isPeriodExpired =
+        !subscription.current_period_end ||
+        new Date(subscription.current_period_end).getTime() <= Date.now();
+
+      if (isPeriodExpired) {
+        const scheduledPlan =
+          subscription.scheduled_plan ??
+          (await getPlanByIdSupabase(subscription.scheduled_plan_id));
+
+        if (scheduledPlan) {
+          const isTargetFree =
+            scheduledPlan.slug === "tubarao-lixa" ||
+            Number(scheduledPlan.price) === 0;
+
+          await updateSubscriptionByIdSupabase(subscription.id, {
+            plan_id: scheduledPlan.id,
+            scheduled_plan_id: null,
+            base_value: isTargetFree ? 0 : Number(scheduledPlan.price),
+            mp_status: isTargetFree ? "authorized" : subscription.mp_status,
+            current_period_end: isTargetFree ? null : subscription.current_period_end,
+          });
+
+          if (scheduledPlan.slug) {
+            await updateProfileAvatarSupabase(userId, scheduledPlan.slug);
+          }
+
+          subscription = {
+            ...subscription,
+            plan_id: scheduledPlan.id,
+            scheduled_plan_id: null,
+            plan: scheduledPlan,
+            base_value: isTargetFree ? 0 : Number(scheduledPlan.price),
+            mp_status: isTargetFree ? "authorized" : subscription.mp_status,
+            current_period_end: isTargetFree ? null : subscription.current_period_end,
+          };
+        }
+      }
     }
 
     const isActive =

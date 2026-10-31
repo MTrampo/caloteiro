@@ -8,14 +8,26 @@ import type { DebtWithRelationsRow } from "../repository/tracking.supabase";
 import type { InstallmentRow } from "@/commons/models/debt";
 import type { DebtorRow } from "@/commons/models/debtor";
 import { DebtorRelationshipEnum } from "@/commons/models/debtor";
+import * as subscriptionService from "@/server/account/service/subscription.api";
 
 vi.mock("../repository/tracking.supabase");
+vi.mock("@/server/account/service/subscription.api");
 
 describe("Serviço de Acompanhamento e KPIs (tracking.api.ts)", () => {
   const userId = "tubarao-kpi-user-1";
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue({
+      maxDebtors: null,
+      canAttachReceipts: true,
+      canAccessFinancial: true,
+      canDebtorPortal: true,
+      canRiskScore: true,
+      canCustomTemplates: true,
+      isFreePlan: false,
+      isSubscriptionActive: true,
+    });
   });
 
   const createFakeDebtor = (id: string, name: string, nickname: string | null = null): DebtorRow => ({
@@ -400,6 +412,103 @@ describe("Serviço de Acompanhamento e KPIs (tracking.api.ts)", () => {
       const res = await getTrackingDataApi({ userId, sortBy: "late_first" });
 
       expect(res.paginated.items[0].debtorName).toBe("Zico do Churrasco");
+    });
+
+    it("BLINDAGEM DA JAULA: deve marcar dívidas excedentes de maior valor com isLocked = true e expurgar dos contadores", async () => {
+      // Plano com limite de 1 dívida ativa
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue({
+        maxDebtors: 1,
+        canAttachReceipts: false,
+        canAccessFinancial: false,
+        canDebtorPortal: false,
+        canRiskScore: false,
+        canCustomTemplates: false,
+        isFreePlan: true,
+        isSubscriptionActive: true,
+      });
+
+      const debts: DebtWithRelationsRow[] = [
+        {
+          id: "d-cara",
+          user_id: userId,
+          debtor_id: "debtor-1",
+          title: "Dívida Cara",
+          category: "personal_loan",
+          original_amount: 5000,
+          total_amount: 5000,
+          installments_count: 1,
+          payment_method: "pix",
+          loan_date: "2026-08-01",
+          first_due_date: "2026-09-01",
+          interest_type: "none",
+          interest_rate: 0,
+          status: "pending",
+          settled_at: null,
+          notes: null,
+          max_late_installments: null,
+          show_notes_on_invoice: false,
+          loan_receipt_path: null,
+          public_link_enabled: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          debtor: createFakeDebtor("debtor-1", "Devedor Rico"),
+          installments: [
+            createFakeInstallment("inst-cara", "d-cara", 1, 5000, 0, "2026-09-01"),
+          ],
+        },
+        {
+          id: "d-barata",
+          user_id: userId,
+          debtor_id: "debtor-2",
+          title: "Dívida Barata",
+          category: "personal_loan",
+          original_amount: 100,
+          total_amount: 100,
+          installments_count: 1,
+          payment_method: "pix",
+          loan_date: "2026-08-01",
+          first_due_date: "2026-09-01",
+          interest_type: "none",
+          interest_rate: 0,
+          status: "pending",
+          settled_at: null,
+          notes: null,
+          max_late_installments: null,
+          show_notes_on_invoice: false,
+          loan_receipt_path: null,
+          public_link_enabled: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          debtor: createFakeDebtor("debtor-2", "Devedor Barato"),
+          installments: [
+            createFakeInstallment("inst-barata", "d-barata", 1, 100, 0, "2026-09-01"),
+          ],
+        },
+      ];
+
+      vi.mocked(trackingSupabase.getActiveDebtsWithRelationsSupabase).mockResolvedValue(debts);
+      vi.mocked(trackingSupabase.getInstallmentIdsWithExcusesSupabase).mockResolvedValue(new Set());
+
+      const res = await getTrackingDataApi({ userId });
+
+      // Total de itens na lista paginada = 2 (ambos aparecem)
+      expect(res.paginated.items.length).toBe(2);
+
+      const caraItem = res.paginated.items.find((i) => i.id === "d-cara");
+      const barataItem = res.paginated.items.find((i) => i.id === "d-barata");
+
+      // A de maior valor DEVE estar trancada na jaula
+      expect(caraItem?.isLocked).toBe(true);
+      expect(caraItem?.lockedReason).toContain("Presa trancada na jaula");
+
+      // A de menor valor DEVE estar liberada
+      expect(barataItem?.isLocked).toBe(false);
+
+      // Os contadores oficiais devem contar APENAS a liberada (1) e ignorar a trancada
+      expect(res.paginated.counts.open).toBe(1);
+      expect(res.paginated.lockedQuotaSummary?.isOverQuota).toBe(true);
+      expect(res.paginated.lockedQuotaSummary?.lockedDebtsCount).toBe(1);
+      expect(res.paginated.lockedQuotaSummary?.lockedTotalAmount).toBe(5000);
     });
   });
 });

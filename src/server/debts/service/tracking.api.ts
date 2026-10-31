@@ -15,6 +15,8 @@ import type {
   GetPromisesQueryPayload,
 } from "@/commons/models/tracking";
 import { getNameInitials, calculateDaysDifference } from "@/commons/utils/format";
+import { getUserPermissionsOrCacheApi } from "@/server/account/service/subscription.api";
+import { partitionDebtsByQuota } from "./debt-quota.api";
 
 interface ProcessedPromiseDebt {
   promise: PromiseItemFormatted;
@@ -238,7 +240,12 @@ export const getTrackingDataApi = async (
   } = payload;
 
   const tab = normalizeTab(rawTab);
-  const debtsRaw = await getActiveDebtsWithRelationsSupabase(userId);
+  const [permissions, debtsRaw] = await Promise.all([
+    getUserPermissionsOrCacheApi(userId),
+    getActiveDebtsWithRelationsSupabase(userId),
+  ]);
+
+  const quotaPartition = partitionDebtsByQuota(debtsRaw, permissions.maxDebtors);
 
   // Coleta IDs de parcelas para buscar desculpas registradas
   const allInstallmentIds: string[] = [];
@@ -267,6 +274,11 @@ export const getTrackingDataApi = async (
       maxLateDays,
     } = processDebtGravityAndStatus(debt, excusesSet);
 
+    const isLocked = quotaPartition.lockedDebtIds.has(debt.id);
+    const lockedReason = isLocked
+      ? "Presa trancada na jaula! Esta dívida possui maior valor em aberto e foi bloqueada devido ao limite do seu plano atual."
+      : undefined;
+
     processed.push({
       promise: {
         id: debt.id,
@@ -281,28 +293,32 @@ export const getTrackingDataApi = async (
         gravity,
         url: `/painel/dividas/${debt.id}`,
         createdAt: debt.created_at || new Date().toISOString(),
+        isLocked,
+        lockedReason,
       },
       nextDueDate,
       maxLateDays,
     });
   }
 
-  // 1. Contagens reais para os badges das abas
+  // 1. Contagens para os badges das abas (expurga as dívidas trancadas dos KPIs oficiais)
+  const allowedProcessed = processed.filter((p) => !p.promise.isLocked);
+
   const counts: TrackingCounts = {
-    open: processed.length,
-    onTime: processed.filter((p) => p.promise.gravity === "ON_TIME").length,
-    overdue: processed.filter(
+    open: allowedProcessed.length,
+    onTime: allowedProcessed.filter((p) => p.promise.gravity === "ON_TIME").length,
+    overdue: allowedProcessed.filter(
       (p) =>
         p.promise.gravity === "LIGHT_DELAY" ||
         p.promise.gravity === "STANDARD_EXCUSE"
     ).length,
-    defaulted: processed.filter(
+    defaulted: allowedProcessed.filter(
       (p) => p.promise.gravity === "BROKEN_AGREEMENT"
     ).length,
   };
 
-  // 2. Summary Cards Data
-  const summary = buildSummaryCards(processed);
+  // 2. Summary Cards Data (calculado somente sobre as ativas liberadas)
+  const summary = buildSummaryCards(allowedProcessed);
 
   // 3. Filtragem por Aba
   let filtered = processed.filter(({ promise }) => {
@@ -386,6 +402,12 @@ export const getTrackingDataApi = async (
       limit,
       hasMore,
       counts,
+      lockedQuotaSummary: {
+        lockedDebtsCount: quotaPartition.lockedDebtsCount,
+        lockedTotalAmount: quotaPartition.lockedTotalAmount,
+        isOverQuota: quotaPartition.isOverQuota,
+        maxAllowed: quotaPartition.maxAllowed,
+      },
     },
   };
 };

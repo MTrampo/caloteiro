@@ -356,7 +356,7 @@ export function RealFeaturesBento() {
                   Parcela 1 de 5 • R$ 300,00
                 </span>
                 <span className="text-[11px] text-emerald-400 block mt-0.5">
-                  Liquidada com recibo WebP
+                  Liquidada com comprovante
                 </span>
               </div>
               <span className="self-start sm:self-auto inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-emerald-500/30 text-emerald-400 bg-emerald-500/10 font-bold text-[11px] shrink-0">
@@ -395,7 +395,7 @@ export function RealFeaturesBento() {
         {/* Cabeçalho da Seção (Regra 7) */}
         <div className="space-y-2 max-w-2xl">
           <h2 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-white">
-            Frio nos números. Ácido na cobrança.
+            Frio nos números. Letal na cobrança.
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 font-mono leading-relaxed">
             Veja como o motor financeiro calcula suas parcelas, abate pagamentos

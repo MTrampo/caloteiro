@@ -104,6 +104,29 @@ export const getDebtByIdSupabase = async (
 };
 
 /**
+ * Remove uma dívida por ID com isolamento por usuário (cascata automática nas parcelas e pagamentos)
+ */
+export const deleteDebtSupabase = async (
+  debtId: string,
+  userId: string
+): Promise<{ success: boolean; error: string | null }> => {
+  const supabase = await serverSupabase();
+
+  const { error } = await supabase
+    .from("debts")
+    .delete()
+    .eq("id", debtId)
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("[deleteDebtSupabase] Erro ao deletar dívida:", error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true, error: null };
+};
+
+/**
  * Busca parcelas de uma dívida ordenadas pelo número da parcela
  */
 export const getInstallmentsByDebtIdSupabase = async (

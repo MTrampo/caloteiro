@@ -65,7 +65,7 @@ const PLANS_DATA: PlanItem[] = [
     price: "R$ 49,90",
     period: "por mês",
     description:
-      "O topo da cadeia alimentar. Presas e dívidas ilimitadas na gruta, com Termômetro da Gruta (/painel/termometro), Score da Mordida Exploratória e Raio-X comportamental.",
+      "O topo da cadeia alimentar. Presas e dívidas ilimitadas na gruta, com Termômetro da Gruta, Score da Mordida Exploratória e Raio-X comportamental.",
     borderClass: "border-emerald-500/50 ring-1 ring-emerald-500/30 bg-card",
     badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     isPro: true,
@@ -163,7 +163,7 @@ const COMPARISON_CATEGORIES: ComparisonCategory[] = [
     rows: [
       {
         label: "3 Níveis de Mensagens no WhatsApp",
-        description: "Disparos automáticos: Lembrete (Nível 1), Ácido (Nível 2) e Tio Patinhas (Nível 3)",
+        description: "Disparos automáticos: Lembrete (Nível 1), Cobrança Direta (Nível 2) e Tio Patinhas (Nível 3)",
         lixa: "Modelos Prontos",
         branco: "100% Editáveis",
         chato: "100% Editáveis",
@@ -210,7 +210,7 @@ const COMPARISON_CATEGORIES: ComparisonCategory[] = [
         chato: true,
       },
       {
-        label: "Cofre de Comprovantes Pix (WebP)",
+        label: "Cofre de Comprovantes Pix",
         description: "Anexo permanente de prints e recibos de pagamento nas parcelas",
         lixa: false,
         branco: true,
@@ -223,7 +223,7 @@ const COMPARISON_CATEGORIES: ComparisonCategory[] = [
     categoryIcon: FaGaugeHigh,
     rows: [
       {
-        label: "Termômetro da Gruta (/painel/termometro)",
+        label: "Termômetro da Gruta",
         description: "Visão consolidada da carteira, velocímetro geral de risco e diagnóstico financeiro de calote",
         lixa: false,
         branco: false,
@@ -237,14 +237,21 @@ const COMPARISON_CATEGORIES: ComparisonCategory[] = [
         chato: true,
       },
       {
-        label: "Raio-X Comportamental da Presa (/painel/devedores/[id])",
-        description: "Extrato de cicatrização e sangramento de pontos, mural de caôs e armas automáticas",
+        label: "Raio-X Comportamental da Presa",
+        description: "Extrato profundo de cicatrização e sangramento de reputação por histórico de atrasos",
         lixa: false,
         branco: false,
         chato: true,
       },
       {
-        label: "Veredito Ácido da Gruta",
+        label: "Mural de Caôs e Desculpas",
+        description: "Histórico carimbado com data e hora de cada promessa furada registrada na cobrança",
+        lixa: false,
+        branco: false,
+        chato: true,
+      },
+      {
+        label: "Veredito da Gruta",
         description: "Diagnósticos e alertas afiados sem rodeios para o Tubarão tomar postura e agir rápido",
         lixa: false,
         branco: false,

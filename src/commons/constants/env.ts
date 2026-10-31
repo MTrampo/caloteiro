@@ -7,3 +7,5 @@ export const DEV_TUNNEL_URL = process.env.DEV_TUNNEL_URL;
 export const RESEND_API_KEY = process.env.RESEND_API_KEY || "re_placeholder_for_build";
 export const RESEND_FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL || "Caloteiro <naoresponda@meutrampo.dev.br>";
+export const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "";
+

@@ -10,7 +10,9 @@ export const webhookGetSubscriptionByIdSupabase = async (
   const supabase = internalSupabase();
   const { data } = await supabase
     .from("subscriptions")
-    .select("*, plan:plans(*, config_plan:config_plans(*))")
+    .select(
+      "*, plan:plans!subscriptions_plan_id_fkey(*, config_plan:config_plans(*)), scheduled_plan:plans!subscriptions_scheduled_plan_id_fkey(*, config_plan:config_plans(*))"
+    )
     .eq("id", id)
     .maybeSingle();
 
@@ -23,7 +25,9 @@ export const webhookGetSubscriptionByPayerEmailSupabase = async (
   const supabase = internalSupabase();
   const { data } = await supabase
     .from("subscriptions")
-    .select("*, plan:plans(*, config_plan:config_plans(*))")
+    .select(
+      "*, plan:plans!subscriptions_plan_id_fkey(*, config_plan:config_plans(*)), scheduled_plan:plans!subscriptions_scheduled_plan_id_fkey(*, config_plan:config_plans(*))"
+    )
     .eq("mp_payer_email", payerEmail)
     .maybeSingle();
 
@@ -36,7 +40,9 @@ export const webhookGetSubscriptionByPayerIdSupabase = async (
   const supabase = internalSupabase();
   const { data } = await supabase
     .from("subscriptions")
-    .select("*, plan:plans(*, config_plan:config_plans(*))")
+    .select(
+      "*, plan:plans!subscriptions_plan_id_fkey(*, config_plan:config_plans(*)), scheduled_plan:plans!subscriptions_scheduled_plan_id_fkey(*, config_plan:config_plans(*))"
+    )
     .eq("mp_payer_id", payerId)
     .maybeSingle();
 
@@ -48,7 +54,8 @@ export const webhookSyncSubscriptionSupabase = async (
   id: string
 ) => {
   const supabase = internalSupabase();
-  const { plan: _ignoredPlan, ...subscriptionColumns } = payload;
+  const { plan: _ignoredPlan, scheduled_plan: _ignoredScheduledPlan, ...subscriptionColumns } = payload;
+  void _ignoredScheduledPlan;
   const { data, error } = await supabase
     .from("subscriptions")
     .update({
@@ -71,7 +78,9 @@ export const webhookGetSubscriptionByMpSubscriptionIdSupabase = async (
   const supabase = internalSupabase();
   const { data } = await supabase
     .from("subscriptions")
-    .select("*, plan:plans(*, config_plan:config_plans(*))")
+    .select(
+      "*, plan:plans!subscriptions_plan_id_fkey(*, config_plan:config_plans(*)), scheduled_plan:plans!subscriptions_scheduled_plan_id_fkey(*, config_plan:config_plans(*))"
+    )
     .eq("mp_subscription_id", mpSubscriptionId)
     .maybeSingle();
 

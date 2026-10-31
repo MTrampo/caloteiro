@@ -182,6 +182,7 @@ describe("Serviço de Assinaturas (subscription.api.ts)", () => {
         mp_subscription_id: null,
         current_period_start: null,
         current_period_end: null,
+        scheduled_plan_id: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -224,6 +225,7 @@ describe("Serviço de Assinaturas (subscription.api.ts)", () => {
         mp_subscription_id: null,
         current_period_start: null,
         current_period_end: null,
+        scheduled_plan_id: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -500,7 +502,7 @@ describe("Serviço de Assinaturas (subscription.api.ts)", () => {
       expect(response.message).toContain("Plano selecionado inválido");
     });
 
-    it("deve processar downgrade para o plano gratuito cancelando preapproval no Mercado Pago", async () => {
+    it("deve agendar downgrade para o plano gratuito cancelando preapproval no Mercado Pago e mantendo plano pago ativo com scheduled_plan_id", async () => {
       const activePaidSub: Subscription = {
         id: "sub-pago-ativo",
         user_id: userId,
@@ -527,14 +529,14 @@ describe("Serviço de Assinaturas (subscription.api.ts)", () => {
         error: null,
       });
       vi.mocked(subscriptionSupabase.getUserPermissionsByUserIdSupabase).mockResolvedValue({
-        maxDebtors: 2,
-        canCustomTemplates: false,
+        maxDebtors: 10,
+        canCustomTemplates: true,
         canExportReports: false,
-        canAccessFinancial: false,
-        canDebtorPortal: false,
+        canAccessFinancial: true,
+        canDebtorPortal: true,
         canRiskScore: false,
         canAttachReceipts: false,
-        isFreePlan: true,
+        isFreePlan: false,
         isSubscriptionActive: true,
       });
       vi.mocked(emailService.sendPlanChangeEmailApi).mockResolvedValue({
@@ -551,26 +553,24 @@ describe("Serviço de Assinaturas (subscription.api.ts)", () => {
       expect(response.status).toBe(HttpStatusEnum.Ok);
       expect(response.data?.isUpgrade).toBe(false);
       expect(response.data?.isFreePlan).toBe(true);
-      expect(response.data?.newPlanName).toBe("Tubarão Lixa");
+      expect(response.data?.effectiveNextBilling).toBe(true);
+      expect(response.data?.scheduledPeriodEnd).toBe(activePaidSub.current_period_end);
 
       // Deve ter cancelado no Mercado Pago
       expect(paymentService.cancelPreApprovalApi).toHaveBeenCalledWith("mp-sub-12345");
 
-      // Deve ter atualizado para plano gratuito no banco
+      // Deve ter gravado o agendamento em scheduled_plan_id sem sobrescrever plan_id prematuramente
       expect(subscriptionSupabase.updateSubscriptionByIdSupabase).toHaveBeenCalledWith(
         "sub-pago-ativo",
         expect.objectContaining({
-          plan_id: freePlan.id,
-          base_value: 0,
-          mp_status: "authorized",
+          scheduled_plan_id: freePlan.id,
+          mp_status: "cancelled",
+          mp_subscription_id: null,
         })
       );
 
-      // Deve ter atualizado o avatar do perfil para a espécie do plano gratuito
-      expect(authSupabase.updateProfileAvatarSupabase).toHaveBeenCalledWith(
-        userId,
-        freePlan.slug
-      );
+      // Não troca o avatar ainda (o usuário continua usando os benefícios do plano pago até a expiração)
+      expect(authSupabase.updateProfileAvatarSupabase).not.toHaveBeenCalled();
 
       // Deve ter disparado e-mail de alteração
       expect(emailService.sendPlanChangeEmailApi).toHaveBeenCalledWith(
@@ -581,6 +581,72 @@ describe("Serviço de Assinaturas (subscription.api.ts)", () => {
           newPrice: 0,
         })
       );
+    });
+
+    it("deve processar downgrade imediato para o plano gratuito quando não houver período futuro ativo", async () => {
+      const expiredPaidSub: Subscription = {
+        id: "sub-pago-expirado",
+        user_id: userId,
+        plan_id: paidPlanBranco.id,
+        base_value: 29.90,
+        mp_status: "authorized",
+        mp_subscription_id: "mp-sub-exp",
+        mp_payer_email: userEmail,
+        mp_payer_id: null,
+        current_period_start: null,
+        current_period_end: null, // Sem período ativo
+        plan: paidPlanBranco,
+      };
+
+      vi.mocked(subscriptionSupabase.getPlanByIdSupabase).mockResolvedValue(freePlan);
+      vi.mocked(subscriptionSupabase.getSubscriptionByUserIdSupabase).mockResolvedValue(expiredPaidSub);
+      vi.mocked(paymentService.cancelPreApprovalApi).mockResolvedValue({
+        status: 200,
+        message: "OK",
+        data: null,
+      });
+      vi.mocked(subscriptionSupabase.updateSubscriptionByIdSupabase).mockResolvedValue({
+        data: null,
+        error: null,
+      });
+      vi.mocked(subscriptionSupabase.getUserPermissionsByUserIdSupabase).mockResolvedValue({
+        maxDebtors: 2,
+        canCustomTemplates: false,
+        canExportReports: false,
+        canAccessFinancial: false,
+        canDebtorPortal: false,
+        canRiskScore: false,
+        canAttachReceipts: false,
+        isFreePlan: true,
+        isSubscriptionActive: false,
+      });
+      vi.mocked(emailService.sendPlanChangeEmailApi).mockResolvedValue({
+        success: true,
+        id: "email-change-exp",
+      });
+
+      const response = await changeSubscriptionPlanApi({
+        userId,
+        userEmail,
+        targetPlanId: freePlan.id,
+      });
+
+      expect(response.status).toBe(HttpStatusEnum.Ok);
+      expect(response.data?.isFreePlan).toBe(true);
+      expect(response.data?.effectiveNextBilling).toBe(false);
+
+      expect(subscriptionSupabase.updateSubscriptionByIdSupabase).toHaveBeenCalledWith(
+        "sub-pago-expirado",
+        expect.objectContaining({
+          plan_id: freePlan.id,
+          scheduled_plan_id: null,
+          base_value: 0,
+          mp_status: "authorized",
+          current_period_end: null,
+        })
+      );
+
+      expect(authSupabase.updateProfileAvatarSupabase).toHaveBeenCalledWith(userId, freePlan.slug);
     });
 
     it("deve processar migração entre planos pagos chamando updatePreApprovalPlanOrPriceApi e enviando e-mail de faturamento", async () => {
@@ -836,7 +902,76 @@ describe("Serviço de Assinaturas (subscription.api.ts)", () => {
       expect(response.data?.initPoint).toBe("https://mercadopago.com/checkout/recontratacao");
     });
 
-    it("REGRESSÃO: downgrade para plano gratuito deve zerar mp_subscription_id e current_period_end no banco", async () => {
+    it("deve agendar downgrade entre planos pagos com scheduled_plan_id mantendo o plano superior ativo até o fim do ciclo", async () => {
+      const activeCabecaChatoSub: Subscription = {
+        id: "sub-chato-ativo",
+        user_id: userId,
+        plan_id: paidPlanCabecaChato.id,
+        base_value: 49.90,
+        mp_status: "authorized",
+        mp_subscription_id: "mp-sub-chato-id",
+        mp_payer_email: userEmail,
+        mp_payer_id: null,
+        current_period_start: null,
+        current_period_end: new Date(Date.now() + 86400000).toISOString(),
+        plan: paidPlanCabecaChato,
+      };
+
+      vi.mocked(subscriptionSupabase.getPlanByIdSupabase).mockResolvedValue(paidPlanBranco);
+      vi.mocked(subscriptionSupabase.getSubscriptionByUserIdSupabase).mockResolvedValue(activeCabecaChatoSub);
+      vi.mocked(paymentService.updatePreApprovalPlanOrPriceApi).mockResolvedValue({
+        status: 200,
+        message: "OK",
+        data: null,
+      });
+      vi.mocked(subscriptionSupabase.updateSubscriptionByIdSupabase).mockResolvedValue({
+        data: null,
+        error: null,
+      });
+      vi.mocked(subscriptionSupabase.getUserPermissionsByUserIdSupabase).mockResolvedValue({
+        maxDebtors: null,
+        canCustomTemplates: true,
+        canExportReports: false,
+        canAccessFinancial: true,
+        canDebtorPortal: true,
+        canRiskScore: true,
+        canAttachReceipts: true,
+        isFreePlan: false,
+        isSubscriptionActive: true,
+      });
+      vi.mocked(emailService.sendPlanChangeEmailApi).mockResolvedValue({
+        success: true,
+        id: "email-change-downgrade-pago",
+      });
+
+      const response = await changeSubscriptionPlanApi({
+        userId,
+        userEmail,
+        targetPlanId: paidPlanBranco.id,
+      });
+
+      expect(response.status).toBe(HttpStatusEnum.Ok);
+      expect(response.data?.isUpgrade).toBe(false);
+      expect(response.data?.effectiveNextBilling).toBe(true);
+      expect(response.data?.scheduledPeriodEnd).toBe(activeCabecaChatoSub.current_period_end);
+
+      // Deve atualizar o valor da próxima fatura no Mercado Pago
+      expect(paymentService.updatePreApprovalPlanOrPriceApi).toHaveBeenCalledWith(
+        "mp-sub-chato-id",
+        29.90,
+        "Tubarão Branco"
+      );
+
+      // Deve gravar scheduled_plan_id sem sobrescrever plan_id do plano atual
+      expect(subscriptionSupabase.updateSubscriptionByIdSupabase).toHaveBeenCalledWith(
+        "sub-chato-ativo",
+        expect.objectContaining({
+          scheduled_plan_id: paidPlanBranco.id,
+        })
+      );
+    });
+
+    it("REGRESSÃO: downgrade para plano gratuito sem período futuro ativo deve zerar mp_subscription_id e current_period_end no banco", async () => {
       const activePaidSub: Subscription = {
         id: "sub-pago-ativo",
         user_id: userId,
@@ -847,7 +982,7 @@ describe("Serviço de Assinaturas (subscription.api.ts)", () => {
         mp_payer_email: userEmail,
         mp_payer_id: null,
         current_period_start: null,
-        current_period_end: new Date(Date.now() + 86400000).toISOString(),
+        current_period_end: null, // Sem período futuro
         plan: paidPlanBranco,
       };
 
@@ -871,7 +1006,7 @@ describe("Serviço de Assinaturas (subscription.api.ts)", () => {
 
       expect(response.status).toBe(HttpStatusEnum.Ok);
       expect(paymentService.cancelPreApprovalApi).toHaveBeenCalledWith("mp-sub-to-cancel");
-      // Limpeza estrita de estado: zera mp_subscription_id e current_period_end
+      // Limpeza estrita de estado quando não há período ativo
       expect(subscriptionSupabase.updateSubscriptionByIdSupabase).toHaveBeenCalledWith(
         activePaidSub.id,
         expect.objectContaining({

@@ -106,7 +106,7 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
         </span>
       </div>
 
-      {/* 8. Termômetro da Gruta (/painel/termometro) - Exclusivo Tubarão Cabeça Chata */}
+      {/* 8. Termômetro da Gruta - Exclusivo Tubarão Cabeça Chata */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck
           className={`size-3 shrink-0 ${
@@ -120,11 +120,11 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
               : "text-zinc-500 line-through"
           }
         >
-          Termômetro da Gruta (/painel/termometro)
+          Termômetro da Gruta (Risco Geral)
         </span>
       </div>
 
-      {/* 9. Score de Risco da Mordida & Raio-X da Presa - Exclusivo Tubarão Cabeça Chata */}
+      {/* 9. Score de Risco & Raio-X da Presa - Exclusivo Tubarão Cabeça Chata */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck
           className={`size-3 shrink-0 ${
@@ -138,7 +138,25 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
               : "text-zinc-500 line-through"
           }
         >
-          Score de Risco &amp; Raio-X Comportamental
+          Raio-X Comportamental &amp; Score da Presa
+        </span>
+      </div>
+
+      {/* 10. Mural de Caôs e Desculpas - Exclusivo Tubarão Cabeça Chata */}
+      <div className="flex items-center gap-2 text-zinc-300">
+        <FaCheck
+          className={`size-3 shrink-0 ${
+            config?.can_risk_score ? "text-emerald-400" : "text-zinc-600"
+          }`}
+        />
+        <span
+          className={
+            config?.can_risk_score
+              ? "text-white font-bold"
+              : "text-zinc-500 line-through"
+          }
+        >
+          Mural de Caôs e Desculpas Furadas
         </span>
       </div>
 

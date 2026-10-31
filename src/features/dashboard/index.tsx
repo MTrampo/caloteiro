@@ -2,7 +2,8 @@ import { SummaryCardsGrid } from "./components/summary-cards-grid"
 import { PromisesList } from "./components/promises-list"
 import { NewButton } from "@/components/buttons/new-button"
 import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action"
-import { FaFileCirclePlus } from "react-icons/fa6"
+import { FaFileCirclePlus, FaLock } from "react-icons/fa6"
+import Link from "next/link"
 import type {
   TrackingSummaryData,
   PaginatedPromisesResult,
@@ -55,6 +56,33 @@ export function DashboardFeature({
           />
         </div>
       </div>
+
+      {/* Banner da Jaula do Tubarão (quando houver presas excedentes trancadas) */}
+      {initialPaginated?.lockedQuotaSummary?.isOverQuota && (
+        <div className="rounded-2xl border border-rose-900/60 bg-rose-950/30 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm shadow-black/40">
+          <div className="flex items-start gap-3">
+            <div className="size-9 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0 mt-0.5">
+              <FaLock className="size-4" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-heading text-sm sm:text-base font-bold text-white">
+                A Jaula do Tubarão está ativa: {initialPaginated.lockedQuotaSummary.lockedDebtsCount}{" "}
+                {initialPaginated.lockedQuotaSummary.lockedDebtsCount === 1 ? "presa trancada" : "presas trancadas"}
+              </h4>
+              <p className="text-xs font-mono text-zinc-300 leading-relaxed">
+                Seu plano permite manter apenas {initialPaginated.lockedQuotaSummary.maxAllowed} dívida ativa. Suas maiores dívidas (totalizando R${" "}
+                {initialPaginated.lockedQuotaSummary.lockedTotalAmount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}) foram trancadas na jaula e não estão somadas nos totais.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/painel/planos"
+            className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold text-xs shrink-0 transition-colors cursor-pointer w-full sm:w-auto"
+          >
+            Destravar Minhas Presas
+          </Link>
+        </div>
+      )}
 
       {/* Grade com os 4 Summary Cards Reais */}
       <SummaryCardsGrid data={initialSummary} />

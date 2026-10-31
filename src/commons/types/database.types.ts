@@ -674,6 +674,7 @@ export type Database = {
           mp_status: string | null
           mp_subscription_id: string | null
           plan_id: string | null
+          scheduled_plan_id: string | null
           updated_at: string | null
           user_id: string
         }
@@ -688,6 +689,7 @@ export type Database = {
           mp_status?: string | null
           mp_subscription_id?: string | null
           plan_id?: string | null
+          scheduled_plan_id?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -702,6 +704,7 @@ export type Database = {
           mp_status?: string | null
           mp_subscription_id?: string | null
           plan_id?: string | null
+          scheduled_plan_id?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -709,6 +712,13 @@ export type Database = {
           {
             foreignKeyName: "subscriptions_plan_id_fkey"
             columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_scheduled_plan_id_fkey"
+            columns: ["scheduled_plan_id"]
             isOneToOne: false
             referencedRelation: "plans"
             referencedColumns: ["id"]

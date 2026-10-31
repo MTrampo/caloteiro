@@ -206,3 +206,27 @@ export const countDebtorsByUserIdSupabase = async (
   return count || 0;
 };
 
+/**
+ * Retorna o número de dívidas ativas vinculadas a um devedor específico
+ */
+export const countActiveDebtsByDebtorIdSupabase = async (
+  debtorId: string,
+  userId: string
+): Promise<number> => {
+  const supabase = await serverSupabase();
+  const { count, error } = await supabase
+    .from("debts")
+    .select("*", { count: "exact", head: true })
+    .eq("debtor_id", debtorId)
+    .eq("user_id", userId)
+    .neq("status", "settled");
+
+  if (error) {
+    console.error("[countActiveDebtsByDebtorIdSupabase] Erro ao contar dívidas ativas:", error);
+    return 0;
+  }
+
+  return count || 0;
+};
+
+

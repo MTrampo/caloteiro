@@ -145,6 +145,9 @@ const webhookUpdateSubscriptionPreapprovalApi = async (preapproval: PreApprovalR
       resolvedConfig = (matchedPlan.config_plan as unknown as PlanFeaturesConfig) || null;
       payload.plan_id = matchedPlan.id;
       payload.base_value = Number(matchedPlan.price);
+      if (subscription.scheduled_plan_id === matchedPlan.id) {
+        payload.scheduled_plan_id = null;
+      }
     }
   }
 

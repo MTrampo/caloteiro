@@ -90,7 +90,7 @@ export function PlanLimitModal({
             <li className="flex items-start gap-2">
               <FaShieldHalved className="size-3.5 text-rose-400 shrink-0 mt-0.5" />
               <span>
-                <strong className="text-white">Tubarão Cabeça Chato:</strong> presas e dívidas <strong className="text-emerald-400">ilimitadas</strong> na sua gruta, Termômetro da Gruta, Score de Risco da presa e anexo de comprovantes.
+                <strong className="text-white">Tubarão Cabeça Chato:</strong> presas e dívidas <strong className="text-emerald-400">ilimitadas</strong> na sua gruta, Termômetro da Gruta, Raio-X Comportamental, Mural de Caôs e anexo de comprovantes.
               </span>
             </li>
           </ul>

@@ -150,13 +150,19 @@ export function PlanChangeManager({
                       <div className="flex items-start gap-2">
                         <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
                         <span className="text-white font-bold">
-                          Termômetro da Gruta (/painel/termometro)
+                          Termômetro da Gruta (Risco Geral)
                         </span>
                       </div>
                       <div className="flex items-start gap-2">
                         <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
                         <span className="text-white font-bold">
-                          Score de Risco &amp; Raio-X Comportamental da Presa
+                          Raio-X Comportamental &amp; Score da Presa
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
+                        <span className="text-white font-bold">
+                          Mural de Caôs e Desculpas Furadas
                         </span>
                       </div>
                     </>

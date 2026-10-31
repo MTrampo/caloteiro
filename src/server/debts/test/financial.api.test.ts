@@ -5,8 +5,10 @@ import type { FinancialDebtWithRelationsRow } from "../repository/financial.supa
 import type { InstallmentRow } from "@/commons/models/debt";
 import type { DebtorRow } from "@/commons/models/debtor";
 import { formatRelativeDueDate, parseDateOnly } from "@/commons/utils/date-formatter";
+import * as subscriptionService from "@/server/account/service/subscription.api";
 
 vi.mock("../repository/financial.supabase");
+vi.mock("@/server/account/service/subscription.api");
 
 function createMockDebtor(overrides?: Partial<DebtorRow>): DebtorRow {
   return {
@@ -50,6 +52,16 @@ describe("financial.api - Inteligência Financeira do Tubarão", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue({
+      maxDebtors: null,
+      canAttachReceipts: true,
+      canAccessFinancial: true,
+      canDebtorPortal: true,
+      canRiskScore: true,
+      canCustomTemplates: true,
+      isFreePlan: false,
+      isSubscriptionActive: true,
+    });
   });
 
   it("deve retornar estrutura zerada segura quando o usuário não tiver nenhuma dívida cadastrada", async () => {
@@ -455,5 +467,99 @@ describe("financial.api - Inteligência Financeira do Tubarão", () => {
 
     // Deve contabilizar os 2 acordos ativos com status 'pending' do banco (e não 'active')
     expect(result.kpis.emAberto.footnote).toBe("2 acordos ativos na gruta");
+  });
+
+  it("BLINDAGEM DA JAULA: deve expurgar dívidas trancadas dos KPIs e preencher lockedQuotaSummary", async () => {
+    // Usuário no plano Tubarão Lixa (limite 1 dívida)
+    vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue({
+      maxDebtors: 1,
+      canAttachReceipts: false,
+      canAccessFinancial: true,
+      canDebtorPortal: false,
+      canRiskScore: false,
+      canCustomTemplates: false,
+      isFreePlan: true,
+      isSubscriptionActive: true,
+    });
+
+    const mockDebts: FinancialDebtWithRelationsRow[] = [
+      {
+        id: "debt-grande-trancada",
+        user_id: userId,
+        debtor_id: "debtor-1",
+        title: "Dívida Gigante",
+        total_amount: 5000,
+        original_amount: 5000,
+        installments_count: 1,
+        interest_type: "none",
+        interest_rate: 0,
+        status: "pending",
+        loan_date: "2026-08-01",
+        first_due_date: "2026-09-01",
+        category: "other",
+        payment_method: "pix",
+        settled_at: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        debtor: createMockDebtor(),
+        installments: [
+          createMockInstallment({
+            id: "inst-gigante",
+            debt_id: "debt-grande-trancada",
+            nominal_amount: 5000,
+            paid_amount: 0,
+            due_date: "2026-11-01",
+            status: "pending",
+          }),
+        ],
+      },
+      {
+        id: "debt-pequena-liberada",
+        user_id: userId,
+        debtor_id: "debtor-2",
+        title: "Dívida Pequena",
+        total_amount: 150,
+        original_amount: 150,
+        installments_count: 1,
+        interest_type: "none",
+        interest_rate: 0,
+        status: "pending",
+        loan_date: "2026-08-01",
+        first_due_date: "2026-09-01",
+        category: "other",
+        payment_method: "pix",
+        settled_at: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        debtor: createMockDebtor({ id: "debtor-2", name: "Zezinho" }),
+        installments: [
+          createMockInstallment({
+            id: "inst-pequena",
+            debt_id: "debt-pequena-liberada",
+            nominal_amount: 150,
+            paid_amount: 0,
+            due_date: "2026-11-01",
+            status: "pending",
+          }),
+        ],
+      },
+    ];
+
+    vi.mocked(financialSupabase.getFinancialDebtsWithRelationsSupabase).mockResolvedValue(mockDebts);
+    vi.mocked(financialSupabase.getFinancialPaymentsSupabase).mockResolvedValue([]);
+    vi.mocked(financialSupabase.getCreditorPixKeySupabase).mockResolvedValue("tubarao@pix.com");
+
+    const result = await getFinancialAnalyticsApi(userId, "month");
+
+    // O KPI em Aberto deve somar APENAS a dívida de 150 (a liberada), e NÃO a de 5000!
+    expect(result.kpis.emAberto.amount).toBe(150);
+    expect(result.kpis.emAberto.footnote).toContain("1 acordo ativo (⚠️ 1 na jaula)");
+
+    // Locked Quota Summary deve refletir o valor trancado
+    expect(result.lockedQuotaSummary?.isOverQuota).toBe(true);
+    expect(result.lockedQuotaSummary?.lockedDebtsCount).toBe(1);
+    expect(result.lockedQuotaSummary?.lockedTotalAmount).toBe(5000);
   });
 });
