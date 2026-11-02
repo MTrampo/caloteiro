@@ -345,6 +345,60 @@ describe("Serviço do Painel Principal / Central de Comando (home-command.api.ts
       expect(marcosItem).toBeDefined();
       expect(marcosItem?.relativeTimeText).toBe("Pagou hoje");
     });
+
+    it("REGRESSÃO: em dívida com múltiplas parcelas, o pagamento de uma parcela não deve vazar data para parcelas antigas", () => {
+      const now = new Date();
+      const elevenDaysAgo = new Date(now);
+      elevenDaysAgo.setDate(elevenDaysAgo.getDate() - 11);
+
+      const todayDate = new Date(now);
+
+      // Simula o caso real da Cleide com 23 parcelas:
+      // Parcelas 1 a 4 foram quitadas há 11 dias (updated_at antigo).
+      // Parcela 5 foi quitada hoje (updated_at de hoje).
+      // Parcela 6 vence daqui a 4 dias (upcoming).
+      const cleideDebtor = createFakeDebtor("d-cleide", "Cleide Ferreira Silva");
+      const cleideDebt = createFakeDebt("debt-cleide-23", cleideDebtor, [
+        createFakeInstallment("inst-c-1", "debt-cleide-23", 1, 300, 300, getRelativeDate(-40), "paid", elevenDaysAgo.toISOString()),
+        createFakeInstallment("inst-c-2", "debt-cleide-23", 2, 300, 300, getRelativeDate(-30), "paid", elevenDaysAgo.toISOString()),
+        createFakeInstallment("inst-c-3", "debt-cleide-23", 3, 300, 300, getRelativeDate(-20), "paid", elevenDaysAgo.toISOString()),
+        createFakeInstallment("inst-c-4", "debt-cleide-23", 4, 300, 300, getRelativeDate(-10), "paid", elevenDaysAgo.toISOString()),
+        createFakeInstallment("inst-c-5", "debt-cleide-23", 5, 300, 300, getRelativeDate(0), "paid", todayDate.toISOString()),
+        createFakeInstallment("inst-c-6", "debt-cleide-23", 6, 300, 0, getRelativeDate(4), "pending"),
+      ]);
+
+      const recentPayments: RecentDebtPaymentRow[] = [
+        {
+          id: "pay-c-5",
+          debt_id: "debt-cleide-23",
+          debtor_id: "d-cleide",
+          amount: 300,
+          notes: "Baixa da parcela 5",
+          paid_at: todayDate.toISOString(),
+        },
+      ];
+
+      const feed = buildHomeCommandFeed([cleideDebt], {}, undefined, recentPayments);
+
+      // Apenas a parcela 5 deve aparecer como paga recentemente (Pagou hoje)
+      const paidItemsInFeed = feed.filter((item) => item.category === "paid");
+      expect(paidItemsInFeed.length).toBe(1);
+      expect(paidItemsInFeed[0].id).toBe("inst-c-5");
+      expect(paidItemsInFeed[0].installmentText).toBe("Parcela 5 de 6");
+      expect(paidItemsInFeed[0].relativeTimeText).toBe("Pagou hoje");
+
+      // As parcelas 1 a 4 NUNCA devem aparecer no feed
+      const oldPaidItems = feed.filter((item) =>
+        ["inst-c-1", "inst-c-2", "inst-c-3", "inst-c-4"].includes(item.id)
+      );
+      expect(oldPaidItems.length).toBe(0);
+
+      // A parcela 6 pendente a vencer em 4 dias deve aparecer na categoria upcoming
+      const upcomingItem = feed.find((item) => item.id === "inst-c-6");
+      expect(upcomingItem).toBeDefined();
+      expect(upcomingItem?.category).toBe("upcoming");
+      expect(upcomingItem?.relativeTimeText).toBe("Vence em 4 dias");
+    });
   });
 
   describe("getHomeCommandDataApi (Integração e Empty States)", () => {

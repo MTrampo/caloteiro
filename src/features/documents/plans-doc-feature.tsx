@@ -263,6 +263,26 @@ const COMPARISON_CATEGORIES: ComparisonCategory[] = [
 
 const FAQS_DATA: DocFaqItem[] = [
   {
+    question: "Qual é o principal papel do Caloteiro?",
+    answer:
+      "O papel principal do Caloteiro é centralizar todos os seus devedores em um só quartel-general. Chega de anotações no bloco de notas, guardanapos e cobrança de cabeça. Na Gruta, você tem uma visão ampla de recebíveis (o que tem chance real de voltar), do total já recuperado no Pix e do dinheiro que está virando doação involuntária ou lenda urbana, para você nunca mais ser pego de surpresa.",
+  },
+  {
+    question: "O Caloteiro cobra ou envia mensagens para o devedor automaticamente?",
+    answer:
+      "Não. Todo o processo de cobrança é manual e sob total controle do Tubarão. O sistema calcula valores, juros, multas e monta a mensagem personalizada com a sua chave Pix. Você clica para abrir o WhatsApp e decide o momento exato de enviar o recado, sem disparos automáticos ou constrangimentos robóticos.",
+  },
+  {
+    question: "Para quem a plataforma é indicada?",
+    answer:
+      "O Caloteiro foi desenhado para dois públicos centrais: 1) Pessoas Físicas que emprestam dinheiro do próprio bolso para parentes, amigos, conhecidos ou dividem contas e compras; e 2) Autônomos, freelancers e prestadores de serviços que trabalham com pequenos empréstimos, vendem fiado ou parcelam serviços por conta própria e precisam cobrar clientes sem climão nem prejuízo.",
+  },
+  {
+    question: "Existe retenção ou cobrança de comissão sobre o Pix recebido?",
+    answer:
+      "Absolutamente zero. O Caloteiro não é intermediador de pagamentos do Pix das suas dívidas. A chave Pix cadastrada é a sua conta bancária de preferência. Quando o devedor paga, o dinheiro cai 100% limpo na sua conta sem nenhum desconto ou taxa do Caloteiro.",
+  },
+  {
     question: "Como funciona a cobrança na troca de plano?",
     answer:
       "A cobrança de upgrade ou downgrade é processada com total transparência pelo Mercado Pago. Se você está no plano gratuito Tubarão Lixa e faz upgrade para o Tubarão Branco ou Cabeça Chata, a primeira mensalidade é faturada no ato da contratação no Mercado Pago, liberando a nova capacidade da gruta imediatamente. Caso já possua uma assinatura ativa e mude entre planos pagos, o novo valor será aplicado no ciclo faturado subsequente.",
@@ -285,7 +305,7 @@ const FAQS_DATA: DocFaqItem[] = [
   {
     question: "O devedor precisa criar conta ou pagar para ver a fatura dele?",
     answer:
-      "Não. O portal do devedor é público, leve e sem necessidade de cadastro. Ele apenas digita o PIN de segurança fornecido por você para visualizar o extrato, copiar sua chave Pix e acompanhar o saldo devedor atualizado.",
+      "Não. O portal da fatura externa é público, leve e sem necessidade de cadastro ou aplicativo. A fatura é estritamente bloqueada contra motores de busca (Google, Bing) e protegida por um PIN de 4 dígitos informado por você.",
   },
 ];
 

@@ -27,6 +27,7 @@ import {
   FaQrcode,
   FaBoxesStacked,
   FaBookOpen,
+  FaScaleBalanced,
 } from "react-icons/fa6";
 import { trackAccountIntent, trackLoginIntent } from "@/commons/utils/analytics";
 
@@ -74,6 +75,13 @@ const LEGAL_DOC_LINKS = [
     description: "Espécies de tubarão, limites de devedores e matriz de recursos.",
     icon: FaCrown,
     iconColor: "text-amber-400",
+  },
+  {
+    href: "/documentos/perguntas-frequentes",
+    title: "Dúvidas & Guia Legal",
+    description: "Legalidade de juros, cobrança no WhatsApp e validade de provas.",
+    icon: FaScaleBalanced,
+    iconColor: "text-emerald-400",
   },
   {
     href: "/documentos/termos",

@@ -1,10 +1,13 @@
 import "server-only";
 
 import { randomUUID } from "crypto";
+import { unstable_cache } from "next/cache";
 import { serverSupabase } from "@/commons/lib/supabase/server";
+import { internalSupabase } from "@/commons/lib/supabase/internal";
 
 const RECEIPTS_BUCKET = "receipts";
-const SIGNED_URL_EXPIRES_IN_SECONDS = 3600; // 1 hora de acesso seguro
+// 24 horas de validade para manter a estabilidade no cache diário
+export const SIGNED_URL_EXPIRES_IN_SECONDS = 86400;
 
 export interface UploadReceiptStorageParams {
   userId: string;
@@ -39,8 +42,7 @@ export async function uploadReceiptWebpSupabase(
 }
 
 /**
- * Cria URLs assinadas em lote para um conjunto de caminhos no bucket de comprovantes.
- * Retorna um Map<caminho, signedUrl>.
+ * Cria URLs assinadas em lote diretamente com o cliente interno do Supabase.
  */
 export async function createSignedReceiptUrlsSupabase(
   paths: string[]
@@ -49,7 +51,7 @@ export async function createSignedReceiptUrlsSupabase(
   const validPaths = Array.from(new Set(paths.filter(Boolean)));
   if (validPaths.length === 0) return urlMap;
 
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
   const { data, error } = await supabase.storage
     .from(RECEIPTS_BUCKET)
     .createSignedUrls(validPaths, SIGNED_URL_EXPIRES_IN_SECONDS);
@@ -66,6 +68,56 @@ export async function createSignedReceiptUrlsSupabase(
   }
 
   return urlMap;
+}
+
+/**
+ * Versão cacheada para obtenção de URLs assinadas.
+ * Evita chamadas repetidas de assinatura de comprovantes durante o ciclo diário.
+ */
+export async function getCachedSignedReceiptUrlsSupabase(
+  scopeId: string,
+  paths: string[],
+  tags: string[] = []
+): Promise<Map<string, string>> {
+  const validPaths = Array.from(new Set(paths.filter(Boolean))).sort();
+  if (validPaths.length === 0) return new Map();
+
+  const serializedPaths = validPaths.join("|");
+  const cacheKey = ["signed-receipt-urls", scopeId, serializedPaths];
+
+  const fetcher = unstable_cache(
+    async () => {
+      const supabase = internalSupabase();
+      const { data, error } = await supabase.storage
+        .from(RECEIPTS_BUCKET)
+        .createSignedUrls(validPaths, SIGNED_URL_EXPIRES_IN_SECONDS);
+
+      if (error || !data) {
+        console.error("[getCachedSignedReceiptUrlsSupabase] Erro ao assinar URLs:", error);
+        return {} as Record<string, string>;
+      }
+
+      const mapObj: Record<string, string> = {};
+      for (const item of data) {
+        if (item.path && item.signedUrl) {
+          mapObj[item.path] = item.signedUrl;
+        }
+      }
+      return mapObj;
+    },
+    cacheKey,
+    {
+      revalidate: SIGNED_URL_EXPIRES_IN_SECONDS,
+      tags,
+    }
+  );
+
+  const obj = await fetcher();
+  const resultMap = new Map<string, string>();
+  for (const [k, v] of Object.entries(obj)) {
+    resultMap.set(k, v);
+  }
+  return resultMap;
 }
 
 /**

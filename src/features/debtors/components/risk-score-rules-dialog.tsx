@@ -20,6 +20,9 @@ import {
 interface RiskScoreRulesDialogProps {
   triggerLabel?: string;
   triggerClassName?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  showTrigger?: boolean;
 }
 
 const TIER_ORDER: BiologicalTier[] = [
@@ -51,24 +54,32 @@ const BLEEDING_WEIGHTS = [
 export function RiskScoreRulesDialog({
   triggerLabel = "Como funciona o Score?",
   triggerClassName,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen,
+  showTrigger = true,
 }: RiskScoreRulesDialogProps) {
-  const [open, setOpen] = React.useState(false);
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? setControlledOpen! : setInternalOpen;
 
   return (
     <>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={() => setOpen(true)}
-        className={
-          triggerClassName ||
-          "h-8 px-2.5 text-[11px] sm:text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer"
-        }
-      >
-        <FaCircleQuestion className="size-3.5 text-amber-400 shrink-0" />
-        <span>{triggerLabel}</span>
-      </Button>
+      {showTrigger && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setOpen(true)}
+          className={
+            triggerClassName ||
+            "h-8 px-2.5 text-[11px] sm:text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white cursor-pointer"
+          }
+        >
+          <FaCircleQuestion className="size-3.5 text-amber-400 shrink-0" />
+          <span>{triggerLabel}</span>
+        </Button>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full max-w-2xl bg-zinc-900 border-zinc-800 p-4 sm:p-6 space-y-5 max-h-[calc(100dvh-2.5rem)] overflow-y-auto">

@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { invalidateUserDataCache } from '@/commons/lib/cache/server-cache';
 import { getUserLoggedApi } from '@/server/account/service/auth.api';
 import {
   createDebtorSchema,
@@ -128,6 +129,7 @@ export async function createDebtorAction(
       return { success: false, error: res.message || 'Falha ao cadastrar devedor.' };
     }
 
+    invalidateUserDataCache({ userId, debtorId: res.data.id });
     revalidatePath('/painel/devedores');
     revalidatePath('/painel/dividas/nova');
     revalidatePath('/painel');
@@ -180,7 +182,9 @@ export async function updateDebtorAction(
       return { success: false, error: res.message || 'Falha ao atualizar devedor.' };
     }
 
+    invalidateUserDataCache({ userId, debtorId: id });
     revalidatePath('/painel/devedores');
+    revalidatePath(`/painel/devedores/${id}`);
     revalidatePath('/painel');
 
     return { success: true, data: presentDebtorItem(res.data) };
@@ -209,7 +213,9 @@ export async function deleteDebtorAction(
       return { success: false, error: res.message || 'Falha ao excluir devedor.' };
     }
 
+    invalidateUserDataCache({ userId, debtorId: id });
     revalidatePath('/painel/devedores');
+    revalidatePath(`/painel/devedores/${id}`);
     revalidatePath('/painel');
 
     return { success: true };

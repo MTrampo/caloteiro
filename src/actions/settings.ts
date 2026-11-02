@@ -7,6 +7,7 @@ import type {
 } from "@/commons/models/user";
 import type { UserPermissions } from "@/commons/models/subscription";
 import { getUserLoggedApi } from "@/server/account/service/auth.api";
+import { invalidateUserDataCache } from "@/commons/lib/cache/server-cache";
 import {
   getCreditorSettingsApi,
   saveCreditorSettingsApi,
@@ -90,6 +91,8 @@ export async function saveCreditorSettingsAction(
         error: response.message || "Erro ao salvar configurações.",
       };
     }
+
+    invalidateUserDataCache({ userId: user.id });
 
     return {
       success: true,

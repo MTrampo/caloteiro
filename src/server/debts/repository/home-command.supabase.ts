@@ -1,6 +1,6 @@
 import "server-only";
 
-import { serverSupabase } from "@/commons/lib/supabase/server";
+import { internalSupabase } from "@/commons/lib/supabase/internal";
 import type { DebtRow, InstallmentRow } from "@/commons/models/debt";
 import type { DebtorRow } from "@/commons/models/debtor";
 
@@ -31,7 +31,7 @@ export interface InstallmentExcuseRow {
 export const getHomeCommandDebtsSupabase = async (
   userId: string
 ): Promise<HomeCommandDebtRow[]> => {
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("debts")
@@ -59,7 +59,7 @@ export const getRecentExcusesByInstallmentIdsSupabase = async (
   installmentIds: string[]
 ): Promise<Record<string, string>> => {
   if (installmentIds.length === 0) return {};
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("debt_excuses")
@@ -89,7 +89,7 @@ export const getRecentDebtPaymentsSupabase = async (
   userId: string,
   sinceDateIso: string
 ): Promise<RecentDebtPaymentRow[]> => {
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("debt_payments")

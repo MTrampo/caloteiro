@@ -1,5 +1,8 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS } from "@/commons/lib/cache/server-cache";
+import { getCalendarDateInSaoPaulo, getSecondsUntilMidnightSaoPaulo } from "@/commons/utils/date";
 import { ApiResponse } from "@/commons/lib/http/responses";
 import type { ResponseProps } from "@/commons/models/api";
 import {
@@ -55,6 +58,7 @@ import {
 } from "../repository/debt.supabase";
 import {
   createSignedReceiptUrlsSupabase,
+  getCachedSignedReceiptUrlsSupabase,
 } from "../repository/receipt-storage.supabase";
 import {
   getUserPermissionsOrCacheApi,
@@ -277,208 +281,232 @@ export const createDebtApi = async (
 };
 
 /**
- * Consulta detalhada da dívida, montando o resumo completo para visualização
+ * Consulta detalhada da dívida, montando o resumo completo para visualização.
+ * Dados da dívida, parcelas e comprovantes são cacheados pelo Next.js 16 por [debtId, userId, todaySaoPaulo]
+ * com revalidação on-demand. A verificação de trava de plano (checkDebtLockedStatusApi) é avaliada em tempo real.
  */
 export const getDebtDetailsApi = async (
   debtId: string,
   userId: string
 ): Promise<ResponseProps<DebtDetailsFormatted>> => {
-  const debt = await getDebtByIdSupabase(debtId, userId);
-  if (!debt) {
+  const todayStr = getCalendarDateInSaoPaulo(new Date());
+  const ttlSeconds = getSecondsUntilMidnightSaoPaulo();
+
+  const getCachedDebtCore = unstable_cache(
+    async (dId: string, uId: string): Promise<DebtDetailsFormatted | null> => {
+      const debt = await getDebtByIdSupabase(dId, uId);
+      if (!debt) return null;
+
+      const debtor = await getDebtorByIdSupabase(debt.debtor_id, uId);
+      if (!debtor) return null;
+
+      const [installmentsRaw, paymentsRaw] = await Promise.all([
+        getInstallmentsByDebtIdSupabase(dId, uId),
+        getPaymentsByDebtIdSupabase(dId, uId),
+      ]);
+
+      // Coleta todos os caminhos de comprovantes para assinar URLs em lote único
+      const receiptPathsToSign: string[] = [];
+      if (debt.loan_receipt_path) receiptPathsToSign.push(debt.loan_receipt_path);
+      for (const inst of installmentsRaw) {
+        if (inst.receipt_path) receiptPathsToSign.push(inst.receipt_path);
+      }
+      for (const pay of paymentsRaw) {
+        if (pay.receipt_path) receiptPathsToSign.push(pay.receipt_path);
+      }
+
+      const signedUrlsMap = await getCachedSignedReceiptUrlsSupabase(
+        dId,
+        receiptPathsToSign,
+        [CACHE_TAGS.debtDetails(dId), CACHE_TAGS.debtReceipts(dId)]
+      );
+
+      const installmentIds = installmentsRaw.map((inst) => inst.id);
+      const excusesRaw = await getExcusesByInstallmentIdsSupabase(installmentIds);
+
+      // Mapeamento de desculpas por parcela
+      const excusesByInstallment = new Map<string, DebtExcuseFormatted[]>();
+      for (const exc of excusesRaw) {
+        const formattedExcuse: DebtExcuseFormatted = {
+          ...exc,
+          formattedPromisedDate: formatDate(exc.promised_date),
+          formattedCreatedAt: formatDateTime(exc.created_at),
+        };
+        const list = excusesByInstallment.get(exc.installment_id) || [];
+        list.push(formattedExcuse);
+        excusesByInstallment.set(exc.installment_id, list);
+      }
+
+      // Tratamento e formatação de parcelas
+      let paidInstallmentsCount = 0;
+      let lateInstallmentsCount = 0;
+      let totalAmortized = 0;
+
+      const installmentsFormatted: InstallmentFormatted[] = installmentsRaw.map((inst) => {
+        const nominal = Number(inst.nominal_amount);
+        const paid = Number(inst.paid_amount);
+        const remaining = Math.max(0, nominal - paid);
+        totalAmortized += paid;
+
+        const { isLate, lateDays } = calculateDaysDifference(inst.due_date);
+        const isPaid = inst.status === "paid" || remaining <= 0;
+
+        let computedStatus: InstallmentStatus = inst.status as InstallmentStatus;
+        if (!isPaid) {
+          if (paid > 0) {
+            computedStatus = "partially_paid";
+          } else if (isLate) {
+            computedStatus = "late";
+          } else {
+            computedStatus = "pending";
+          }
+        } else {
+          computedStatus = "paid";
+        }
+
+        if (computedStatus === "paid") paidInstallmentsCount++;
+        if (computedStatus === "late" || (isLate && !isPaid)) lateInstallmentsCount++;
+
+        const statusMeta = {
+          pending: { label: "A Vencer", badgeClass: "bg-zinc-800 text-zinc-300 border-zinc-700" },
+          late: { label: "Em Atraso", badgeClass: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
+          partially_paid: { label: "Parcial", badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
+          paid: { label: "Liquidada", badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+        }[computedStatus];
+
+        let lateDaysText = "";
+        if (isLate && !isPaid) {
+          lateDaysText = lateDays === 1 ? "Venceu ontem" : `Venceu há ${lateDays} dias`;
+        }
+
+        return {
+          ...inst,
+          status: computedStatus,
+          formattedNominalAmount: formatBRL(nominal),
+          formattedPaidAmount: formatBRL(paid),
+          formattedRemainingAmount: formatBRL(remaining),
+          formattedDueDate: formatDate(inst.due_date),
+          isLate: isLate && !isPaid,
+          lateDays: isLate && !isPaid ? lateDays : 0,
+          lateDaysText,
+          statusLabel: statusMeta.label,
+          statusBadgeClass: statusMeta.badgeClass,
+          receiptUrl: inst.receipt_path ? signedUrlsMap.get(inst.receipt_path) || null : null,
+          excuses: excusesByInstallment.get(inst.id) || [],
+        };
+      });
+
+      // Tratamento e formatação de pagamentos (Pix recebidos)
+      const paymentsFormatted: DebtPaymentFormatted[] = paymentsRaw.map((payment) => ({
+        ...payment,
+        receiptUrl: payment.receipt_path ? signedUrlsMap.get(payment.receipt_path) || null : null,
+        formattedAmount: formatBRL(Number(payment.amount)),
+        formattedPaidAt: formatDateTime(payment.paid_at),
+      }));
+
+      const originalAmount = Number(debt.original_amount) || 0;
+      const totalDebtAmount = Number(debt.total_amount || debt.original_amount) || 0;
+      const totalInterestAmount = Math.max(0, Math.round((totalDebtAmount - originalAmount) * 100) / 100);
+      const hasInterest = totalInterestAmount > 0;
+
+      // O saldo restante na pista reflete o compromisso total contratado (com juros) menos o amortizado
+      const remainingAmount = Math.max(0, Math.round((totalDebtAmount - totalAmortized) * 100) / 100);
+      const progressPercentage = totalDebtAmount > 0
+        ? Math.min(100, Math.round((totalAmortized / totalDebtAmount) * 100))
+        : 0;
+
+      const remainingInstallmentsCount = Math.max(0, installmentsFormatted.length - paidInstallmentsCount);
+      const formattedTotalInterestAmount = totalInterestAmount > 0
+        ? `+ ${formatBRL(totalInterestAmount)}`
+        : formatBRL(0);
+
+      const isFullySettled = remainingAmount <= 0 || debt.status === "settled";
+
+      const debtStatusMeta = {
+        pending: { label: "Em Aberto", badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
+        settled: { label: "Quitada (Honrada)", badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+        defaulted: { label: "Quebra de Acordo / Calote", badgeClass: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
+      }[debt.status] || { label: debt.status, badgeClass: "bg-zinc-800 text-zinc-300 border-zinc-700" };
+
+      const categoryLabels = DEBT_CATEGORY_LABELS;
+      const interestType = (debt.interest_type || "none") as InterestType;
+      let interestLabel = "Sem juros";
+      if (interestType === "fixed") {
+        interestLabel = `Taxa Fixa (+${formatBRL(Number(debt.interest_rate || 0))})`;
+      } else if (interestType === "total_percentage") {
+        interestLabel = `${Number(debt.interest_rate || 0)}% sobre o total`;
+      } else if (interestType === "monthly_percentage") {
+        interestLabel = `${Number(debt.interest_rate || 0)}% ao mês`;
+      }
+
+      const maxLateInstallments =
+        debt.max_late_installments !== undefined && debt.max_late_installments !== null
+          ? Number(debt.max_late_installments)
+          : null;
+      const showNotesOnInvoice = Boolean(debt.show_notes_on_invoice);
+      const breachStatus = computeBreachStatus({
+        status: debt.status,
+        isFullySettled,
+        maxLateInstallments,
+        lateInstallmentsCount,
+      });
+
+      return {
+        ...debt,
+        publicLinkEnabled: Boolean(debt.public_link_enabled),
+        publicAccessCode: debt.public_access_code || "",
+        maxLateInstallments,
+        showNotesOnInvoice,
+        breachStatus,
+        isLocked: false,
+        lockedReason: undefined,
+        loanReceiptUrl: debt.loan_receipt_path ? signedUrlsMap.get(debt.loan_receipt_path) || null : null,
+        formattedOriginalAmount: formatBRL(originalAmount),
+        formattedTotalAmount: formatBRL(totalDebtAmount),
+        formattedPaidAmount: formatBRL(totalAmortized),
+        formattedRemainingAmount: formatBRL(remainingAmount),
+        totalInterestAmount,
+        formattedTotalInterestAmount,
+        hasInterest,
+        remainingInstallmentsCount,
+        progressPercentage,
+        formattedLoanDate: formatDate(debt.loan_date),
+        formattedFirstDueDate: formatDate(debt.first_due_date),
+        statusLabel: debtStatusMeta.label,
+        statusBadgeClass: debtStatusMeta.badgeClass,
+        categoryLabel: (categoryLabels as Record<string, string>)[debt.category] || "Geral",
+        interestLabel,
+        paidInstallmentsCount,
+        totalInstallmentsCount: installmentsFormatted.length,
+        isFullySettled,
+        hasLateInstallments: lateInstallmentsCount > 0,
+        lateInstallmentsCount,
+        debtor: presentDebtorItem(debtor),
+        installments: installmentsFormatted,
+        payments: paymentsFormatted,
+      };
+    },
+    ["debt-details-data", debtId, userId, todayStr],
+    {
+      revalidate: ttlSeconds,
+      tags: [CACHE_TAGS.userData(userId), CACHE_TAGS.debtDetails(debtId)],
+    }
+  );
+
+  const cachedData = await getCachedDebtCore(debtId, userId);
+  if (!cachedData) {
     return ApiResponse.NotFound({
       message: "Dívida não encontrada no tanque deste Tubarão.",
     });
   }
 
-  const debtor = await getDebtorByIdSupabase(debt.debtor_id, userId);
-  if (!debtor) {
-    return ApiResponse.NotFound({
-      message: "Devedor associado a esta dívida não foi localizado.",
-    });
-  }
-
-  const [installmentsRaw, paymentsRaw] = await Promise.all([
-    getInstallmentsByDebtIdSupabase(debtId, userId),
-    getPaymentsByDebtIdSupabase(debtId, userId),
-  ]);
-
-  // Coleta todos os caminhos de comprovantes para assinar URLs em lote único
-  const receiptPathsToSign: string[] = [];
-  if (debt.loan_receipt_path) receiptPathsToSign.push(debt.loan_receipt_path);
-  for (const inst of installmentsRaw) {
-    if (inst.receipt_path) receiptPathsToSign.push(inst.receipt_path);
-  }
-  for (const pay of paymentsRaw) {
-    if (pay.receipt_path) receiptPathsToSign.push(pay.receipt_path);
-  }
-
-  const signedUrlsMap = await createSignedReceiptUrlsSupabase(receiptPathsToSign);
-
-  const installmentIds = installmentsRaw.map((inst) => inst.id);
-  const excusesRaw = await getExcusesByInstallmentIdsSupabase(installmentIds);
-
-  // Mapeamento de desculpas por parcela
-  const excusesByInstallment = new Map<string, DebtExcuseFormatted[]>();
-  for (const exc of excusesRaw) {
-    const formattedExcuse: DebtExcuseFormatted = {
-      ...exc,
-      formattedPromisedDate: formatDate(exc.promised_date),
-      formattedCreatedAt: formatDateTime(exc.created_at),
-    };
-    const list = excusesByInstallment.get(exc.installment_id) || [];
-    list.push(formattedExcuse);
-    excusesByInstallment.set(exc.installment_id, list);
-  }
-
-  // Tratamento e formatação de parcelas
-  let paidInstallmentsCount = 0;
-  let lateInstallmentsCount = 0;
-  let totalAmortized = 0;
-
-  const installmentsFormatted: InstallmentFormatted[] = installmentsRaw.map((inst) => {
-    const nominal = Number(inst.nominal_amount);
-    const paid = Number(inst.paid_amount);
-    const remaining = Math.max(0, nominal - paid);
-    totalAmortized += paid;
-
-    const { isLate, lateDays } = calculateDaysDifference(inst.due_date);
-    const isPaid = inst.status === "paid" || remaining <= 0;
-
-    let computedStatus: InstallmentStatus = inst.status as InstallmentStatus;
-    if (!isPaid) {
-      if (paid > 0) {
-        computedStatus = "partially_paid";
-      } else if (isLate) {
-        computedStatus = "late";
-      } else {
-        computedStatus = "pending";
-      }
-    } else {
-      computedStatus = "paid";
-    }
-
-    if (computedStatus === "paid") paidInstallmentsCount++;
-    if (computedStatus === "late" || (isLate && !isPaid)) lateInstallmentsCount++;
-
-    const statusMeta = {
-      pending: { label: "A Vencer", badgeClass: "bg-zinc-800 text-zinc-300 border-zinc-700" },
-      late: { label: "Em Atraso", badgeClass: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
-      partially_paid: { label: "Parcial", badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
-      paid: { label: "Liquidada", badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
-    }[computedStatus];
-
-    let lateDaysText = "";
-    if (isLate && !isPaid) {
-      lateDaysText = lateDays === 1 ? "Venceu ontem" : `Venceu há ${lateDays} dias`;
-    }
-
-    return {
-      ...inst,
-      status: computedStatus,
-      formattedNominalAmount: formatBRL(nominal),
-      formattedPaidAmount: formatBRL(paid),
-      formattedRemainingAmount: formatBRL(remaining),
-      formattedDueDate: formatDate(inst.due_date),
-      isLate: isLate && !isPaid,
-      lateDays: isLate && !isPaid ? lateDays : 0,
-      lateDaysText,
-      statusLabel: statusMeta.label,
-      statusBadgeClass: statusMeta.badgeClass,
-      receiptUrl: inst.receipt_path ? signedUrlsMap.get(inst.receipt_path) || null : null,
-      excuses: excusesByInstallment.get(inst.id) || [],
-    };
-  });
-
-  // Tratamento e formatação de pagamentos (Pix recebidos)
-  const paymentsFormatted: DebtPaymentFormatted[] = paymentsRaw.map((payment) => ({
-    ...payment,
-    receiptUrl: payment.receipt_path ? signedUrlsMap.get(payment.receipt_path) || null : null,
-    formattedAmount: formatBRL(Number(payment.amount)),
-    formattedPaidAt: formatDateTime(payment.paid_at),
-  }));
-
-  const originalAmount = Number(debt.original_amount) || 0;
-  const totalDebtAmount = Number(debt.total_amount || debt.original_amount) || 0;
-  const totalInterestAmount = Math.max(0, Math.round((totalDebtAmount - originalAmount) * 100) / 100);
-  const hasInterest = totalInterestAmount > 0;
-
-  // O saldo restante na pista reflete o compromisso total contratado (com juros) menos o amortizado
-  const remainingAmount = Math.max(0, Math.round((totalDebtAmount - totalAmortized) * 100) / 100);
-  const progressPercentage = totalDebtAmount > 0
-    ? Math.min(100, Math.round((totalAmortized / totalDebtAmount) * 100))
-    : 0;
-
-  const remainingInstallmentsCount = Math.max(0, installmentsFormatted.length - paidInstallmentsCount);
-  const formattedTotalInterestAmount = totalInterestAmount > 0
-    ? `+ ${formatBRL(totalInterestAmount)}`
-    : formatBRL(0);
-
-  const isFullySettled = remainingAmount <= 0 || debt.status === "settled";
-
-  const debtStatusMeta = {
-    pending: { label: "Em Aberto", badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
-    settled: { label: "Quitada (Honrada)", badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
-    defaulted: { label: "Quebra de Acordo / Calote", badgeClass: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
-  }[debt.status] || { label: debt.status, badgeClass: "bg-zinc-800 text-zinc-300 border-zinc-700" };
-
-  const categoryLabels = DEBT_CATEGORY_LABELS;
-  const interestType = (debt.interest_type || "none") as InterestType;
-  let interestLabel = "Sem juros";
-  if (interestType === "fixed") {
-    interestLabel = `Taxa Fixa (+${formatBRL(Number(debt.interest_rate || 0))})`;
-  } else if (interestType === "total_percentage") {
-    interestLabel = `${Number(debt.interest_rate || 0)}% sobre o total`;
-  } else if (interestType === "monthly_percentage") {
-    interestLabel = `${Number(debt.interest_rate || 0)}% ao mês`;
-  }
-
-  const maxLateInstallments =
-    debt.max_late_installments !== undefined && debt.max_late_installments !== null
-      ? Number(debt.max_late_installments)
-      : null;
-  const showNotesOnInvoice = Boolean(debt.show_notes_on_invoice);
-  const breachStatus = computeBreachStatus({
-    status: debt.status,
-    isFullySettled,
-    maxLateInstallments,
-    lateInstallmentsCount,
-  });
-
+  // Avaliação 100% dinâmica em tempo real de status de trava/jaula da assinatura
   const lockStatus = await checkDebtLockedStatusApi(debtId, userId);
 
   const formattedData: DebtDetailsFormatted = {
-    ...debt,
-    publicLinkEnabled: Boolean(debt.public_link_enabled),
-    publicAccessCode: debt.public_access_code || "",
-    maxLateInstallments,
-    showNotesOnInvoice,
-    breachStatus,
+    ...cachedData,
     isLocked: lockStatus.isLocked,
     lockedReason: lockStatus.reason,
-    loanReceiptUrl: debt.loan_receipt_path ? signedUrlsMap.get(debt.loan_receipt_path) || null : null,
-    formattedOriginalAmount: formatBRL(originalAmount),
-    formattedTotalAmount: formatBRL(totalDebtAmount),
-    formattedPaidAmount: formatBRL(totalAmortized),
-    formattedRemainingAmount: formatBRL(remainingAmount),
-    totalInterestAmount,
-    formattedTotalInterestAmount,
-    hasInterest,
-    remainingInstallmentsCount,
-    progressPercentage,
-    formattedLoanDate: formatDate(debt.loan_date),
-    formattedFirstDueDate: formatDate(debt.first_due_date),
-    statusLabel: debtStatusMeta.label,
-    statusBadgeClass: debtStatusMeta.badgeClass,
-    categoryLabel: (categoryLabels as Record<string, string>)[debt.category] || "Geral",
-    interestLabel,
-    paidInstallmentsCount,
-    totalInstallmentsCount: installmentsFormatted.length,
-    isFullySettled,
-    hasLateInstallments: lateInstallmentsCount > 0,
-    lateInstallmentsCount,
-    debtor: presentDebtorItem(debtor),
-    installments: installmentsFormatted,
-    payments: paymentsFormatted,
   };
 
   return ApiResponse.Ok({

@@ -165,7 +165,8 @@ export function TermsDocFeature() {
               </li>
               <li>
                 A Plataforma não se responsabiliza pelo adimplemento, pontualidade ou inadimplemento total
-                ou parcial dos valores organizados pelo Usuário.
+                ou parcial dos valores organizados pelo Usuário, atuando como software neutro de tecnologia
+                sem auditoria prévia ou monitoramento proativo de negociações particulares entre terceiros.
               </li>
             </ul>
           </div>
@@ -239,6 +240,13 @@ export function TermsDocFeature() {
             <strong className="text-white">suspender temporariamente ou cancelar definitivamente</strong> a conta
             do Usuário, bloqueando o acesso sem dever de ressarcimento ou devolução de valores, sem prejuízo da
             adoção das medidas legais pertinentes nas esferas cível e criminal.
+          </p>
+          <p>
+            4.5. <strong className="text-white">Cooperação com Ordens Judiciais e Marco Civil:</strong> Em estrito
+            cumprimento à legislação brasileira (Marco Civil da Internet, Lei nº 12.965/2014, arts. 10 e 15),
+            caso a Plataforma seja formalmente intimada por ordem judicial fundamentada ou requisição policial válida,
+            fornecerá estritamente as informações cadastrais existentes em seus registros técnicos disponíveis (em
+            consonância com a política de privacidade e não armazenamento de endereços IP da Plataforma).
           </p>
         </section>
 

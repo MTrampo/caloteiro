@@ -49,6 +49,36 @@ export function formatProperName(name?: string | null): string {
 export const formatCaseName = formatProperName;
 
 /**
+ * Extrai o primeiro e segundo nome para exibição compacta em cards e listas compactas,
+ * tratando partículas de ligação da língua portuguesa (ex: "Cleide Ferreira Silva" -> "Cleide Ferreira",
+ * "Maria de Fátima dos Santos" -> "Maria de Fátima", "Ramon Silva" -> "Ramon Silva", "Cleiton" -> "Cleiton").
+ */
+export function formatShortName(fullName?: string | null, maxSignificantWords = 2): string {
+  if (!fullName || typeof fullName !== "string") return "";
+  const trimmed = fullName.trim();
+  if (!trimmed) return "";
+
+  const words = trimmed.split(/\s+/);
+  if (words.length <= maxSignificantWords) return formatProperName(trimmed);
+
+  const selectedWords: string[] = [];
+  let significantCount = 0;
+
+  for (const word of words) {
+    selectedWords.push(word);
+    const isParticle = LOWERCASE_PARTICLES.has(word.toLowerCase());
+    if (!isParticle) {
+      significantCount++;
+      if (significantCount >= maxSignificantWords) {
+        break;
+      }
+    }
+  }
+
+  return formatProperName(selectedWords.join(" "));
+}
+
+/**
  * Extrai as iniciais do nome de forma limpa para exibição em avatares (máx 2 caracteres)
  * Ex: "Vinicius Lopes" -> "VL", "Ramon Antônio da Silva" -> "RS", "Tubarão" -> "TU"
  */

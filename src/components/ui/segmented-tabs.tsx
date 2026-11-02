@@ -33,28 +33,13 @@ export function SegmentedTabs<T extends string = string>({
 }: SegmentedTabsProps<T>) {
   if (!items || items.length === 0) return null
 
-  const isCompactGrid = items.length <= 4
-
-  const gridColsClass =
-    items.length === 2
-      ? "grid-cols-2"
-      : items.length === 3
-      ? "grid-cols-3"
-      : items.length === 4
-      ? "grid-cols-2"
-      : "grid-cols-1"
-
   return (
     <div
       role="tablist"
       aria-label={ariaLabel}
       className={cn(
-        "p-1 bg-zinc-900/80 border border-zinc-800 rounded-xl items-center gap-1 sm:gap-1.5",
-        fullWidthOnMobile
-          ? isCompactGrid
-            ? cn("grid w-full sm:w-auto sm:inline-flex", gridColsClass)
-            : "flex w-full sm:w-auto overflow-x-auto scrollbar-none"
-          : "inline-flex items-center",
+        "p-1 bg-zinc-900/80 border border-zinc-800 rounded-xl flex items-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-none touch-pan-x [-webkit-overflow-scrolling:touch]",
+        fullWidthOnMobile ? "w-full sm:w-auto" : "w-auto",
         className
       )}
     >
@@ -69,14 +54,16 @@ export function SegmentedTabs<T extends string = string>({
             aria-selected={isActive}
             onClick={() => onChange(tab.id)}
             className={cn(
-              "flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-1 text-[11px] sm:text-xs font-mono rounded-lg transition-all cursor-pointer whitespace-nowrap touch-manipulation min-w-0",
-              isCompactGrid ? "w-full sm:w-auto" : "shrink-0",
+              "flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-1 text-[11px] sm:text-xs font-mono rounded-lg transition-all cursor-pointer whitespace-nowrap touch-manipulation",
+              fullWidthOnMobile
+                ? "flex-1 min-w-0 sm:flex-initial sm:min-w-max px-2 sm:px-3"
+                : "shrink-0 min-w-max px-3",
               isActive
                 ? "bg-white text-zinc-950 font-bold shadow-xs"
                 : "text-zinc-400 hover:text-white"
             )}
           >
-            <span className="truncate">{tab.label}</span>
+            <span>{tab.label}</span>
 
             {typeof tab.count === "number" && (
               <span

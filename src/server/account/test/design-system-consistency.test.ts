@@ -107,5 +107,24 @@ describe("Conformidade de Design System e Consistência Visual", () => {
       ).toBe(false);
     }
   });
+
+  it("deve garantir que os componentes de abas (SectionTabs e SegmentedTabs) utilizam scroll horizontal no mobile sem empilhar em grid", () => {
+    const sectionTabsPath = path.resolve(process.cwd(), "src/components/ui/section-tabs.tsx");
+    const segmentedTabsPath = path.resolve(process.cwd(), "src/components/ui/segmented-tabs.tsx");
+
+    const sectionContent = fs.readFileSync(sectionTabsPath, "utf-8");
+    const segmentedContent = fs.readFileSync(segmentedTabsPath, "utf-8");
+
+    // Ambos devem ter overflow-x-auto e scrollbar-none
+    expect(sectionContent).toContain("overflow-x-auto");
+    expect(sectionContent).toContain("scrollbar-none");
+    expect(sectionContent).not.toContain("grid-cols-1");
+    expect(sectionContent).not.toContain("grid-cols-2");
+
+    expect(segmentedContent).toContain("overflow-x-auto");
+    expect(segmentedContent).toContain("scrollbar-none");
+    expect(segmentedContent).not.toContain("grid-cols-1");
+    expect(segmentedContent).not.toContain("grid-cols-2");
+  });
 });
 

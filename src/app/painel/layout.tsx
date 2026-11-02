@@ -1,6 +1,7 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { OfflineStatusBanner } from "@/components/pwa"
 import { getCurrentUserSessionProfileApi } from "@/server/account/service/auth.api"
 import { FREE_PLAN_SLUG } from "@/commons/constants/subscription"
 import type { Metadata } from "next"
@@ -49,6 +50,7 @@ export default async function PainelLayout({
         >
           <AppSidebar user={sidebarUserData} permissions={permissions} />
           <SidebarInset className="min-h-screen flex flex-col bg-background">
+            <OfflineStatusBanner />
             {children}
           </SidebarInset>
         </SidebarProvider>

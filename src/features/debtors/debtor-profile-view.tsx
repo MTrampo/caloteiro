@@ -8,6 +8,8 @@ import { formatBRL, formatDate } from "@/commons/utils/format";
 import { maskCpf } from "@/commons/utils/masks";
 import { Button } from "@/components/ui/button";
 import { SectionTabs, type SectionTabItem } from "@/components/ui/section-tabs";
+import { ResponsiveCardsCarousel } from "@/components/cards/responsive-cards-carousel";
+import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action";
 import { RiskSpeedometerChart } from "./components/risk-speedometer-chart";
 import { RiskScoreRulesDialog } from "./components/risk-score-rules-dialog";
 import { EditDebtorDialog } from "./components/edit-debtor-dialog";
@@ -30,6 +32,7 @@ import {
   FaCommentDots,
   FaPenToSquare,
   FaTrashCan,
+  FaCircleQuestion,
 } from "react-icons/fa6";
 
 interface DebtorProfileViewProps {
@@ -43,6 +46,7 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
   const [currentDebtor, setCurrentDebtor] = React.useState(data.debtor);
   const [isEditOpen, setIsEditOpen] = React.useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
+  const [isRulesOpen, setIsRulesOpen] = React.useState(false);
   const [copiedPix, setCopiedPix] = React.useState(false);
   const [activeSectionTab, setActiveSectionTab] =
     React.useState<DebtorSectionTab>("extrato");
@@ -77,7 +81,7 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
   };
 
   return (
-    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full pb-24 sm:pb-6">
+    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full pb-32 sm:pb-6">
       {/* Cabeçalho Solto da Página (Sem Card, sem ícone no h2, sem pílula acima do título) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="space-y-1 min-w-0">
@@ -107,11 +111,13 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
           </p>
         </div>
 
-        {/* Ações Rápidas no Topo */}
-        <div className="flex flex-wrap items-center gap-2 shrink-0 w-full sm:w-auto">
+        {/* Ações Rápidas no Topo (Desktop: Exibidas no cabeçalho; Mobile: Unificadas no FAB flutuante) */}
+        <div className="hidden sm:flex items-center gap-2 shrink-0">
           <RiskScoreRulesDialog
             triggerLabel="Como funciona a pontuação?"
-            triggerClassName="w-full sm:w-auto h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white justify-center cursor-pointer"
+            open={isRulesOpen}
+            onOpenChange={setIsRulesOpen}
+            triggerClassName="h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white justify-center cursor-pointer"
           />
 
           <Button
@@ -119,7 +125,7 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
             variant="outline"
             size="sm"
             onClick={() => setIsEditOpen(true)}
-            className="w-full sm:w-auto h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white justify-center cursor-pointer"
+            className="h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white justify-center cursor-pointer"
             title="Editar dados da presa"
           >
             <FaPenToSquare className="size-3 text-zinc-400 mr-1.5" />
@@ -131,7 +137,7 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
             variant="outline"
             size="sm"
             onClick={() => setIsDeleteOpen(true)}
-            className="w-full sm:w-auto h-9 px-3 text-xs font-mono font-bold bg-rose-500/10 border-rose-500/30 text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 justify-center cursor-pointer"
+            className="h-9 px-3 text-xs font-mono font-bold bg-rose-500/10 border-rose-500/30 text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 justify-center cursor-pointer"
             title="Excluir presa da gruta"
           >
             <FaTrashCan className="size-3 mr-1.5" />
@@ -141,7 +147,7 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
           <Button
             render={<Link href={`/painel/dividas/nova?debtorId=${currentDebtor.id}`} />}
             size="sm"
-            className="w-full sm:w-auto h-9 px-3.5 bg-white hover:bg-zinc-200 text-zinc-950 font-mono text-xs font-bold rounded-xl justify-center"
+            className="h-9 px-3.5 bg-white hover:bg-zinc-200 text-zinc-950 font-mono text-xs font-bold rounded-xl justify-center"
           >
             <FaFileCirclePlus className="size-3.5 mr-1.5" />
             <span>Nova Dívida</span>
@@ -149,9 +155,9 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
         </div>
       </div>
 
-      {/* 4 KPIs Comportamentais da Presa */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
-        <div className="rounded-2xl border border-border bg-card p-4 space-y-1">
+      {/* 4 KPIs Comportamentais da Presa (Carrossel no Mobile, Grid 4 Colunas no Desktop) */}
+      <ResponsiveCardsCarousel desktopColumns={4} tabletColumns={2}>
+        <div className="rounded-2xl border border-border bg-card p-4 space-y-1 h-full flex flex-col justify-between">
           <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block">
             Taxa de Pontualidade
           </span>
@@ -163,7 +169,7 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-4 space-y-1">
+        <div className="rounded-2xl border border-border bg-card p-4 space-y-1 h-full flex flex-col justify-between">
           <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block">
             Tempo até o Pix
           </span>
@@ -180,7 +186,7 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-4 space-y-1">
+        <div className="rounded-2xl border border-border bg-card p-4 space-y-1 h-full flex flex-col justify-between">
           <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block">
             Dinheiro na Pista
           </span>
@@ -192,7 +198,7 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-4 space-y-1">
+        <div className="rounded-2xl border border-border bg-card p-4 space-y-1 h-full flex flex-col justify-between">
           <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block">
             Meteção de Louco
           </span>
@@ -208,7 +214,7 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
               : "Nenhuma parcela atrasada hoje"}
           </p>
         </div>
-      </div>
+      </ResponsiveCardsCarousel>
 
       {/* Grid Principal: Velocímetro Biológico (Esquerda) + Dados Cadastrais do Modal (Direita) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
@@ -614,6 +620,42 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
         open={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
         redirectTo="/painel/devedores"
+      />
+
+      {/* Diálogo de Regras do Score (acionável tanto pelo cabeçalho no desktop quanto pelo FAB no mobile) */}
+      <RiskScoreRulesDialog
+        open={isRulesOpen}
+        onOpenChange={setIsRulesOpen}
+        showTrigger={false}
+      />
+
+      {/* Ações Flutuantes no Mobile (FAB Multi-Ações com 3 pontinhos e transição para ✕) */}
+      <MobileFloatingAction
+        ariaLabel="Ações da presa"
+        actions={[
+          {
+            label: "Nova Dívida",
+            icon: <FaFileCirclePlus className="size-4" />,
+            href: `/painel/dividas/nova?debtorId=${currentDebtor.id}`,
+            variant: "emerald",
+          },
+          {
+            label: "Editar Presa",
+            icon: <FaPenToSquare className="size-4 text-zinc-300" />,
+            onClick: () => setIsEditOpen(true),
+          },
+          {
+            label: "Como funciona a pontuação?",
+            icon: <FaCircleQuestion className="size-4 text-amber-400" />,
+            onClick: () => setIsRulesOpen(true),
+          },
+          {
+            label: "Excluir Presa",
+            icon: <FaTrashCan className="size-4 text-rose-400" />,
+            onClick: () => setIsDeleteOpen(true),
+            variant: "destructive",
+          },
+        ]}
       />
     </div>
   );

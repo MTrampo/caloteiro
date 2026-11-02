@@ -1,6 +1,7 @@
 import "server-only";
 
-import { serverSupabase } from "@/commons/lib/supabase/server";
+import { internalSupabase } from "@/commons/lib/supabase/internal";
+import { decryptSensitiveData } from "@/server/account/service/encryption.api";
 import type { DebtRow, InstallmentRow, DebtPaymentRow } from "@/commons/models/debt";
 import type { DebtorRow } from "@/commons/models/debtor";
 
@@ -15,7 +16,7 @@ export interface FinancialDebtWithRelationsRow extends DebtRow {
 export const getFinancialDebtsWithRelationsSupabase = async (
   userId: string
 ): Promise<FinancialDebtWithRelationsRow[]> => {
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("debts")
@@ -42,7 +43,7 @@ export const getFinancialPaymentsSupabase = async (
   userId: string,
   startDate?: string
 ): Promise<DebtPaymentRow[]> => {
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   let query = supabase
     .from("debt_payments")
@@ -70,7 +71,7 @@ export const getFinancialPaymentsSupabase = async (
 export const getCreditorPixKeySupabase = async (
   userId: string
 ): Promise<string | undefined> => {
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("creditor_settings")
@@ -78,10 +79,9 @@ export const getCreditorPixKeySupabase = async (
     .eq("user_id", userId)
     .maybeSingle();
 
-  if (error || !data?.pix_key) {
+  if (error || !data || !data.pix_key) {
     return undefined;
   }
 
-  return data.pix_key;
+  return decryptSensitiveData(data.pix_key) || undefined;
 };
-

@@ -2,6 +2,7 @@ import "server-only";
 
 import { serverSupabase } from "@/commons/lib/supabase/server";
 import { internalSupabase } from "@/commons/lib/supabase/internal";
+import { decryptSensitiveData } from "@/server/account/service/encryption.api";
 import type {
   DebtRow,
   InstallmentRow,
@@ -87,7 +88,7 @@ export const getDebtByIdSupabase = async (
   debtId: string,
   userId: string
 ): Promise<DebtRow | null> => {
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("debts")
@@ -133,7 +134,7 @@ export const getInstallmentsByDebtIdSupabase = async (
   debtId: string,
   userId: string
 ): Promise<InstallmentRow[]> => {
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("installments")
@@ -258,7 +259,7 @@ export const getPaymentsByDebtIdSupabase = async (
   debtId: string,
   userId: string
 ): Promise<DebtPaymentRow[]> => {
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("debt_payments")
@@ -304,7 +305,7 @@ export const getExcusesByInstallmentIdsSupabase = async (
   installmentIds: string[]
 ): Promise<DebtExcuseRow[]> => {
   if (installmentIds.length === 0) return [];
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("debt_excuses")
@@ -504,7 +505,7 @@ export const getPublicDebtContextByIdSupabase = async (
     creditorName: profileRes.data?.name || null,
     creditorNickname: profileRes.data?.nickname || null,
     creditorPhone: profileRes.data?.phone || null,
-    pixKey: settingsRes.data?.pix_key || null,
+    pixKey: decryptSensitiveData(settingsRes.data?.pix_key) || null,
     pixKeyType: settingsRes.data?.pix_key_type || null,
     pixHolderName: settingsRes.data?.pix_holder_name || null,
     pixBankName: settingsRes.data?.pix_bank_name || null,

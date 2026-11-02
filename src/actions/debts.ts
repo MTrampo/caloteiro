@@ -2,6 +2,7 @@
 
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
+import { invalidateUserDataCache } from '@/commons/lib/cache/server-cache';
 import { getUserLoggedApi } from '@/server/account/service/auth.api';
 import {
   createDebtSchema,
@@ -97,6 +98,7 @@ export async function createDebtAction(
       };
     }
 
+    invalidateUserDataCache({ userId, debtId: result.data.debtId });
     revalidatePath('/painel/dividas');
     revalidatePath('/painel/dividas/acompanhamento');
     revalidatePath('/painel');
@@ -202,6 +204,7 @@ export async function registerDebtPaymentAction(
       };
     }
 
+    invalidateUserDataCache({ userId, debtId });
     revalidatePath(`/painel/dividas/${debtId}`);
     revalidatePath('/painel/dividas');
     revalidatePath('/painel/dividas/acompanhamento');
@@ -247,6 +250,11 @@ export async function registerDebtExcuseAction(
         error: result.message || 'Não foi possível salvar a desculpa.',
       };
     }
+
+    invalidateUserDataCache({ userId });
+    revalidatePath('/painel');
+    revalidatePath('/painel/dividas');
+    revalidatePath('/painel/termometro');
 
     return {
       success: true,
@@ -300,6 +308,7 @@ export async function updateDebtPortalConfigAction(
       };
     }
 
+    invalidateUserDataCache({ userId, debtId: validation.data.debtId });
     revalidatePath(`/painel/dividas/${validation.data.debtId}`);
     revalidatePath(`/fatura/${validation.data.debtId}`);
 
@@ -444,6 +453,7 @@ export async function updateDebtAgreementRulesAction(
       };
     }
 
+    invalidateUserDataCache({ userId, debtId: validation.data.debtId });
     revalidatePath(`/painel/dividas/${validation.data.debtId}`);
     revalidatePath(`/fatura/${validation.data.debtId}`);
 
@@ -499,6 +509,7 @@ export async function updateDebtBreachStatusAction(
       };
     }
 
+    invalidateUserDataCache({ userId, debtId: validation.data.debtId });
     revalidatePath(`/painel/dividas/${validation.data.debtId}`);
     revalidatePath('/painel/dividas');
     revalidatePath('/painel');
@@ -544,6 +555,7 @@ export async function attachInstallmentReceiptAction(
       };
     }
 
+    invalidateUserDataCache({ userId, debtId: validation.data.debtId });
     revalidatePath(`/painel/dividas/${validation.data.debtId}`);
     revalidatePath('/painel/dividas');
     revalidatePath('/painel');
@@ -586,6 +598,7 @@ export async function deleteDebtAction(
       };
     }
 
+    invalidateUserDataCache({ userId, debtId });
     revalidatePath('/painel');
     revalidatePath('/painel/dividas');
     revalidatePath('/painel/dividas/acompanhamento');

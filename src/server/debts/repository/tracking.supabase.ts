@@ -1,6 +1,6 @@
 import "server-only";
 
-import { serverSupabase } from "@/commons/lib/supabase/server";
+import { internalSupabase } from "@/commons/lib/supabase/internal";
 import type { DebtRow, InstallmentRow } from "@/commons/models/debt";
 import type { DebtorRow } from "@/commons/models/debtor";
 
@@ -15,7 +15,7 @@ export interface DebtWithRelationsRow extends DebtRow {
 export const getActiveDebtsWithRelationsSupabase = async (
   userId: string
 ): Promise<DebtWithRelationsRow[]> => {
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("debts")
@@ -42,7 +42,7 @@ export const getInstallmentIdsWithExcusesSupabase = async (
   installmentIds: string[]
 ): Promise<Set<string>> => {
   if (installmentIds.length === 0) return new Set();
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("debt_excuses")
@@ -55,4 +55,3 @@ export const getInstallmentIdsWithExcusesSupabase = async (
 
   return new Set(data.map((item) => item.installment_id));
 };
-

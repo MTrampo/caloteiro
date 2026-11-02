@@ -49,6 +49,13 @@ const TRUST_PILLARS = [
     description:
       "As mensagens personalizadas saem a partir do seu próprio número de WhatsApp. Você revisa e envia no momento que achar melhor.",
   },
+  {
+    icon: FaShieldHalved,
+    iconColor: "text-purple-400",
+    title: "Criptografia de Dados (AES-256)",
+    description:
+      "CPFs e chaves Pix são criptografados no banco de dados com padrão militar. Nem a plataforma tem acesso em texto puro; somente você visualiza seus dados.",
+  },
 ];
 
 export function RoiAndTrustSection() {
@@ -248,7 +255,7 @@ export function RoiAndTrustSection() {
 
           <div
             ref={pillarsGridRef}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4"
           >
             {TRUST_PILLARS.map((pillar) => {
               const Icon = pillar.icon;

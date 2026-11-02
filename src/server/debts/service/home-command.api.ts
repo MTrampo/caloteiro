@@ -1,5 +1,8 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS } from "@/commons/lib/cache/server-cache";
+import { getCalendarDateInSaoPaulo, getSecondsUntilMidnightSaoPaulo } from "@/commons/utils/date";
 import {
   getHomeCommandDebtsSupabase,
   getRecentExcusesByInstallmentIdsSupabase,
@@ -117,29 +120,37 @@ export function buildHomeCommandFeed(
       const lastExcuseNote = excusesMap[inst.id] || undefined;
 
       // Parcela já paga recentemente (hoje, ontem ou até 2 dias de calendário no fuso de São Paulo)
+      // REGRA CRÍTICA: Cada parcela possui seu próprio timestamp de baixa (inst.updated_at).
+      // NUNCA utilizar debtPayments[0].paid_at no nível de parcela individual, pois em dívidas
+      // parceladas (ex: 23 parcelas) isso causaria vazamento da data do pagamento mais recente
+      // para parcelas antigas já quitadas há semanas ou meses, exibindo todas falsamente como "Pagas hoje".
       if (isPaid) {
-        const debtPayments = paymentsByDebtId.get(debt.id);
-        const paymentDate = debtPayments?.[0]?.paid_at || inst.updated_at;
+        const hasRecentPayment =
+          recentPayments.length === 0 || paymentsByDebtId.has(debt.id);
 
-        if (paymentDate) {
-          const diffDays = calculatePastCalendarDaysDiff(paymentDate);
+        if (hasRecentPayment) {
+          const paymentDate = inst.updated_at;
 
-          if (diffDays >= 0 && diffDays <= 2) {
-            paidItems.push({
-              id: inst.id,
-              debtId: debt.id,
-              debtorName,
-              debtorNickname,
-              debtorPhone,
-              type: "recently_paid",
-              category: "paid",
-              relativeTimeText: formatRelativePaidText(diffDays),
-              installmentText,
-              pixKey,
-              lastExcuseNote,
-              nominalAmount: nominal,
-              paidAmount: paid,
-            });
+          if (paymentDate) {
+            const diffDays = calculatePastCalendarDaysDiff(paymentDate);
+
+            if (diffDays >= 0 && diffDays <= 2) {
+              paidItems.push({
+                id: inst.id,
+                debtId: debt.id,
+                debtorName,
+                debtorNickname,
+                debtorPhone,
+                type: "recently_paid",
+                category: "paid",
+                relativeTimeText: formatRelativePaidText(diffDays),
+                installmentText,
+                pixKey,
+                lastExcuseNote,
+                nominalAmount: nominal,
+                paidAmount: paid,
+              });
+            }
           }
         }
         continue;
@@ -223,77 +234,93 @@ export function buildHomeCommandFeed(
 }
 
 /**
- * Consulta e consolida os dados reais da Central de Comando do Tubarão
+ * Consulta e consolida os dados reais da Central de Comando do Tubarão.
+ * Cacheado pelo Next.js 16 por [userId, todaySaoPaulo] com reset diário automático às 00:00 BRT
+ * e invalidação imediata via tag mestre 'user-data:{userId}' em qualquer mutação.
  */
 export const getHomeCommandDataApi = async (
   userId: string,
   userName: string = "Tubarão"
 ): Promise<CommandCenterData> => {
-  // 1. Busca dívidas com devedores e parcelas
-  const debts = await getHomeCommandDebtsSupabase(userId);
+  const todayStr = getCalendarDateInSaoPaulo(new Date());
+  const ttlSeconds = getSecondsUntilMidnightSaoPaulo();
 
-  // 2. Extrai IDs das parcelas para buscar desculpas registradas
-  const allInstallmentIds: string[] = [];
-  let overdueCount = 0;
-  let criticalCount = 0;
-  let dueSoonCount = 0;
-  let totalCount = 0;
+  const getCachedData = unstable_cache(
+    async (uid: string, name: string): Promise<CommandCenterData> => {
+      // 1. Busca dívidas com devedores e parcelas
+      const debts = await getHomeCommandDebtsSupabase(uid);
 
-  for (const debt of debts) {
-    for (const inst of debt.installments || []) {
-      totalCount++;
-      allInstallmentIds.push(inst.id);
+      // 2. Extrai IDs das parcelas para buscar desculpas registradas
+      const allInstallmentIds: string[] = [];
+      let overdueCount = 0;
+      let criticalCount = 0;
+      let dueSoonCount = 0;
+      let totalCount = 0;
 
-      const nominal = Number(inst.nominal_amount);
-      const paid = Number(inst.paid_amount);
-      const isPaid = inst.status === "paid" || paid >= nominal;
+      for (const debt of debts) {
+        for (const inst of debt.installments || []) {
+          totalCount++;
+          allInstallmentIds.push(inst.id);
 
-      if (!isPaid) {
-        const { isLate, lateDays, diffDays } = calculateDaysDifference(inst.due_date);
-        if (isLate && lateDays > 0) {
-          overdueCount++;
-          if (lateDays > 30) {
-            criticalCount++;
+          const nominal = Number(inst.nominal_amount);
+          const paid = Number(inst.paid_amount);
+          const isPaid = inst.status === "paid" || paid >= nominal;
+
+          if (!isPaid) {
+            const { isLate, lateDays, diffDays } = calculateDaysDifference(inst.due_date);
+            if (isLate && lateDays > 0) {
+              overdueCount++;
+              if (lateDays > 30) {
+                criticalCount++;
+              }
+            } else if (diffDays <= 7) {
+              dueSoonCount++;
+            }
           }
-        } else if (diffDays <= 7) {
-          dueSoonCount++;
         }
       }
+
+      // 3. Busca desculpas das parcelas e pagamentos recentes
+      const excusesMap = await getRecentExcusesByInstallmentIdsSupabase(allInstallmentIds);
+
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const recentPayments = await getRecentDebtPaymentsSupabase(
+        uid,
+        sevenDaysAgo.toISOString()
+      );
+
+      // 4. Busca configurações de credor (Chave Pix oficial)
+      const creditorSettings = await getCreditorSettingsByUserIdSupabase(uid);
+      const creditorPixKey = creditorSettings?.pix_key || undefined;
+
+      // 5. Calcula KPIs e Feed
+      const kpis = buildHomeCommandKPIs(debts, recentPayments);
+      const feed = buildHomeCommandFeed(debts, excusesMap, creditorPixKey, recentPayments);
+
+      const wisdomQuote = getRandomWisdomQuote();
+
+      return {
+        userName: name,
+        kpis,
+        feed,
+        totalDebtsCount: debts.length,
+        creditorPixKey,
+        wisdomQuote,
+        counts: {
+          overdueCount,
+          criticalCount,
+          dueSoonCount,
+          totalCount,
+        },
+      };
+    },
+    ["home-command-feed", userId, todayStr],
+    {
+      revalidate: ttlSeconds,
+      tags: [CACHE_TAGS.userData(userId)],
     }
-  }
-
-  // 3. Busca desculpas das parcelas e pagamentos recentes
-  const excusesMap = await getRecentExcusesByInstallmentIdsSupabase(allInstallmentIds);
-
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const recentPayments = await getRecentDebtPaymentsSupabase(
-    userId,
-    sevenDaysAgo.toISOString()
   );
 
-  // 4. Busca configurações de credor (Chave Pix oficial)
-  const creditorSettings = await getCreditorSettingsByUserIdSupabase(userId);
-  const creditorPixKey = creditorSettings?.pix_key || undefined;
-
-  // 5. Calcula KPIs e Feed
-  const kpis = buildHomeCommandKPIs(debts, recentPayments);
-  const feed = buildHomeCommandFeed(debts, excusesMap, creditorPixKey, recentPayments);
-
-  const wisdomQuote = getRandomWisdomQuote();
-
-  return {
-    userName,
-    kpis,
-    feed,
-    totalDebtsCount: debts.length,
-    creditorPixKey,
-    wisdomQuote,
-    counts: {
-      overdueCount,
-      criticalCount,
-      dueSoonCount,
-      totalCount,
-    },
-  };
+  return getCachedData(userId, userName);
 };

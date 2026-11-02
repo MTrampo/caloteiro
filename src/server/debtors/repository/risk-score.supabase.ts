@@ -1,8 +1,9 @@
 import "server-only";
 
-import { serverSupabase } from "@/commons/lib/supabase/server";
+import { internalSupabase } from "@/commons/lib/supabase/internal";
 import type { DebtorItem } from "@/commons/models/debtor";
 import type { Database } from "@/commons/types/database.types";
+import { decryptSensitiveData } from "@/server/account/service/encryption.api";
 
 type DebtRow = Database["public"]["Tables"]["debts"]["Row"];
 type InstallmentRow = Database["public"]["Tables"]["installments"]["Row"];
@@ -34,7 +35,7 @@ export const getDebtorRiskContextByIdSupabase = async (
   debtorId: string,
   userId: string
 ): Promise<DebtorRelationalRiskBundle | null> => {
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   const [debtorRes, debtsRes, installmentsRes, paymentsRes, excusesRes, settingsRes] =
     await Promise.all([
@@ -79,13 +80,20 @@ export const getDebtorRiskContextByIdSupabase = async (
     return null;
   }
 
+  const rawDebtor = debtorRes.data as DebtorItem;
+  const debtor: DebtorItem = {
+    ...rawDebtor,
+    document: decryptSensitiveData(rawDebtor.document),
+    pix_key: decryptSensitiveData(rawDebtor.pix_key),
+  };
+
   return {
-    debtor: debtorRes.data as DebtorItem,
+    debtor,
     debts: (debtsRes.data as DebtRow[]) || [],
     installments: (installmentsRes.data as InstallmentRow[]) || [],
     payments: (paymentsRes.data as DebtPaymentRow[]) || [],
     excuses: (excusesRes.data as DebtExcuseRow[]) || [],
-    creditorPixKey: settingsRes.data?.pix_key || null,
+    creditorPixKey: decryptSensitiveData(settingsRes.data?.pix_key) || null,
   };
 };
 
@@ -96,7 +104,7 @@ export const getBatchDebtorsRiskContextSupabase = async (
   userId: string,
   debtorIds?: string[]
 ): Promise<BatchDebtorsRelationalRiskBundle> => {
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   let debtorsQuery = supabase
     .from("debtors")
@@ -132,13 +140,19 @@ export const getBatchDebtorsRiskContextSupabase = async (
         .maybeSingle(),
     ]);
 
+  const rawDebtors = (debtorsRes.data as DebtorItem[]) || [];
+  const debtors = rawDebtors.map((d) => ({
+    ...d,
+    document: decryptSensitiveData(d.document),
+    pix_key: decryptSensitiveData(d.pix_key),
+  }));
+
   return {
-    debtors: (debtorsRes.data as DebtorItem[]) || [],
+    debtors,
     debts: (debtsRes.data as DebtRow[]) || [],
     installments: (installmentsRes.data as InstallmentRow[]) || [],
     payments: (paymentsRes.data as DebtPaymentRow[]) || [],
     excuses: (excusesRes.data as DebtExcuseRow[]) || [],
-    creditorPixKey: settingsRes.data?.pix_key || null,
+    creditorPixKey: decryptSensitiveData(settingsRes.data?.pix_key) || null,
   };
 };
-

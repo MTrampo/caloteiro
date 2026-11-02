@@ -1,9 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { FaQuoteLeft, FaRotate } from "react-icons/fa6"
+import { FaQuoteLeft } from "react-icons/fa6"
 import { getRandomWisdomQuote } from "../utils/greeting-helper"
-import { Button } from "@/components/ui/button"
 
 type CreditorWisdomProps = {
   initialWisdom: {

@@ -1,5 +1,8 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS } from "@/commons/lib/cache/server-cache";
+import { getCalendarDateInSaoPaulo, getSecondsUntilMidnightSaoPaulo } from "@/commons/utils/date";
 import {
   getActiveDebtsWithRelationsSupabase,
   getInstallmentIdsWithExcusesSupabase,
@@ -240,24 +243,37 @@ export const getTrackingDataApi = async (
   } = payload;
 
   const tab = normalizeTab(rawTab);
-  const [permissions, debtsRaw] = await Promise.all([
+  const todayStr = getCalendarDateInSaoPaulo(new Date());
+  const ttlSeconds = getSecondsUntilMidnightSaoPaulo();
+
+  const getCachedTrackingBase = unstable_cache(
+    async (uid: string) => {
+      const debts = await getActiveDebtsWithRelationsSupabase(uid);
+      const allInstallmentIds: string[] = [];
+      for (const d of debts) {
+        if (d.installments) {
+          for (const inst of d.installments) {
+            allInstallmentIds.push(inst.id);
+          }
+        }
+      }
+      const excusesSetRaw = await getInstallmentIdsWithExcusesSupabase(allInstallmentIds);
+      return { debtsRaw: debts, excusesList: Array.from(excusesSetRaw) };
+    },
+    ["tracking-debts-base", userId, todayStr],
+    {
+      revalidate: ttlSeconds,
+      tags: [CACHE_TAGS.userData(userId)],
+    }
+  );
+
+  const [permissions, { debtsRaw, excusesList }] = await Promise.all([
     getUserPermissionsOrCacheApi(userId),
-    getActiveDebtsWithRelationsSupabase(userId),
+    getCachedTrackingBase(userId),
   ]);
 
+  const excusesSet = new Set(excusesList);
   const quotaPartition = partitionDebtsByQuota(debtsRaw, permissions.maxDebtors);
-
-  // Coleta IDs de parcelas para buscar desculpas registradas
-  const allInstallmentIds: string[] = [];
-  for (const d of debtsRaw) {
-    if (d.installments) {
-      for (const inst of d.installments) {
-        allInstallmentIds.push(inst.id);
-      }
-    }
-  }
-
-  const excusesSet = await getInstallmentIdsWithExcusesSupabase(allInstallmentIds);
 
   // Processa cada dívida ativa
   const processed: ProcessedPromiseDebt[] = [];

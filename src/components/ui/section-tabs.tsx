@@ -27,20 +27,12 @@ export function SectionTabs<T extends string = string>({
 }: SectionTabsProps<T>) {
   if (!items || items.length === 0) return null;
 
-  const mobileGridClass =
-    items.length === 4
-      ? "grid grid-cols-2 sm:flex sm:flex-wrap"
-      : items.length === 2
-      ? "grid grid-cols-2 sm:flex sm:flex-wrap"
-      : "grid grid-cols-1 sm:flex sm:flex-wrap";
-
   return (
     <div
       role="tablist"
       aria-label={ariaLabel}
       className={cn(
-        "items-center gap-2 w-full",
-        mobileGridClass,
+        "flex items-center gap-2 w-full overflow-x-auto scrollbar-none pb-1 sm:pb-0 pr-4 sm:pr-0 sm:flex-wrap touch-pan-x [-webkit-overflow-scrolling:touch]",
         className
       )}
     >
@@ -55,10 +47,10 @@ export function SectionTabs<T extends string = string>({
             aria-selected={isActive}
             onClick={() => onChange(tab.id)}
             className={cn(
-              "inline-flex items-center justify-between sm:justify-start gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-[13px] font-mono font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 touch-manipulation",
+              "inline-flex items-center justify-start gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-[13px] font-mono font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 touch-manipulation",
               isActive
-                ? "bg-zinc-800 text-white border border-zinc-700/90 shadow-sm shadow-black/40"
-                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/80 border border-zinc-800/60 sm:border-transparent"
+                ? "bg-zinc-800 text-white border border-zinc-700/90 shadow-xs shadow-black/40"
+                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/80 border border-zinc-800/80"
             )}
           >
             <span>{tab.label}</span>

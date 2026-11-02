@@ -142,30 +142,28 @@ export function DebtorsFeature({
           </p>
         </div>
 
-        {/* Botão Cadastrar Devedor Padronizado (NewButton - Desktop) + Atalho p/ Termômetro */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Ações no Topo (Desktop: Exibidas no cabeçalho; Mobile: Unificadas no FAB flutuante) */}
+        <div className="hidden sm:flex items-center gap-2">
           {planLimits?.canRiskScore && (
             <Button
               variant="outline"
               size="sm"
               render={<Link href="/painel/termometro" />}
-              className="w-full sm:w-auto h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white justify-center"
+              className="h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white justify-center"
             >
               <FaGaugeHigh className="size-3.5 text-amber-400 mr-1.5" />
               <span>Termômetro da Gruta</span>
             </Button>
           )}
-          <div className="hidden sm:inline-flex">
-            <NewButton
-              href="/painel/devedores/novo"
-              label="Cadastrar Devedor"
-              icon="user-plus"
-              isLocked={planLimits?.isDebtorLimitReached}
-              lockReason="debtor"
-              maxAllowed={planLimits?.maxDebtors ?? 2}
-              planName={planLimits?.planName ?? "Tubarão Lixa"}
-            />
-          </div>
+          <NewButton
+            href="/painel/devedores/novo"
+            label="Cadastrar Devedor"
+            icon="user-plus"
+            isLocked={planLimits?.isDebtorLimitReached}
+            lockReason="debtor"
+            maxAllowed={planLimits?.maxDebtors ?? 2}
+            planName={planLimits?.planName ?? "Tubarão Lixa"}
+          />
         </div>
       </div>
 
@@ -177,7 +175,7 @@ export function DebtorsFeature({
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por nome, apelido, telefone ou CPF..."
+            placeholder="Buscar por nome, telefone ou CPF..."
             className="w-full bg-card border border-border rounded-xl pl-9 pr-4 py-2 text-xs font-mono text-white placeholder:text-zinc-500 focus:outline-hidden focus:border-zinc-700 shadow-xs"
           />
         </div>
@@ -283,8 +281,9 @@ export function DebtorsFeature({
         </div>
       )}
 
-      {/* Ação Flutuante no Mobile (FAB) */}
+      {/* Ação Flutuante no Mobile (FAB Multi-Ações com 3 pontinhos e transição para ✕) */}
       <MobileFloatingAction
+        ariaLabel="Ações de devedores"
         actions={[
           {
             label: "Novo Devedor",
@@ -294,7 +293,17 @@ export function DebtorsFeature({
             lockReason: "debtor",
             maxAllowed: planLimits?.maxDebtors ?? 2,
             planName: planLimits?.planName ?? "Tubarão Lixa",
+            variant: "emerald",
           },
+          ...(planLimits?.canRiskScore
+            ? [
+                {
+                  label: "Termômetro da Gruta",
+                  icon: <FaGaugeHigh className="size-4 text-amber-400" />,
+                  href: "/painel/termometro",
+                },
+              ]
+            : []),
         ]}
       />
     </div>

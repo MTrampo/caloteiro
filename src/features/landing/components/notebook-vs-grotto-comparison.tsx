@@ -40,6 +40,22 @@ interface ComparisonScenario {
 
 const COMPARISON_SCENARIOS: ComparisonScenario[] = [
   {
+    id: "overview",
+    topic: "Organização dos Devedores",
+    notebook: {
+      title: "Cegueira financeira e anotações perdidas",
+      description:
+        "Anotações espalhadas no bloco de notas do celular, papel de pão e conversas arquivadas. Você não faz ideia de quanto ainda pode receber ou quanto já virou caridade involuntária.",
+      consequence: "Você só descobre o tamanho do rombo quando a sua própria conta bancária aperta.",
+    },
+    caloteiro: {
+      title: "Todos os devedores em 1 só lugar",
+      description:
+        "Visão panorâmica e sem filtro: saiba na hora quanto ainda tem esperança de voltar (recebíveis na pista), quanto já arrancou no Pix e quem virou lenda urbana.",
+      advantage: "Raio-X financeiro absoluto: nenhum devedor fica esquecido e controle total do seu patrimônio.",
+    },
+  },
+  {
     id: "due-date",
     topic: "O Dia do Vencimento",
     notebook: {

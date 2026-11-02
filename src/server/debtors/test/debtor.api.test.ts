@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { HttpStatusEnum } from "@/commons/enums/http";
+import { formatShortName } from "@/commons/utils/format";
 import { DebtorRelationshipEnum } from "@/commons/models/debtor";
 import type { CreateDebtorPayload, DebtorItem } from "@/commons/models/debtor";
 import type { UserPermissions } from "@/commons/models/subscription";
@@ -258,6 +259,30 @@ describe("Serviço de Devedores (debtor.api.ts)", () => {
 
       expect(response.status).toBe(HttpStatusEnum.Ok);
       expect(debtorSupabase.updateDebtorSupabase).toHaveBeenCalled();
+    });
+  });
+
+  describe("formatShortName (Formatação de Nome Curto para Cards)", () => {
+    it("deve extrair primeiro e segundo nome de nomes completos", () => {
+      expect(formatShortName("Cleide Ferreira Silva")).toBe("Cleide Ferreira");
+      expect(formatShortName("Carlos Eduardo dos Santos")).toBe("Carlos Eduardo");
+    });
+
+    it("deve preservar partículas de ligação em português sem cortar no meio", () => {
+      expect(formatShortName("Maria de Fátima dos Santos")).toBe("Maria de Fátima");
+      expect(formatShortName("João da Silva")).toBe("João da Silva");
+      expect(formatShortName("Ana de Lurdes Ferreira")).toBe("Ana de Lurdes");
+    });
+
+    it("deve retornar o nome normal quando já tem 1 ou 2 palavras", () => {
+      expect(formatShortName("Cleiton")).toBe("Cleiton");
+      expect(formatShortName("Karen Cristina")).toBe("Karen Cristina");
+    });
+
+    it("deve tratar strings vazias ou nulas com segurança", () => {
+      expect(formatShortName("")).toBe("");
+      expect(formatShortName(null)).toBe("");
+      expect(formatShortName(undefined)).toBe("");
     });
   });
 });

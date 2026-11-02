@@ -1,0 +1,51 @@
+# Caloteiro — Central de Cobranças
+
+> Um aplicativo descontraído, afiado e sem burocracia para quem cansou de passar vergonha ao cobrar dinheiro emprestado. Desenvolvido por **Meu Trampo** (https://meutrampo.dev.br/).
+
+## Sobre o Caloteiro
+O Caloteiro é a plataforma oficial onde quem emprestou dinheiro se torna o **Tubarão** — o credor que centraliza todos os seus devedores em um só quartel-general, acabando com anotações soltas no bloco de notas e cobranças de cabeça. O sistema oferece uma visão panorâmica e sem filtros de **recebíveis na pista**, **valores recuperados no Pix** e **dinheiro perdido que virou lenda urbana**. O Tubarão monitora suas **presas marcadas** (devedores), carimba promessas furadas no **Mural de Caôs** e cobra de forma firme, profissional e bem-humorada pelo WhatsApp.
+
+* **Site Oficial:** https://caloteiro.meutrampo.dev.br/
+* **Criado por:** Meu Trampo (https://meutrampo.dev.br/)
+* **Instagram do Criador:** @meutrampo.dev (https://instagram.com/meutrampo.dev)
+* **Suporte via WhatsApp:** +55 11 91105-1247 (https://wa.me/5511911051247)
+
+## Para Quem é Indicado?
+* **Pessoas Físicas:** Exclusivo para quem empresta dinheiro do próprio bolso (amigos, parentes, familiares, colegas de trabalho, divisão de contas de viagem, churrascos e faturas de cartão compartilhado).
+* **Autônomos, Freelancers e Prestadores de Serviços:** Para quem trabalha com empréstimos, vende no fiado, opera crediário próprio ou presta serviços parcelados e precisa cobrar clientes pontualmente sem burocracia bancária.
+
+## Esclarecimentos Essenciais de Funcionamento (Anti-Enganação)
+* **Cobrança 100% no seu Controle:** O Caloteiro **não envia mensagens sozinho pelas suas costas** nem liga para devedores. O sistema calcula valores atualizados, juros e dias de atraso, e gera o texto pronto com a sua chave Pix. Você só clica para abrir o **seu próprio WhatsApp** e enviar com 1 toque.
+* **Zero Comissão sobre o Pix:** O Caloteiro **não retém dinheiro** nem cobra taxa por Pix recebido. O pagamento cai 100% integral direto na sua conta bancária pessoal ou jurídica.
+* **Criptografia AES-256 de Dados Sensíveis (LGPD):** CPFs, CNPJs e chaves Pix são gravados sob criptografia de padrão bancário (AES-256-GCM) no banco de dados. Nem a equipe técnica da plataforma visualiza dados em texto puro; somente o credor autenticado tem a chave de sessão.
+* **Privacidade Absoluta:** O devedor **não é exposto publicamente na internet** e os dados não vão para birôs de crédito. A Gruta é uma ferramenta privada do credor.
+* **PWA Multiplataforma:** Funciona como app nativo no celular (Android e iOS) adicionado à tela inicial, além de computadores e tablets.
+
+## Principais Recursos da Plataforma
+* **A Gruta do Tubarão:** Painel de comando com auditoria em tempo real do capital voando na pista vs. recuperado.
+* **3 Níveis de Pressão no WhatsApp:** Do lembrete amigável do dia do vencimento até a cutucada ácida de atraso crítico (Modo Tio Patinhas).
+* **Mural de Caôs e Desculpas:** Linha do tempo carimbada com data e hora de cada promessa furada ("sexta eu te pago sem falta").
+* **Arquivo de Provas Permanente:** Cofre de anexos de comprovantes Pix diretamente em cada parcela paga, eliminando discussões de "já te transferi".
+* **Link da Dívida com Pix 1-Clique:** Portal externo protegido por código de acesso (PIN de 4 dígitos) para o devedor copiar o Pix Copia e Cola e pagar em 30 segundos.
+* **Motor de Juros e Multas:** Juros simples, percentual no total, taxa fixa em Reais (R$) e juros compostos ao mês (% a.m.).
+* **Termômetro da Gruta & Score de Risco:** Inteligência analítica e velocímetro comportamental da presa marcada (0 a 100 pontos).
+
+## Dúvidas Jurídicas & Legislação Brasileira (Resumo)
+* **Emprestar dinheiro a juros é crime?** Não. O Código Civil autoriza o mútuo feneratício entre particulares (arts. 586 a 592) e o STJ reconhece juros acordados dentro dos limites legais. A agiotagem (Lei 1.521/51) só se configura em cobranças extorsivas ou coação.
+* **Cobrança violenta ou retenção de documentos:** São crimes graves (extorsão, art. 158 do CP, com pena de 4 a 10 anos). O Caloteiro promove cobrança digital pacífica e não tolera violência.
+* **Neutralidade da Plataforma:** O Caloteiro atua como ferramenta neutra de gestão sem monitorar as negociações particulares de usuários, não armazena endereços de IP e coopera com ordens judiciais formais nos limites dos dados disponíveis.
+* **Cobrar no WhatsApp é assédio?** Não. É o exercício regular de um direito do credor (art. 188, I do CC). A lei veda apenas a exposição pública vexatória.
+* **Mensagens e Pix valem como prova jurídica?** Sim. O CPC (arts. 369 e 411) admite conversas eletrônicas e comprovantes Pix como início de prova material legítima em ações de cobrança.
+
+## Espécies & Planos
+* **Tubarão Lixa (Grátis para Sempre):** R$ 0,00/mês. Até 2 presas marcadas simultâneas, parcelamento até 12x, sem juros e % total, mensagens prontas de WhatsApp. **Não exige cartão de crédito para começar.**
+* **Tubarão Branco (Mais Popular):** R$ 29,90/mês. Até 10 presas marcadas simultâneas, parcelamento até 36x, taxa fixa em R$, modelos 100% personalizáveis de WhatsApp, painel financeiro consolidado, link da dívida com Pix e cofre de comprovantes.
+* **Tubarão Cabeça Chato (Sem Limites):** R$ 49,90/mês. Presas marcadas e dívidas ilimitadas, parcelamento até 120x, juros ao mês (% a.m.), Termômetro da Gruta, Score de Risco da Mordida Exploratória, Raio-X Comportamental e Mural de Caôs completo.
+
+## Links para Leitura Aprofundada
+* Documentação Completa para LLMs: /llms-full.txt
+* Perguntas Frequentes & Guia Legal: /documentos/perguntas-frequentes
+* Matriz de Recursos e Planos: /documentos/planos
+* Termos de Uso e Contrato: /documentos/termos
+* Política de Privacidade e LGPD: /documentos/privacidade
+

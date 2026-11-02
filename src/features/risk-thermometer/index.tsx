@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/segmented-tabs";
 import { RiskSpeedometerChart } from "@/features/debtors/components/risk-speedometer-chart";
 import { RiskScoreRulesDialog } from "@/features/debtors/components/risk-score-rules-dialog";
+import { ResponsiveCardsCarousel } from "@/components/cards/responsive-cards-carousel";
+import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action";
 import { GrottoVerdictAlert } from "./components/grotto-verdict-alert";
 import {
   FaMagnifyingGlass,
@@ -22,6 +24,9 @@ import {
   FaTriangleExclamation,
   FaGaugeHigh,
   FaUserPlus,
+  FaCircleQuestion,
+  FaFileCirclePlus,
+  FaUsers,
 } from "react-icons/fa6";
 
 interface RiskThermometerFeatureProps {
@@ -33,6 +38,7 @@ type FilterTab = "all" | ThermometerGroup;
 export function RiskThermometerFeature({ data }: RiskThermometerFeatureProps) {
   const [selectedTab, setSelectedTab] = React.useState<FilterTab>("all");
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [isRulesOpen, setIsRulesOpen] = React.useState(false);
 
   const filteredDebtors = React.useMemo(() => {
     return data.debtorsRanked.filter((item) => {
@@ -78,7 +84,7 @@ export function RiskThermometerFeature({ data }: RiskThermometerFeatureProps) {
   ];
 
   return (
-    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full pb-24 sm:pb-6">
+    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full pb-32 sm:pb-6">
       {/* Cabeçalho Solto da Página (Sem Card, sem ícone no h2, sem pílula acima do título) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="space-y-1">
@@ -90,31 +96,36 @@ export function RiskThermometerFeature({ data }: RiskThermometerFeatureProps) {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0 w-full sm:w-auto">
+        {/* Ações no Topo (Desktop: Cabeçalho; Mobile: Unificadas no FAB flutuante) */}
+        <div className="hidden sm:flex items-center gap-2 shrink-0">
           <RiskScoreRulesDialog
             triggerLabel="Como funciona o Score?"
-            triggerClassName="w-full sm:w-auto h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white justify-center cursor-pointer"
+            open={isRulesOpen}
+            onOpenChange={setIsRulesOpen}
+            triggerClassName="h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white justify-center cursor-pointer"
           />
         </div>
       </div>
 
-      {/* 3 Cards de Resumo da Qualidade da Base */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* 3 Cards de Resumo da Qualidade da Base (Carrossel no Mobile, Grid 3 Colunas no Desktop) */}
+      <ResponsiveCardsCarousel desktopColumns={3} tabletColumns={2}>
         {/* Card 1: Elite da Gruta (Melhores Pagadores) */}
-        <div className="rounded-2xl border border-emerald-500/25 bg-card p-4 sm:p-5 space-y-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-bold">
-              Melhores (Elite 70–100 pts)
-            </span>
-            <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-full">
-              {data.elitePercentage}%
-            </span>
-          </div>
-          <div className="text-2xl sm:text-3xl font-black font-heading text-white tracking-tight tabular-nums">
-            {data.eliteCount}{" "}
-            <span className="text-xs sm:text-sm font-mono font-normal text-zinc-400">
-              {data.eliteCount === 1 ? "presa" : "presas"}
-            </span>
+        <div className="rounded-2xl border border-emerald-500/25 bg-card p-4 sm:p-5 space-y-1.5 h-full flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-bold">
+                Melhores (Elite 70–100 pts)
+              </span>
+              <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-full">
+                {data.elitePercentage}%
+              </span>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black font-heading text-white tracking-tight tabular-nums mt-1">
+              {data.eliteCount}{" "}
+              <span className="text-xs sm:text-sm font-mono font-normal text-zinc-400">
+                {data.eliteCount === 1 ? "presa" : "presas"}
+              </span>
+            </div>
           </div>
           <p className="text-xs font-mono text-zinc-400 leading-snug">
             Pagadores exemplares que honram o Pix sem dor de cabeça.
@@ -122,20 +133,22 @@ export function RiskThermometerFeature({ data }: RiskThermometerFeatureProps) {
         </div>
 
         {/* Card 2: Na Média / Em Observação */}
-        <div className="rounded-2xl border border-yellow-500/25 bg-card p-4 sm:p-5 space-y-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-yellow-400 font-bold">
-              Na Média (50–69 pts)
-            </span>
-            <span className="text-xs font-mono font-bold text-yellow-400 bg-yellow-500/10 border border-yellow-500/25 px-2 py-0.5 rounded-full">
-              {data.averagePercentage}%
-            </span>
-          </div>
-          <div className="text-2xl sm:text-3xl font-black font-heading text-white tracking-tight tabular-nums">
-            {data.averageCount}{" "}
-            <span className="text-xs sm:text-sm font-mono font-normal text-zinc-400">
-              {data.averageCount === 1 ? "presa" : "presas"}
-            </span>
+        <div className="rounded-2xl border border-yellow-500/25 bg-card p-4 sm:p-5 space-y-1.5 h-full flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-yellow-400 font-bold">
+                Na Média (50–69 pts)
+              </span>
+              <span className="text-xs font-mono font-bold text-yellow-400 bg-yellow-500/10 border border-yellow-500/25 px-2 py-0.5 rounded-full">
+                {data.averagePercentage}%
+              </span>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black font-heading text-white tracking-tight tabular-nums mt-1">
+              {data.averageCount}{" "}
+              <span className="text-xs sm:text-sm font-mono font-normal text-zinc-400">
+                {data.averageCount === 1 ? "presa" : "presas"}
+              </span>
+            </div>
           </div>
           <p className="text-xs font-mono text-zinc-400 leading-snug">
             Peixes ensaboados no meio da tabela que exigem rédea curta.
@@ -143,26 +156,28 @@ export function RiskThermometerFeature({ data }: RiskThermometerFeatureProps) {
         </div>
 
         {/* Card 3: Zona de Calote (Piores) */}
-        <div className="rounded-2xl border border-rose-500/30 bg-card p-4 sm:p-5 space-y-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-rose-400 font-bold">
-              Zona de Calote (0–49 pts)
-            </span>
-            <span className="text-xs font-mono font-bold text-rose-400 bg-rose-500/10 border border-rose-500/25 px-2 py-0.5 rounded-full">
-              {data.defaulterPercentage}%
-            </span>
-          </div>
-          <div className="text-2xl sm:text-3xl font-black font-heading text-white tracking-tight tabular-nums">
-            {data.defaulterCount}{" "}
-            <span className="text-xs sm:text-sm font-mono font-normal text-zinc-400">
-              {data.defaulterCount === 1 ? "presa" : "presas"}
-            </span>
+        <div className="rounded-2xl border border-rose-500/30 bg-card p-4 sm:p-5 space-y-1.5 h-full flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-rose-400 font-bold">
+                Zona de Calote (0–49 pts)
+              </span>
+              <span className="text-xs font-mono font-bold text-rose-400 bg-rose-500/10 border border-rose-500/25 px-2 py-0.5 rounded-full">
+                {data.defaulterPercentage}%
+              </span>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black font-heading text-white tracking-tight tabular-nums mt-1">
+              {data.defaulterCount}{" "}
+              <span className="text-xs sm:text-sm font-mono font-normal text-zinc-400">
+                {data.defaulterCount === 1 ? "presa" : "presas"}
+              </span>
+            </div>
           </div>
           <p className="text-xs font-mono text-zinc-400 leading-snug">
             Caloteiros em treinamento ou profissionais que puxam seu risco pra cima.
           </p>
         </div>
-      </div>
+      </ResponsiveCardsCarousel>
 
       {/* Alerta de Veredito da Gruta */}
       <GrottoVerdictAlert data={data} />
@@ -453,6 +468,36 @@ export function RiskThermometerFeature({ data }: RiskThermometerFeatureProps) {
           </div>
         )}
       </div>
+
+      {/* Diálogo explicativo de regras do Score (acionável também via FAB) */}
+      <RiskScoreRulesDialog
+        open={isRulesOpen}
+        onOpenChange={setIsRulesOpen}
+        showTrigger={false}
+      />
+
+      {/* Ações Flutuantes no Mobile (FAB Multi-Ações com 3 pontinhos e transição para ✕) */}
+      <MobileFloatingAction
+        ariaLabel="Ações do Termômetro"
+        actions={[
+          {
+            label: "Nova Dívida",
+            icon: <FaFileCirclePlus className="size-4" />,
+            href: "/painel/dividas/nova",
+            variant: "emerald",
+          },
+          {
+            label: "Ver Devedores",
+            icon: <FaUsers className="size-4 text-zinc-300" />,
+            href: "/painel/devedores",
+          },
+          {
+            label: "Como funciona o Score?",
+            icon: <FaCircleQuestion className="size-4 text-amber-400" />,
+            onClick: () => setIsRulesOpen(true),
+          },
+        ]}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { serverSupabase } from "@/commons/lib/supabase/server";
+import { internalSupabase } from "@/commons/lib/supabase/internal";
 import type {
   DebtorItem,
   DebtorUpdate,
@@ -9,6 +10,21 @@ import type {
   GetDebtorsParams,
   PaginatedDebtors,
 } from "@/commons/models/debtor";
+import {
+  encryptSensitiveData,
+  decryptSensitiveData,
+} from "@/server/account/service/encryption.api";
+
+/**
+ * Mapeia os dados do devedor descriptografando campos sensíveis (LGPD)
+ */
+function mapDebtorRow(row: DebtorItem): DebtorItem {
+  return {
+    ...row,
+    document: decryptSensitiveData(row.document),
+    pix_key: decryptSensitiveData(row.pix_key),
+  };
+}
 
 /**
  * Consulta devedores paginados com suporte a termo de busca
@@ -17,7 +33,7 @@ export const getDebtorsPaginatedSupabase = async (
   params: GetDebtorsParams
 ): Promise<PaginatedDebtors> => {
   const { userId, page = 1, limit = 12, search } = params;
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   const from = (page - 1) * limit;
   const to = from + limit - 1;
@@ -33,7 +49,7 @@ export const getDebtorsPaginatedSupabase = async (
   if (search && search.trim()) {
     const term = search.trim();
     query = query.or(
-      `name.ilike.%${term}%,nickname.ilike.%${term}%,phone.ilike.%${term}%,document.ilike.%${term}%`
+      `name.ilike.%${term}%,nickname.ilike.%${term}%,phone.ilike.%${term}%`
     );
   }
 
@@ -50,8 +66,30 @@ export const getDebtorsPaginatedSupabase = async (
     };
   }
 
-  const items = (data as DebtorItem[]) || [];
-  const totalCount = count || 0;
+  let rawItems = (data as DebtorItem[]) || [];
+  let items = rawItems.map(mapDebtorRow);
+  let totalCount = count || 0;
+
+  // Se o usuário digitou um termo numérico (possível CPF) e a busca SQL direta não trouxe itens
+  const cleanDigits = search ? search.replace(/\D/g, "") : "";
+  if (cleanDigits.length >= 3 && items.length === 0) {
+    const { data: allActive } = await supabase
+      .from("debtors")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("is_archived", false)
+      .order("created_at", { ascending: false });
+
+    if (allActive) {
+      const decryptedAll = (allActive as DebtorItem[]).map(mapDebtorRow);
+      const filteredByCpf = decryptedAll.filter((d) =>
+        d.document?.replace(/\D/g, "").includes(cleanDigits)
+      );
+      items = filteredByCpf.slice(from, to + 1);
+      totalCount = filteredByCpf.length;
+    }
+  }
+
   const hasMore = from + items.length < totalCount;
 
   return {
@@ -70,7 +108,7 @@ export const getDebtorByIdSupabase = async (
   id: string,
   userId: string
 ): Promise<DebtorItem | null> => {
-  const supabase = await serverSupabase();
+  const supabase = internalSupabase();
 
   const { data, error } = await supabase
     .from("debtors")
@@ -83,7 +121,7 @@ export const getDebtorByIdSupabase = async (
     return null;
   }
 
-  return data as DebtorItem;
+  return mapDebtorRow(data as DebtorItem);
 };
 
 /**
@@ -102,10 +140,10 @@ export const createDebtorSupabase = async (
       name: payload.name,
       nickname: payload.nickname || null,
       relationship: payload.relationship,
-      document: payload.document || null,
+      document: encryptSensitiveData(payload.document),
       address: payload.address || null,
       phone: payload.phone,
-      pix_key: payload.pix_key || null,
+      pix_key: encryptSensitiveData(payload.pix_key),
       pix_key_type: payload.pix_key_type || null,
       notes: payload.notes || null,
       is_archived: false,
@@ -118,7 +156,7 @@ export const createDebtorSupabase = async (
     return { data: null, error: error.message };
   }
 
-  return { data: data as DebtorItem, error: null };
+  return { data: mapDebtorRow(data as DebtorItem), error: null };
 };
 
 /**
@@ -138,10 +176,12 @@ export const updateDebtorSupabase = async (
   if (payload.name !== undefined) updateData.name = payload.name;
   if (payload.nickname !== undefined) updateData.nickname = payload.nickname;
   if (payload.relationship !== undefined) updateData.relationship = payload.relationship;
-  if (payload.document !== undefined) updateData.document = payload.document;
+  if (payload.document !== undefined)
+    updateData.document = encryptSensitiveData(payload.document);
   if (payload.address !== undefined) updateData.address = payload.address;
   if (payload.phone !== undefined) updateData.phone = payload.phone;
-  if (payload.pix_key !== undefined) updateData.pix_key = payload.pix_key;
+  if (payload.pix_key !== undefined)
+    updateData.pix_key = encryptSensitiveData(payload.pix_key);
   if (payload.pix_key_type !== undefined) updateData.pix_key_type = payload.pix_key_type;
   if (payload.notes !== undefined) updateData.notes = payload.notes;
   if (payload.is_archived !== undefined) updateData.is_archived = payload.is_archived;
@@ -159,7 +199,7 @@ export const updateDebtorSupabase = async (
     return { data: null, error: error.message };
   }
 
-  return { data: data as DebtorItem, error: null };
+  return { data: mapDebtorRow(data as DebtorItem), error: null };
 };
 
 /**

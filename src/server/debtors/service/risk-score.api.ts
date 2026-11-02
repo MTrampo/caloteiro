@@ -1,5 +1,8 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS } from "@/commons/lib/cache/server-cache";
+import { getSecondsUntilMidnightSaoPaulo } from "@/commons/utils/date";
 import { ApiResponse } from "@/commons/lib/http/responses";
 import type { ResponseProps } from "@/commons/models/api";
 import {
@@ -651,136 +654,151 @@ export const getDebtorRaioXApi = async (
     });
   }
 
-  const bundle = await getDebtorRiskContextByIdSupabase(debtorId, userId);
-  if (!bundle) {
+  const todayStr = getCalendarDateInSaoPaulo(new Date());
+  const ttlSeconds = getSecondsUntilMidnightSaoPaulo();
+
+  const getCachedRaioX = unstable_cache(
+    async (dId: string, uId: string): Promise<DebtorRaioXData | null> => {
+      const bundle = await getDebtorRiskContextByIdSupabase(dId, uId);
+      if (!bundle) return null;
+
+      const riskScore = calculateDebtorRiskScore({
+        debtorId: bundle.debtor.id,
+        debtorName: bundle.debtor.name,
+        debtorPhone: bundle.debtor.phone,
+        creditorPixKey: bundle.creditorPixKey,
+        debts: bundle.debts,
+        installments: bundle.installments,
+        payments: bundle.payments,
+        excuses: bundle.excuses,
+      });
+
+      const debtorFormatted: DebtorItemFormatted = {
+        ...presentDebtorItem(bundle.debtor),
+        whatsAppUrl: riskScore.recommendedWhatsappUrl,
+        riskScore,
+      };
+
+      // Mapeia dívidas do devedor
+      const debtMap = new Map<string, { title: string }>();
+      const debtsFormatted: DebtorRaioXDebtItem[] = bundle.debts.map((debt) => {
+        debtMap.set(debt.id, { title: debt.title });
+        const debtInsts = bundle.installments.filter((i) => i.debt_id === debt.id);
+
+        let paidCount = 0;
+        let overdueCount = 0;
+        let paidCents = 0;
+        let totalNominalCents = 0;
+
+        for (const inst of debtInsts) {
+          const nom = Math.round(Number(inst.nominal_amount || 0) * 100);
+          const pd = Math.round(Number(inst.paid_amount || 0) * 100);
+          totalNominalCents += nom;
+          paidCents += Math.min(nom, pd);
+
+          if (inst.status === "paid" || (nom > 0 && pd >= nom)) {
+            paidCount++;
+          } else if (diffCalendarDays(inst.due_date, todayStr) > 0) {
+            overdueCount++;
+          }
+        }
+
+        const totalAmount =
+          totalNominalCents > 0
+            ? totalNominalCents / 100
+            : Number(debt.total_amount ?? debt.original_amount ?? 0);
+        const paidAmount = paidCents / 100;
+        const remainingAmount = Math.max(0, (totalNominalCents - paidCents) / 100);
+
+        let statusLabel = "Em andamento";
+        let statusBadgeClass = "bg-zinc-800 text-zinc-300 border-zinc-700";
+
+        if (debt.status === "settled" || (debtInsts.length > 0 && paidCount >= debtInsts.length)) {
+          statusLabel = "Quitada";
+          statusBadgeClass = "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+        } else if (debt.status === "defaulted" || overdueCount >= 2) {
+          statusLabel = "Quebra / Crítico";
+          statusBadgeClass = "bg-rose-500/15 text-rose-400 border-rose-500/30";
+        } else if (overdueCount > 0) {
+          statusLabel = `${overdueCount} em atraso`;
+          statusBadgeClass = "bg-amber-500/15 text-amber-400 border-amber-500/30";
+        }
+
+        return {
+          id: debt.id,
+          title: debt.title,
+          status: debt.status,
+          statusLabel,
+          statusBadgeClass,
+          originalAmount: Number(debt.original_amount || 0),
+          totalAmount,
+          paidAmount,
+          remainingAmount,
+          formattedTotalAmount: formatBRL(totalAmount),
+          formattedPaidAmount: formatBRL(paidAmount),
+          formattedRemainingAmount: formatBRL(remainingAmount),
+          formattedLoanDate: formatDate(debt.loan_date),
+          installmentsCount: debtInsts.length || debt.installments_count || 1,
+          paidInstallmentsCount: paidCount,
+          overdueInstallmentsCount: overdueCount,
+        };
+      });
+
+      // Mapa de parcelas para vincular desculpas
+      const instMap = new Map<string, { debtId: string; number: number; isPaid: boolean }>();
+      for (const inst of bundle.installments) {
+        const isPaid =
+          inst.status === "paid" ||
+          Number(inst.paid_amount || 0) >= Number(inst.nominal_amount || 0);
+        instMap.set(inst.id, {
+          debtId: inst.debt_id,
+          number: inst.installment_number,
+          isPaid,
+        });
+      }
+
+      const excusesFormatted: DebtorRaioXExcuseItem[] = bundle.excuses.map((exc) => {
+        const instInfo = instMap.get(exc.installment_id);
+        const debtId = instInfo?.debtId || "";
+        const debtTitle = debtMap.get(debtId)?.title || "Acordo na Gruta";
+        const wasHonored = Boolean(exc.was_honored || instInfo?.isPaid);
+
+        return {
+          id: exc.id,
+          excuseText: exc.excuse_text,
+          promisedDate: exc.promised_date,
+          formattedPromisedDate: formatDate(exc.promised_date),
+          formattedCreatedAt: formatDate(exc.created_at),
+          wasHonored,
+          debtId,
+          debtTitle,
+          installmentNumber: instInfo?.number || 1,
+        };
+      });
+
+      return {
+        debtor: debtorFormatted,
+        riskScore,
+        debts: debtsFormatted,
+        excuses: excusesFormatted,
+      };
+    },
+    ["debtor-raiox-data", debtorId, userId, todayStr],
+    {
+      revalidate: ttlSeconds,
+      tags: [CACHE_TAGS.userData(userId), CACHE_TAGS.debtorDetails(debtorId)],
+    }
+  );
+
+  const raioXData = await getCachedRaioX(debtorId, userId);
+  if (!raioXData) {
     return ApiResponse.NotFound({
       message: "Presa não encontrada na sua gruta.",
     });
   }
 
-  const todayStr = getCalendarDateInSaoPaulo(new Date());
-
-  const riskScore = calculateDebtorRiskScore({
-    debtorId: bundle.debtor.id,
-    debtorName: bundle.debtor.name,
-    debtorPhone: bundle.debtor.phone,
-    creditorPixKey: bundle.creditorPixKey,
-    debts: bundle.debts,
-    installments: bundle.installments,
-    payments: bundle.payments,
-    excuses: bundle.excuses,
-  });
-
-  const debtorFormatted: DebtorItemFormatted = {
-    ...presentDebtorItem(bundle.debtor),
-    whatsAppUrl: riskScore.recommendedWhatsappUrl,
-    riskScore,
-  };
-
-  // Mapeia dívidas do devedor
-  const debtMap = new Map<string, { title: string }>();
-  const debtsFormatted: DebtorRaioXDebtItem[] = bundle.debts.map((debt) => {
-    debtMap.set(debt.id, { title: debt.title });
-    const debtInsts = bundle.installments.filter((i) => i.debt_id === debt.id);
-
-    let paidCount = 0;
-    let overdueCount = 0;
-    let paidCents = 0;
-    let totalNominalCents = 0;
-
-    for (const inst of debtInsts) {
-      const nom = Math.round(Number(inst.nominal_amount || 0) * 100);
-      const pd = Math.round(Number(inst.paid_amount || 0) * 100);
-      totalNominalCents += nom;
-      paidCents += Math.min(nom, pd);
-
-      if (inst.status === "paid" || (nom > 0 && pd >= nom)) {
-        paidCount++;
-      } else if (diffCalendarDays(inst.due_date, todayStr) > 0) {
-        overdueCount++;
-      }
-    }
-
-    const totalAmount =
-      totalNominalCents > 0
-        ? totalNominalCents / 100
-        : Number(debt.total_amount ?? debt.original_amount ?? 0);
-    const paidAmount = paidCents / 100;
-    const remainingAmount = Math.max(0, (totalNominalCents - paidCents) / 100);
-
-    let statusLabel = "Em andamento";
-    let statusBadgeClass = "bg-zinc-800 text-zinc-300 border-zinc-700";
-
-    if (debt.status === "settled" || (debtInsts.length > 0 && paidCount >= debtInsts.length)) {
-      statusLabel = "Quitada";
-      statusBadgeClass = "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
-    } else if (debt.status === "defaulted" || overdueCount >= 2) {
-      statusLabel = "Quebra / Crítico";
-      statusBadgeClass = "bg-rose-500/15 text-rose-400 border-rose-500/30";
-    } else if (overdueCount > 0) {
-      statusLabel = `${overdueCount} em atraso`;
-      statusBadgeClass = "bg-amber-500/15 text-amber-400 border-amber-500/30";
-    }
-
-    return {
-      id: debt.id,
-      title: debt.title,
-      status: debt.status,
-      statusLabel,
-      statusBadgeClass,
-      originalAmount: Number(debt.original_amount || 0),
-      totalAmount,
-      paidAmount,
-      remainingAmount,
-      formattedTotalAmount: formatBRL(totalAmount),
-      formattedPaidAmount: formatBRL(paidAmount),
-      formattedRemainingAmount: formatBRL(remainingAmount),
-      formattedLoanDate: formatDate(debt.loan_date),
-      installmentsCount: debtInsts.length || debt.installments_count || 1,
-      paidInstallmentsCount: paidCount,
-      overdueInstallmentsCount: overdueCount,
-    };
-  });
-
-  // Mapa de parcelas para vincular desculpas
-  const instMap = new Map<string, { debtId: string; number: number; isPaid: boolean }>();
-  for (const inst of bundle.installments) {
-    const isPaid =
-      inst.status === "paid" ||
-      Number(inst.paid_amount || 0) >= Number(inst.nominal_amount || 0);
-    instMap.set(inst.id, {
-      debtId: inst.debt_id,
-      number: inst.installment_number,
-      isPaid,
-    });
-  }
-
-  const excusesFormatted: DebtorRaioXExcuseItem[] = bundle.excuses.map((exc) => {
-    const instInfo = instMap.get(exc.installment_id);
-    const debtId = instInfo?.debtId || "";
-    const debtTitle = debtMap.get(debtId)?.title || "Acordo na Gruta";
-    const wasHonored = Boolean(exc.was_honored || instInfo?.isPaid);
-
-    return {
-      id: exc.id,
-      excuseText: exc.excuse_text,
-      promisedDate: exc.promised_date,
-      formattedPromisedDate: formatDate(exc.promised_date),
-      formattedCreatedAt: formatDate(exc.created_at),
-      wasHonored,
-      debtId,
-      debtTitle,
-      installmentNumber: instInfo?.number || 1,
-    };
-  });
-
   return ApiResponse.Ok({
-    data: {
-      debtor: debtorFormatted,
-      riskScore,
-      debts: debtsFormatted,
-      excuses: excusesFormatted,
-    },
+    data: raioXData,
     message: "Raio-X comportamental da presa carregado com sucesso.",
   });
 };
@@ -800,175 +818,191 @@ export const getGrottoThermometerDataApi = async (
     });
   }
 
-  const bundle = await getBatchDebtorsRiskContextSupabase(userId);
-  const totalDebtors = bundle.debtors.length;
+  const todayStr = getCalendarDateInSaoPaulo(new Date());
+  const ttlSeconds = getSecondsUntilMidnightSaoPaulo();
 
-  let eliteCount = 0;
-  let averageCount = 0;
-  let defaulterCount = 0;
+  const getCachedThermometer = unstable_cache(
+    async (uid: string): Promise<GrottoThermometerData> => {
+      const bundle = await getBatchDebtorsRiskContextSupabase(uid);
+      const totalDebtors = bundle.debtors.length;
 
-  let safeExposureCents = 0;
-  let riskExposureCents = 0;
-  let scoreSum = 0;
+      let eliteCount = 0;
+      let averageCount = 0;
+      let defaulterCount = 0;
 
-  const debtorsRanked: ThermometerDebtorItem[] = bundle.debtors.map((rawDebtor) => {
-    const debtorDebts = bundle.debts.filter((d) => d.debtor_id === rawDebtor.id);
-    const debtorInstallments = bundle.installments.filter(
-      (i) => i.debtor_id === rawDebtor.id
-    );
-    const debtorPayments = bundle.payments.filter(
-      (p) => p.debtor_id === rawDebtor.id
-    );
-    const debtorExcuses = bundle.excuses.filter(
-      (e) => e.debtor_id === rawDebtor.id
-    );
+      let safeExposureCents = 0;
+      let riskExposureCents = 0;
+      let scoreSum = 0;
 
-    const calc = calculateDebtorRiskScore({
-      debtorId: rawDebtor.id,
-      debtorName: rawDebtor.name,
-      debtorPhone: rawDebtor.phone,
-      creditorPixKey: bundle.creditorPixKey,
-      debts: debtorDebts,
-      installments: debtorInstallments,
-      payments: debtorPayments,
-      excuses: debtorExcuses,
-    });
+      const debtorsRanked: ThermometerDebtorItem[] = bundle.debtors.map((rawDebtor) => {
+        const debtorDebts = bundle.debts.filter((d) => d.debtor_id === rawDebtor.id);
+        const debtorInstallments = bundle.installments.filter(
+          (i) => i.debtor_id === rawDebtor.id
+        );
+        const debtorPayments = bundle.payments.filter(
+          (p) => p.debtor_id === rawDebtor.id
+        );
+        const debtorExcuses = bundle.excuses.filter(
+          (e) => e.debtor_id === rawDebtor.id
+        );
 
-    scoreSum += calc.score;
+        const calc = calculateDebtorRiskScore({
+          debtorId: rawDebtor.id,
+          debtorName: rawDebtor.name,
+          debtorPhone: rawDebtor.phone,
+          creditorPixKey: bundle.creditorPixKey,
+          debts: debtorDebts,
+          installments: debtorInstallments,
+          payments: debtorPayments,
+          excuses: debtorExcuses,
+        });
 
-    let group: ThermometerGroup = "average";
-    if (calc.score >= 70) {
-      group = "elite";
-      eliteCount++;
-    } else if (calc.score >= 50) {
-      group = "average";
-      averageCount++;
-    } else {
-      group = "defaulter";
-      defaulterCount++;
+        scoreSum += calc.score;
+
+        let group: ThermometerGroup = "average";
+        if (calc.score >= 70) {
+          group = "elite";
+          eliteCount++;
+        } else if (calc.score >= 50) {
+          group = "average";
+          averageCount++;
+        } else {
+          group = "defaulter";
+          defaulterCount++;
+        }
+
+        const exposureCents = Math.round(calc.openExposureAmount * 100);
+        if (calc.score >= 50) {
+          safeExposureCents += exposureCents;
+        } else {
+          riskExposureCents += exposureCents;
+        }
+
+        const summary: DebtorRiskScoreSummary = {
+          score: calc.score,
+          tier: calc.tier,
+          tierLabel: calc.tierLabel,
+          tierShortLabel: calc.tierShortLabel,
+          tierDescription: calc.tierDescription,
+          colorHex: calc.colorHex,
+          badgeClass: calc.badgeClass,
+          textClass: calc.textClass,
+          recentDelta: calc.recentDelta,
+          recentDeltaLabel: calc.recentDeltaLabel,
+          weaponLevel: calc.weaponLevel,
+          weaponLabel: calc.weaponLabel,
+          recommendedWhatsappUrl: calc.recommendedWhatsappUrl,
+          overdueInstallmentsCount: calc.overdueInstallmentsCount,
+          excusesCount: calc.excusesCount,
+          paidOnTimeCount: calc.paidOnTimeCount,
+          totalInstallmentsCount: calc.totalInstallmentsCount,
+          openExposureAmount: calc.openExposureAmount,
+          badges: calc.badges,
+        };
+
+        const debtorFormatted: DebtorItemFormatted = {
+          ...presentDebtorItem(rawDebtor),
+          whatsAppUrl: calc.recommendedWhatsappUrl,
+          riskScore: summary,
+        };
+
+        return {
+          debtor: debtorFormatted,
+          riskScore: summary,
+          group,
+          formattedExposure: formatBRL(calc.openExposureAmount),
+        };
+      });
+
+      // Ordena do menor score (maior perigo) para o maior por padrão, ou permite filtro na UI
+      debtorsRanked.sort((a, b) => a.riskScore.score - b.riskScore.score);
+
+      const overallScore =
+        totalDebtors > 0 ? Math.round(scoreSum / totalDebtors) : INITIAL_RISK_SCORE;
+      const overallTier = resolveBiologicalTier(overallScore);
+      const overallTierMeta = BIOLOGICAL_TIER_METADATA[overallTier];
+
+      const elitePercentage =
+        totalDebtors > 0 ? Math.round((eliteCount / totalDebtors) * 100) : 0;
+      const averagePercentage =
+        totalDebtors > 0 ? Math.round((averageCount / totalDebtors) * 100) : 0;
+      const defaulterPercentage =
+        totalDebtors > 0
+          ? Math.max(0, 100 - elitePercentage - averagePercentage)
+          : 0;
+
+      const totalExposureCents = safeExposureCents + riskExposureCents;
+      const safeExposureAmount = safeExposureCents / 100;
+      const riskExposureAmount = riskExposureCents / 100;
+      const totalExposureAmount = totalExposureCents / 100;
+
+      const riskExposurePercentage =
+        totalExposureCents > 0
+          ? Math.round((riskExposureCents / totalExposureCents) * 100)
+          : 0;
+
+      // Diagnóstico estratégico da carteira do Tubarão
+      let diagnosisTitle = "Gruta Vazia (Sem Presas Marcadas)";
+      let diagnosisDescription =
+        "Cadastre seus devedores para o Termômetro medir o nível de risco da sua carteira.";
+      let riskLevelLabel = "Aguardando Presas";
+
+      if (totalDebtors > 0) {
+        if (overallScore >= 70 && defaulterPercentage <= 20) {
+          diagnosisTitle = "Mar Calmo: Cardume de Pagadores Exemplares";
+          diagnosisDescription =
+            "Sua base de clientes é saudável! A maioria das suas presas respeita o vencimento e mantém o dinheiro girando sem dor de cabeça.";
+          riskLevelLabel = "Risco Baixo (Carteira Saudável)";
+        } else if (overallScore >= 50 && defaulterPercentage < 50) {
+          diagnosisTitle = "Águas Turvas: Base no Meio-Termo (Exige Vigilância)";
+          diagnosisDescription =
+            "Você tem bons pagadores, mas parte da gruta está na linha amarela ou começando a dar desculpas. Use o score para filtrar quem merece novos empréstimos.";
+          riskLevelLabel = "Risco Moderado (Sob Observação)";
+        } else {
+          diagnosisTitle = "Alerta de Cardume Tóxico: Alto Risco de Calote!";
+          diagnosisDescription =
+            "Mais da metade do seu risco vem de Caloteiros em Treinamento ou Profissionais. Pare de soltar dinheiro para quem tem Score abaixo de 50 e concentre sua carteira na Elite da Gruta!";
+          riskLevelLabel = "Risco Crítico (Exposição Alta)";
+        }
+      }
+
+      return {
+        overallScore,
+        overallTier,
+        overallTierLabel: overallTierMeta.label,
+        overallColorHex: overallTierMeta.colorHex,
+        overallBadgeClass: overallTierMeta.badgeClass,
+        diagnosisTitle,
+        diagnosisDescription,
+        riskLevelLabel,
+        totalDebtors,
+        eliteCount,
+        averageCount,
+        defaulterCount,
+        elitePercentage,
+        averagePercentage,
+        defaulterPercentage,
+        safeExposureAmount,
+        riskExposureAmount,
+        totalExposureAmount,
+        formattedSafeExposure: formatBRL(safeExposureAmount),
+        formattedRiskExposure: formatBRL(riskExposureAmount),
+        formattedTotalExposure: formatBRL(totalExposureAmount),
+        riskExposurePercentage,
+        debtorsRanked,
+      };
+    },
+    ["grotto-thermometer", userId, todayStr],
+    {
+      revalidate: ttlSeconds,
+      tags: [CACHE_TAGS.userData(userId)],
     }
+  );
 
-    const exposureCents = Math.round(calc.openExposureAmount * 100);
-    if (calc.score >= 50) {
-      safeExposureCents += exposureCents;
-    } else {
-      riskExposureCents += exposureCents;
-    }
-
-    const summary: DebtorRiskScoreSummary = {
-      score: calc.score,
-      tier: calc.tier,
-      tierLabel: calc.tierLabel,
-      tierShortLabel: calc.tierShortLabel,
-      tierDescription: calc.tierDescription,
-      colorHex: calc.colorHex,
-      badgeClass: calc.badgeClass,
-      textClass: calc.textClass,
-      recentDelta: calc.recentDelta,
-      recentDeltaLabel: calc.recentDeltaLabel,
-      weaponLevel: calc.weaponLevel,
-      weaponLabel: calc.weaponLabel,
-      recommendedWhatsappUrl: calc.recommendedWhatsappUrl,
-      overdueInstallmentsCount: calc.overdueInstallmentsCount,
-      excusesCount: calc.excusesCount,
-      paidOnTimeCount: calc.paidOnTimeCount,
-      totalInstallmentsCount: calc.totalInstallmentsCount,
-      openExposureAmount: calc.openExposureAmount,
-      badges: calc.badges,
-    };
-
-    const debtorFormatted: DebtorItemFormatted = {
-      ...presentDebtorItem(rawDebtor),
-      whatsAppUrl: calc.recommendedWhatsappUrl,
-      riskScore: summary,
-    };
-
-    return {
-      debtor: debtorFormatted,
-      riskScore: summary,
-      group,
-      formattedExposure: formatBRL(calc.openExposureAmount),
-    };
-  });
-
-  // Ordena do menor score (maior perigo) para o maior por padrão, ou permite filtro na UI
-  debtorsRanked.sort((a, b) => a.riskScore.score - b.riskScore.score);
-
-  const overallScore =
-    totalDebtors > 0 ? Math.round(scoreSum / totalDebtors) : INITIAL_RISK_SCORE;
-  const overallTier = resolveBiologicalTier(overallScore);
-  const overallTierMeta = BIOLOGICAL_TIER_METADATA[overallTier];
-
-  const elitePercentage =
-    totalDebtors > 0 ? Math.round((eliteCount / totalDebtors) * 100) : 0;
-  const averagePercentage =
-    totalDebtors > 0 ? Math.round((averageCount / totalDebtors) * 100) : 0;
-  const defaulterPercentage =
-    totalDebtors > 0
-      ? Math.max(0, 100 - elitePercentage - averagePercentage)
-      : 0;
-
-  const totalExposureCents = safeExposureCents + riskExposureCents;
-  const safeExposureAmount = safeExposureCents / 100;
-  const riskExposureAmount = riskExposureCents / 100;
-  const totalExposureAmount = totalExposureCents / 100;
-
-  const riskExposurePercentage =
-    totalExposureCents > 0
-      ? Math.round((riskExposureCents / totalExposureCents) * 100)
-      : 0;
-
-  // Diagnóstico estratégico da carteira do Tubarão
-  let diagnosisTitle = "Gruta Vazia (Sem Presas Marcadas)";
-  let diagnosisDescription =
-    "Cadastre seus devedores para o Termômetro medir o nível de risco da sua carteira.";
-  let riskLevelLabel = "Aguardando Presas";
-
-  if (totalDebtors > 0) {
-    if (overallScore >= 70 && defaulterPercentage <= 20) {
-      diagnosisTitle = "Mar Calmo: Cardume de Pagadores Exemplares";
-      diagnosisDescription =
-        "Sua base de clientes é saudável! A maioria das suas presas respeita o vencimento e mantém o dinheiro girando sem dor de cabeça.";
-      riskLevelLabel = "Risco Baixo (Carteira Saudável)";
-    } else if (overallScore >= 50 && defaulterPercentage < 50) {
-      diagnosisTitle = "Águas Turvas: Base no Meio-Termo (Exige Vigilância)";
-      diagnosisDescription =
-        "Você tem bons pagadores, mas parte da gruta está na linha amarela ou começando a dar desculpas. Use o score para filtrar quem merece novos empréstimos.";
-      riskLevelLabel = "Risco Moderado (Sob Observação)";
-    } else {
-      diagnosisTitle = "Alerta de Cardume Tóxico: Alto Risco de Calote!";
-      diagnosisDescription =
-        "Mais da metade do seu risco vem de Caloteiros em Treinamento ou Profissionais. Pare de soltar dinheiro para quem tem Score abaixo de 50 e concentre sua carteira na Elite da Gruta!";
-      riskLevelLabel = "Risco Crítico (Exposição Alta)";
-    }
-  }
+  const thermometerData = await getCachedThermometer(userId);
 
   return ApiResponse.Ok({
-    data: {
-      overallScore,
-      overallTier,
-      overallTierLabel: overallTierMeta.label,
-      overallColorHex: overallTierMeta.colorHex,
-      overallBadgeClass: overallTierMeta.badgeClass,
-      diagnosisTitle,
-      diagnosisDescription,
-      riskLevelLabel,
-      totalDebtors,
-      eliteCount,
-      averageCount,
-      defaulterCount,
-      elitePercentage,
-      averagePercentage,
-      defaulterPercentage,
-      safeExposureAmount,
-      riskExposureAmount,
-      totalExposureAmount,
-      formattedSafeExposure: formatBRL(safeExposureAmount),
-      formattedRiskExposure: formatBRL(riskExposureAmount),
-      formattedTotalExposure: formatBRL(totalExposureAmount),
-      riskExposurePercentage,
-      debtorsRanked,
-    },
+    data: thermometerData,
     message: "Termômetro da Gruta calculado com sucesso.",
   });
 };

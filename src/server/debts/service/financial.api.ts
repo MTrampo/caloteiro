@@ -1,5 +1,8 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS } from "@/commons/lib/cache/server-cache";
+import { getCalendarDateInSaoPaulo, getSecondsUntilMidnightSaoPaulo } from "@/commons/utils/date";
 import {
   getFinancialDebtsWithRelationsSupabase,
   getFinancialPaymentsSupabase,
@@ -160,12 +163,28 @@ export const getFinancialAnalyticsApi = async (
   period: FinancialPeriod = "month"
 ): Promise<FinancialAnalyticsResult> => {
   const windowConfig = getPeriodWindow(period);
+  const todayStr = getCalendarDateInSaoPaulo(new Date());
+  const ttlSeconds = getSecondsUntilMidnightSaoPaulo();
 
-  const [permissions, debts, payments, creditorPixKey] = await Promise.all([
+  const getCachedFinancialBase = unstable_cache(
+    async (uid: string, p: string, startDate: string) => {
+      const [debts, payments, creditorPixKey] = await Promise.all([
+        getFinancialDebtsWithRelationsSupabase(uid),
+        getFinancialPaymentsSupabase(uid, startDate),
+        getCreditorPixKeySupabase(uid),
+      ]);
+      return { debts, payments, creditorPixKey };
+    },
+    ["financial-data-base", userId, period, todayStr],
+    {
+      revalidate: ttlSeconds,
+      tags: [CACHE_TAGS.userData(userId)],
+    }
+  );
+
+  const [permissions, { debts, payments, creditorPixKey }] = await Promise.all([
     getUserPermissionsOrCacheApi(userId),
-    getFinancialDebtsWithRelationsSupabase(userId),
-    getFinancialPaymentsSupabase(userId, windowConfig.startDate),
-    getCreditorPixKeySupabase(userId),
+    getCachedFinancialBase(userId, period, windowConfig.startDate),
   ]);
 
   if (debts.length === 0) {

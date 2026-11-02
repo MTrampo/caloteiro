@@ -11,6 +11,10 @@ const DOC_LINKS = [
     label: "Planos & Regras",
   },
   {
+    href: "/documentos/perguntas-frequentes",
+    label: "Dúvidas & Guia Legal",
+  },
+  {
     href: "/documentos/termos",
     label: "Termos de Uso",
   },

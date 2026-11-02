@@ -256,12 +256,17 @@ export function PrivacyDocFeature() {
 
             <div className="rounded-xl border border-border bg-card p-4 space-y-2">
               <h4 className="font-heading text-sm font-bold text-white">
-                3.3. Dados de Terceiros Inseridos pelo Credor (Devedores)
+                3.3. Dados de Terceiros Inseridos pelo Credor (Devedores) e Criptografia em Repouso
               </h4>
               <p className="text-zinc-300">
                 Nome civil, apelido/vulgo, grau de proximidade (parente, amigo, colega), número de telefone celular para contato/WhatsApp.
-                Informações acessórias opcionais: CPF, endereço residencial em linha única, chave Pix informada pelo terceiro
+                Informações acessórias opcionais: CPF/CNPJ, endereço residencial em linha única, chave Pix informada pelo terceiro
                 e anotações livres de justificativas (&ldquo;caôs&rdquo; ou desculpas) vinculadas ao vencimento de parcelas.
+              </p>
+              <p className="text-zinc-300">
+                <strong className="text-white">Criptografia de Dados Sensíveis:</strong> Os campos de CPF/CNPJ e Chave Pix
+                são gravados no banco de dados exclusivamente sob o padrão de <em>Criptografia em Repouso (AES-256-GCM)</em>,
+                impedindo que administradores ou terceiros visualizem dados brutos em texto puro.
               </p>
             </div>
           </div>
@@ -393,6 +398,10 @@ export function PrivacyDocFeature() {
           </p>
           <ul className="list-disc list-inside space-y-1.5 text-zinc-300">
             <li>Criptografia ponta a ponta nas conexões via HTTPS/TLS;</li>
+            <li>
+              <strong className="text-white">Criptografia em Repouso de Dados Sensíveis (AES-256-GCM):</strong> Números
+              de CPF/CNPJ e Chaves Pix de credores e devedores são criptografados no banco de dados com algoritmo de nível bancário e IV aleatório único. Nem administradores de banco possuem acesso em texto puro; somente a sessão autenticada do usuário detém a chave para visualização;
+            </li>
             <li>Armazenamento de senhas via mecanismos de hash criptográfico irreversível;</li>
             <li>Políticas rigorosas de controle de acesso aos bancos de dados de produção;</li>
             <li>Compressão segura de comprovantes Pix e isolamento por identificador de usuário (Row Level Security - RLS).</li>

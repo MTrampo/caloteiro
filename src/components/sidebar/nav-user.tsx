@@ -21,11 +21,19 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { FaCreditCard, FaRightFromBracket, FaUser } from "react-icons/fa6"
+import {
+  FaCreditCard,
+  FaRightFromBracket,
+  FaUser,
+  FaLaptop,
+  FaMobileScreen,
+} from "react-icons/fa6"
 import { ChevronsUpDown } from "lucide-react"
 import Link from "next/link"
 import { signOutAction } from "@/actions/auth"
 import { formatProperName, getNameInitials } from "@/commons/utils/format"
+import { usePwaInstall } from "@/hooks/use-pwa-install"
+import { IosGuideDialog } from "@/components/pwa/ios-guide-dialog"
 import tlSvg from "@/commons/assets/svgs/tl.svg"
 import tbSvg from "@/commons/assets/svgs/tb.svg"
 import tccSvg from "@/commons/assets/svgs/tcc.svg"
@@ -72,6 +80,24 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const router = useRouter()
   const [isPending, startTransition] = React.useTransition()
+  const [showIosGuide, setShowIosGuide] = React.useState(false)
+
+  const {
+    canInstall,
+    isStandalone,
+    isIOS,
+    isDesktop,
+    installTitle,
+    installApp,
+  } = usePwaInstall()
+
+  const handleInstallClick = async () => {
+    if (isIOS) {
+      setShowIosGuide(true)
+    } else {
+      await installApp()
+    }
+  }
 
   // Formatação segura de nomes
   const formattedNickname = user.nickname ? formatProperName(user.nickname) : null
@@ -165,6 +191,24 @@ export function NavUser({
                 <span>Assinatura</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
+            {!isStandalone && canInstall && (
+              <>
+                <DropdownMenuSeparator className="bg-zinc-800" />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={handleInstallClick}
+                    className="flex items-center gap-2 cursor-pointer text-emerald-400 hover:text-emerald-300 focus:text-emerald-300 focus:bg-zinc-800"
+                  >
+                    {isDesktop ? (
+                      <FaLaptop className="size-3.5 text-emerald-400" />
+                    ) : (
+                      <FaMobileScreen className="size-3.5 text-emerald-400" />
+                    )}
+                    <span>{installTitle}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </>
+            )}
             <DropdownMenuSeparator className="bg-zinc-800" />
             <DropdownMenuItem
               className="flex items-center gap-2 cursor-pointer text-rose-400 hover:text-rose-300 focus:text-rose-300"
@@ -177,6 +221,7 @@ export function NavUser({
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+      <IosGuideDialog open={showIosGuide} onOpenChange={setShowIosGuide} />
     </SidebarMenu>
   )
 }
