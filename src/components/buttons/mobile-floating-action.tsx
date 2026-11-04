@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { PlanLimitModal } from "@/components/modals/plan-limit-modal"
 import { cn } from "@/commons/lib/utils"
-import { FaPlus, FaBolt, FaEllipsisVertical, FaXmark } from "react-icons/fa6"
+import { FaPlus, FaEllipsisVertical, FaXmark } from "react-icons/fa6"
 
 export interface FloatingActionItem {
   label: string

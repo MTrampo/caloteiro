@@ -12,13 +12,7 @@ import {
   FaShieldHalved,
   FaCheck,
   FaXmark,
-  FaClock,
-  FaFileInvoiceDollar,
-  FaWhatsapp,
-  FaCoins,
   FaArrowRight,
-  FaRotate,
-  FaSkull,
 } from "react-icons/fa6";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);

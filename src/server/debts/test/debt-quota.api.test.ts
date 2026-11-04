@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   calculateRemainingDebtAmount,
   partitionDebtsByQuota,
-  getUserDebtQuotaPartitionApi,
   checkDebtLockedStatusApi,
   type QuotaDebtTarget,
 } from "../service/debt-quota.api";
@@ -155,7 +154,7 @@ describe("Serviço de Quota e Jaula do Tubarão (debt-quota.api.ts)", () => {
           total_amount: 2000,
           debtor: null,
           installments: [],
-        } as any,
+        } as unknown as Awaited<ReturnType<typeof trackingRepo.getActiveDebtsWithRelationsSupabase>>[0],
         {
           id: "d-barata",
           user_id: "user-1",
@@ -164,7 +163,7 @@ describe("Serviço de Quota e Jaula do Tubarão (debt-quota.api.ts)", () => {
           total_amount: 100,
           debtor: null,
           installments: [],
-        } as any,
+        } as unknown as Awaited<ReturnType<typeof trackingRepo.getActiveDebtsWithRelationsSupabase>>[0],
       ]);
 
       const caraStatus = await checkDebtLockedStatusApi("d-cara", "user-1");

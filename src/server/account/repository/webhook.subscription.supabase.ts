@@ -55,6 +55,7 @@ export const webhookSyncSubscriptionSupabase = async (
 ) => {
   const supabase = internalSupabase();
   const { plan: _ignoredPlan, scheduled_plan: _ignoredScheduledPlan, ...subscriptionColumns } = payload;
+  void _ignoredPlan;
   void _ignoredScheduledPlan;
   const { data, error } = await supabase
     .from("subscriptions")

@@ -16,7 +16,6 @@ import {
   FaTriangleExclamation,
   FaComments,
   FaHandshakeAngle,
-  FaSkullCrossbones,
 } from "react-icons/fa6";
 import {
   DocFaqCollapsible,

@@ -47,12 +47,12 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
   const router = useRouter();
   const { riskScore, debts, excuses } = data;
   const [currentDebtor, setCurrentDebtor] = React.useState(data.debtor);
-  const [isEditOpen, setIsEditOpen] = React.useState(false);
-
-  // Sincroniza quando os dados do servidor (router.refresh) forem atualizados
-  React.useEffect(() => {
+  const [prevDebtor, setPrevDebtor] = React.useState(data.debtor);
+  if (data.debtor !== prevDebtor) {
+    setPrevDebtor(data.debtor);
     setCurrentDebtor(data.debtor);
-  }, [data.debtor]);
+  }
+  const [isEditOpen, setIsEditOpen] = React.useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
   const [isRulesOpen, setIsRulesOpen] = React.useState(false);
   const [copiedPix, setCopiedPix] = React.useState(false);
@@ -382,7 +382,7 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
                   <span>Endereço / Referência</span>
                 </div>
                 <p
-                  className="font-medium text-zinc-200 break-words"
+                  className="font-medium text-zinc-200 wrap-break-word"
                   title={currentDebtor.address || undefined}
                 >
                   {currentDebtor.address || "Não informado"}
@@ -492,7 +492,7 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
             <div className="relative pl-6 sm:pl-8 space-y-3.5 before:absolute before:left-2.5 sm:before:left-3.5 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800">
               {(riskScore.timeline && riskScore.timeline.length > 0
                 ? riskScore.timeline
-                : riskScore.factors.map((f, i) => ({
+                : riskScore.factors.map((f) => ({
                     id: f.id,
                     date: new Date().toISOString(),
                     formattedDate: "Base",

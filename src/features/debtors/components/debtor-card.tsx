@@ -42,14 +42,15 @@ export function DebtorCard({
   onDebtorDeleted,
 }: DebtorCardProps) {
   const [currentDebtor, setCurrentDebtor] = React.useState<DebtorItemFormatted>(debtor);
+  const [prevDebtor, setPrevDebtor] = React.useState<DebtorItemFormatted>(debtor);
+  if (debtor !== prevDebtor) {
+    setPrevDebtor(debtor);
+    setCurrentDebtor(debtor);
+  }
   const [copied, setCopied] = React.useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
   const [isEditOpen, setIsEditOpen] = React.useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    setCurrentDebtor(debtor);
-  }, [debtor]);
 
   const handleCopyPix = () => {
     if (currentDebtor.pix_key) {
@@ -82,16 +83,16 @@ export function DebtorCard({
         <div className="flex items-start justify-between gap-2">
           <div className="space-y-1 min-w-0 flex-1">
             {/* Linha 1: Nome Curto (Primeiro e Segundo) + Apelido da Presa */}
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
               <h3
-                className="font-heading text-sm sm:text-base font-bold text-white truncate max-w-[170px] sm:max-w-none"
+                className="font-heading text-sm sm:text-base font-bold text-white truncate"
                 title={currentDebtor.formattedName}
               >
                 {displayName}
               </h3>
               {currentDebtor.formattedNickname && (
                 <span
-                  className="text-[11px] sm:text-xs font-mono text-zinc-300 bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-700 truncate max-w-[110px] sm:max-w-[160px]"
+                  className="text-[11px] sm:text-xs font-mono text-zinc-300 bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-700 truncate shrink-0 max-w-[110px] sm:max-w-[160px]"
                   title={`Apelido: ${currentDebtor.formattedNickname}`}
                 >
                   “{currentDebtor.formattedNickname}”

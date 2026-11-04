@@ -15,11 +15,6 @@ export function OfflineStatusBanner() {
   const [wasOffline, setWasOffline] = useState(false);
 
   useEffect(() => {
-    // Determina o estado inicial da conexão
-    if (typeof window !== "undefined") {
-      setIsOffline(!window.navigator.onLine);
-    }
-
     const handleOffline = () => {
       setIsOffline(true);
       setWasOffline(true);

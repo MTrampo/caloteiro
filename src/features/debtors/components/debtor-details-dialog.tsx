@@ -75,12 +75,12 @@ export function DebtorDetailsDialog({
               </div>
 
               <div className="space-y-1 min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <DialogTitle className="font-heading text-lg font-bold text-white truncate">
+                <div className="flex items-center gap-2 min-w-0">
+                  <DialogTitle className="font-heading text-lg font-bold text-white truncate min-w-0">
                     {debtor.formattedName}
                   </DialogTitle>
                   <span
-                    className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700"
+                    className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 shrink-0 whitespace-nowrap"
                     title={debtor.relationshipDesc}
                   >
                     {debtor.relationshipLabel}

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { FaPlus, FaUserPlus, FaCirclePlus, FaLock, FaFileCirclePlus } from "react-icons/fa6"
+import { FaPlus, FaUserPlus, FaCirclePlus, FaFileCirclePlus } from "react-icons/fa6"
 import { Button } from "@/components/ui/button"
 import { PlanLimitModal } from "@/components/modals/plan-limit-modal"
 import { cn } from "@/commons/lib/utils"

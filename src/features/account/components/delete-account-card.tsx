@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ import { FaTrashCan, FaTriangleExclamation } from "react-icons/fa6";
 import { Loader2 } from "lucide-react";
 
 export function DeleteAccountCard() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = React.useState(false);
   const [confirmationWord, setConfirmationWord] = React.useState("");
   const [isPending, startTransition] = React.useTransition();
@@ -38,7 +40,7 @@ export function DeleteAccountCard() {
 
         toast.success("Sua conta e todos os dados foram excluídos permanentemente.");
         setIsOpen(false);
-        window.location.href = "/entrar";
+        router.replace("/entrar");
       } catch {
         toast.error("Erro inesperado ao excluir conta.");
       }

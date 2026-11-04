@@ -48,7 +48,7 @@ export function RouteTelemetryTracker() {
     if (!pathname || lastPathRef.current === pathname) return;
     lastPathRef.current = pathname;
 
-    const { key, isPanel } = resolveFeatureKey(pathname);
+    const { key } = resolveFeatureKey(pathname);
 
     // Registra view da funcionalidade para entender uso
     trackFeatureView(key, pathname);

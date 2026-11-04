@@ -1,4 +1,4 @@
-import { GA_ID, IS_DEV } from "@/commons/constants/env";
+import { IS_DEV } from "@/commons/constants/env";
 
 declare global {
   interface Window {

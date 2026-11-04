@@ -37,14 +37,16 @@ export function DebtorsFeature({
   const [isLoadingMore, setIsLoadingMore] = React.useState(false)
   const [isSearching, setIsSearching] = React.useState(false)
 
-  // Sincroniza estado local quando props do servidor (router.refresh) mudam
-  React.useEffect(() => {
+  // Sincroniza estado local durante o render quando props do servidor (router.refresh) mudarem
+  const [prevInitialDebtors, setPrevInitialDebtors] = React.useState(initialDebtors)
+  if (initialDebtors !== prevInitialDebtors) {
+    setPrevInitialDebtors(initialDebtors)
     if (!searchTerm.trim() && page === 1) {
       setDebtors(initialDebtors)
       setHasMore(initialHasMore)
       setTotalCount(initialTotalCount)
     }
-  }, [initialDebtors, initialHasMore, initialTotalCount, searchTerm, page])
+  }
 
   // Referência para o sentinela do infinite scroll
   const observerTarget = React.useRef<HTMLDivElement | null>(null)

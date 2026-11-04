@@ -34,13 +34,14 @@ export function AttachInstallmentReceiptModal({
   onPreviewReceipt,
 }: AttachInstallmentReceiptModalProps) {
   const [receiptPath, setReceiptPath] = React.useState<string | null>(null);
-  const [isPending, startTransition] = React.useTransition();
-
-  React.useEffect(() => {
+  const [prevOpen, setPrevOpen] = React.useState(isOpen);
+  if (isOpen !== prevOpen) {
+    setPrevOpen(isOpen);
     if (isOpen) {
       setReceiptPath(null);
     }
-  }, [isOpen]);
+  }
+  const [isPending, startTransition] = React.useTransition();
 
   if (!isOpen || !installment) return null;
 

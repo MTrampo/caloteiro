@@ -70,14 +70,18 @@ export function DebtPortalMenu({
   const [internalMobileDialogOpen, setInternalMobileDialogOpen] = React.useState(false);
 
   // Sincroniza estados quando as props da dívida forem revalidadas
-  React.useEffect(() => {
+  const [prevEnabled, setPrevEnabled] = React.useState(initialEnabled);
+  if (initialEnabled !== prevEnabled) {
+    setPrevEnabled(initialEnabled);
     setEnabled(initialEnabled);
-  }, [initialEnabled]);
+  }
 
-  React.useEffect(() => {
+  const [prevAccessCode, setPrevAccessCode] = React.useState(initialAccessCode);
+  if (initialAccessCode !== prevAccessCode) {
+    setPrevAccessCode(initialAccessCode);
     setAccessCode(initialAccessCode);
     setCustomCodeInput(initialAccessCode);
-  }, [initialAccessCode]);
+  }
 
   const isMobileDialogOpen =
     propsIsMobileDialogOpen !== undefined

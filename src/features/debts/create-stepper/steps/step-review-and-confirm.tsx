@@ -175,7 +175,7 @@ export function StepReviewAndConfirm({
 
         {projectedInstallments.length > 12 ? (
           <div className="relative">
-            <ScrollArea className="max-h-[340px] sm:max-h-[420px] pr-2.5 sm:pr-3.5">
+            <ScrollArea className="max-h-85 sm:max-h-105 pr-2.5 sm:pr-3.5">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pb-2">
                 {projectedInstallments.map((inst) => (
                   <div
@@ -209,7 +209,7 @@ export function StepReviewAndConfirm({
               </div>
             </ScrollArea>
             {/* Gradiente sutil na base para indicar continuidade */}
-            <div className="pointer-events-none absolute bottom-0 inset-x-0 h-6 bg-gradient-to-t from-background via-background/60 to-transparent rounded-b-xl" />
+            <div className="pointer-events-none absolute bottom-0 inset-x-0 h-6 bg-linear-to-t from-background via-background/60 to-transparent rounded-b-xl" />
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">

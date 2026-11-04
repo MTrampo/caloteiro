@@ -1894,7 +1894,7 @@ describe("Serviço de Dívidas (debt.api.ts)", () => {
         total_amount: 500,
         installments_count: 1,
         status: "pending",
-      } as any);
+      } as unknown as Awaited<ReturnType<typeof debtSupabase.getDebtByIdSupabase>>);
 
       vi.mocked(debtSupabase.deleteDebtSupabase).mockResolvedValue({
         success: true,

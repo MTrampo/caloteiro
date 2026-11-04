@@ -22,7 +22,6 @@ import {
   FaEye,
   FaShieldHalved,
   FaTriangleExclamation,
-  FaGaugeHigh,
   FaUserPlus,
   FaCircleQuestion,
   FaFileCirclePlus,

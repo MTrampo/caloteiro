@@ -33,13 +33,14 @@ export function DeleteDebtorDialog({
   const router = useRouter();
   const [isConfirmed, setIsConfirmed] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
-
-  React.useEffect(() => {
+  const [prevOpen, setPrevOpen] = React.useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setIsConfirmed(false);
       setIsDeleting(false);
     }
-  }, [open]);
+  }
 
   if (!debtor) return null;
 

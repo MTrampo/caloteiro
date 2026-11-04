@@ -74,11 +74,14 @@ export function AgreementRulesCard({
   const [copiedAlertMsg, setCopiedAlertMsg] = React.useState(false);
 
   // Sincroniza estados locais quando a dívida atualizar após mutação/revalidação
-  React.useEffect(() => {
+  const syncKey = `${debt.notes}-${debt.maxLateInstallments}-${debt.showNotesOnInvoice}`;
+  const [prevSyncKey, setPrevSyncKey] = React.useState(syncKey);
+  if (syncKey !== prevSyncKey) {
+    setPrevSyncKey(syncKey);
     setNotes(debt.notes || "");
     setMaxLate(debt.maxLateInstallments);
     setShowOnInvoice(debt.showNotesOnInvoice);
-  }, [debt.notes, debt.maxLateInstallments, debt.showNotesOnInvoice]);
+  }
 
   const handleOpenEdit = () => {
     setNotes(debt.notes || "");
@@ -406,7 +409,7 @@ export function AgreementRulesCard({
         </div>
 
         {debt.notes && debt.notes.trim().length > 0 ? (
-          <div className="rounded-xl bg-zinc-950/70 border border-zinc-800/90 p-3 sm:p-3.5 text-[11px] sm:text-xs font-mono text-zinc-200 leading-relaxed whitespace-pre-line break-words overflow-wrap-anywhere">
+          <div className="rounded-xl bg-zinc-950/70 border border-zinc-800/90 p-3 sm:p-3.5 text-[11px] sm:text-xs font-mono text-zinc-200 leading-relaxed whitespace-pre-line wrap-break-word overflow-wrap-anywhere">
             {debt.notes}
           </div>
         ) : (

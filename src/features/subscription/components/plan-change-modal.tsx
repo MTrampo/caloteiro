@@ -35,13 +35,13 @@ export function PlanChangeModal({
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
   const [isConfirmed, setIsConfirmed] = React.useState(false);
+  const [prevTargetId, setPrevTargetId] = React.useState<string | null>(null);
 
-  // Sempre reseta a caixa de confirmação ao abrir o modal ou trocar o plano alvo
-  React.useEffect(() => {
-    if (isOpen) {
-      setIsConfirmed(false);
-    }
-  }, [isOpen, targetPlan?.id]);
+  // Reseta a caixa de confirmação quando o plano selecionado muda durante a renderização
+  if (targetPlan?.id !== prevTargetId) {
+    setPrevTargetId(targetPlan?.id ?? null);
+    setIsConfirmed(false);
+  }
 
   if (!isOpen || !targetPlan) return null;
 

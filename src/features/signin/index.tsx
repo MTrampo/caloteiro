@@ -42,13 +42,6 @@ export function SignInFlow({ initialEmail = "" }: SignInFlowProps) {
     }
   }, []);
 
-  // Sincroniza initialEmail se mudar
-  React.useEffect(() => {
-    if (initialEmail && !email) {
-      setEmail(initialEmail);
-    }
-  }, [initialEmail, email]);
-
   // Fluxo 1: Login de Usuário
   const handleSignIn = async (data: UserSignInFormInputs) => {
     try {
@@ -106,11 +99,7 @@ export function SignInFlow({ initialEmail = "" }: SignInFlowProps) {
           setStep("reset-password");
         } else {
           toast.success("Conta confirmada com sucesso! Bem-vindo à Gruta do Tubarão.");
-          if (typeof window !== "undefined") {
-            window.location.href = "/painel";
-          } else {
-            router.push("/painel");
-          }
+          router.push("/painel");
         }
         return;
       }

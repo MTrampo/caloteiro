@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useEffect } from "react"
+import { useState, useTransition } from "react"
 import { toast } from "sonner"
 import type { FinancialPeriod, FinancialAnalyticsResult } from "./types"
 import { DebtsHeader } from "./components/debts-header"
@@ -22,15 +22,11 @@ interface DebtsFeatureProps {
 
 export function DebtsFeature({ initialData, planLimits }: DebtsFeatureProps) {
   const [period, setPeriod] = useState<FinancialPeriod>("month")
-  const [data, setData] = useState<FinancialAnalyticsResult>(initialData)
+  const [customData, setCustomData] = useState<FinancialAnalyticsResult>(initialData)
   const [isPending, startTransition] = useTransition()
 
-  // Sincroniza quando initialData atualizar no servidor (router.refresh) no período padrão ("month")
-  useEffect(() => {
-    if (period === "month") {
-      setData(initialData)
-    }
-  }, [initialData, period])
+  // Se estiver no período padrão ("month"), a fonte da verdade é sempre initialData do servidor
+  const data = period === "month" ? initialData : customData
 
   const handlePeriodChange = (newPeriod: FinancialPeriod) => {
     if (newPeriod === period) return
@@ -39,7 +35,7 @@ export function DebtsFeature({ initialData, planLimits }: DebtsFeatureProps) {
     startTransition(async () => {
       const res = await getFinancialAnalyticsAction({ period: newPeriod })
       if (res.success && res.data) {
-        setData(res.data)
+        setCustomData(res.data)
       } else if (!res.success) {
         toast.error(res.error || "Erro ao atualizar dados do período.")
       }

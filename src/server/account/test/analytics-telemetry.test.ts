@@ -14,7 +14,7 @@ describe("Serviço de Telemetria e Analytics (analytics.ts)", () => {
 
   beforeEach(() => {
     // Simula ambiente de navegador com gtag
-    (global as any).window = {
+    (globalThis as Record<string, unknown>).window = {
       gtag: vi.fn(),
     };
   });
@@ -36,7 +36,7 @@ describe("Serviço de Telemetria e Analytics (analytics.ts)", () => {
   });
 
   it("não deve lançar exceção se window.gtag não estiver definido", () => {
-    (global as any).window = {};
+    (globalThis as Record<string, unknown>).window = {};
 
     expect(() => {
       trackEvent("intent_login", { cta_location: "header" });
@@ -44,7 +44,7 @@ describe("Serviço de Telemetria e Analytics (analytics.ts)", () => {
   });
 
   it("não deve lançar exceção em ambiente SSR (sem window)", () => {
-    delete (global as any).window;
+    delete (globalThis as Record<string, unknown>).window;
 
     expect(() => {
       trackEvent("intent_login", { cta_location: "header" });

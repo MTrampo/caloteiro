@@ -42,15 +42,13 @@ export function DailyFeed({
     null
   );
 
-  // Limpa paidIds otimistas assim que os itens já chegarem com status "recently_paid" do servidor
-  React.useEffect(() => {
-    setPaidIds((prev) =>
-      prev.filter((id) => {
-        const current = feed.find((item) => item.id === id);
-        return current && current.type !== "recently_paid";
-      })
-    );
-  }, [feed]);
+  // Filtra IDs otimistas que ainda não vieram como "recently_paid" do servidor
+  const effectivePaidIds = React.useMemo(() => {
+    return paidIds.filter((id) => {
+      const current = feed.find((item) => item.id === id);
+      return current && current.type !== "recently_paid";
+    });
+  }, [paidIds, feed]);
 
   const handleCopyPix = (id: string, key?: string) => {
     if (!canCopyPix) return;
@@ -91,14 +89,14 @@ export function DailyFeed({
 
   // Contadores dinâmicos por categoria (descontando quem já foi baixado na sessão)
   const overdueItems = feed.filter(
-    (i) => i.category === "overdue" && !paidIds.includes(i.id)
+    (i) => i.category === "overdue" && !effectivePaidIds.includes(i.id)
   );
   const upcomingItems = feed.filter(
-    (i) => i.category === "upcoming" && !paidIds.includes(i.id)
+    (i) => i.category === "upcoming" && !effectivePaidIds.includes(i.id)
   );
 
   const displayedItems = feed.filter((item) => {
-    if (paidIds.includes(item.id)) return true; // Mantém exibido com status "Milagre Confirmado"
+    if (effectivePaidIds.includes(item.id)) return true; // Mantém exibido com status "Milagre Confirmado"
     if (selectedFilter === "overdue") return item.category === "overdue";
     if (selectedFilter === "upcoming") return item.category === "upcoming";
     return true;
@@ -178,7 +176,7 @@ export function DailyFeed({
       ) : (
         <div className="space-y-3">
           {displayedItems.map((item) => {
-            const isPaid = paidIds.includes(item.id) || item.type === "recently_paid";
+            const isPaid = effectivePaidIds.includes(item.id) || item.type === "recently_paid";
 
             return (
               <div

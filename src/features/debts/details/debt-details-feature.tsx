@@ -142,7 +142,7 @@ export function DebtDetailsFeature({
       {/* Cabeçalho da Dívida (Solto, sem card, sem ícones no título h2) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="space-y-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <Link
               href="/painel/dividas"
               className="text-zinc-400 hover:text-white transition-colors p-1.5 -ml-1 rounded-xl hover:bg-zinc-800 shrink-0"
@@ -150,7 +150,7 @@ export function DebtDetailsFeature({
             >
               <FaArrowLeft className="size-4" />
             </Link>
-            <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white truncate max-w-[calc(100vw-150px)] sm:max-w-none">
+            <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white truncate min-w-0">
               {debt.title}
             </h2>
             <span

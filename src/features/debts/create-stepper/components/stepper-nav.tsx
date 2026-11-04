@@ -44,7 +44,6 @@ export function StepperNav({ currentStepId, onStepClick, canNavigateTo }: Steppe
           const isCompleted = index < currentIndex;
           const isCurrent = index === currentIndex;
           const isClickable = canNavigateTo ? canNavigateTo(item.id) : isCompleted;
-          const Icon = item.icon;
 
           return (
             <button

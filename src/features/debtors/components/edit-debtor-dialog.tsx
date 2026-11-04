@@ -111,7 +111,7 @@ export function EditDebtorDialog({
         document: debtor.document ? maskCpf(debtor.document) : "",
         address: debtor.address || "",
         pix_key: debtor.pix_key || "",
-        pix_key_type: (debtor.pix_key_type as any) || "cpf",
+        pix_key_type: (debtor.pix_key_type as EditDebtorFormInputs["pix_key_type"]) || "cpf",
         notes: debtor.notes || "",
       });
     }

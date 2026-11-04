@@ -26,7 +26,6 @@ import {
   FaWhatsapp,
   FaQrcode,
   FaBoxesStacked,
-  FaBookOpen,
   FaScaleBalanced,
 } from "react-icons/fa6";
 import { trackAccountIntent, trackLoginIntent } from "@/commons/utils/analytics";

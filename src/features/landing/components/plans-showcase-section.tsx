@@ -13,7 +13,7 @@ import tlSvg from "@/commons/assets/svgs/tl.svg";
 import tbSvg from "@/commons/assets/svgs/tb.svg";
 import tccSvg from "@/commons/assets/svgs/tcc.svg";
 import { FaArrowRight, FaCheck, FaXmark } from "react-icons/fa6";
-import { trackPlanIntent, trackSimulator } from "@/commons/utils/analytics";
+import { trackPlanIntent } from "@/commons/utils/analytics";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 

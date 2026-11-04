@@ -126,7 +126,7 @@ export function InstallmentsList({
           >
             <SelectTrigger
               size="sm"
-              className="h-8 w-full sm:w-auto min-w-0 sm:min-w-[175px] bg-zinc-900 border-border text-xs font-mono text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer rounded-xl"
+              className="h-8 w-full sm:w-auto min-w-0 sm:min-w-43.75 bg-zinc-900 border-border text-xs font-mono text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer rounded-xl"
             >
               <div className="flex items-center gap-1.5 truncate">
                 <FaArrowDownWideShort className="size-3 text-zinc-400 shrink-0" />
@@ -156,7 +156,7 @@ export function InstallmentsList({
       {processedInstallments.length > 0 ? (
         isScrollable ? (
           <div className="relative">
-            <ScrollArea className="max-h-[520px] sm:max-h-[620px] pr-2.5 sm:pr-3.5">
+            <ScrollArea className="max-h-130 sm:max-h-155 pr-2.5 sm:pr-3.5">
               <div className="space-y-3 pb-2">
                 {processedInstallments.map((installment) => (
                   <InstallmentCard
@@ -172,7 +172,7 @@ export function InstallmentsList({
               </div>
             </ScrollArea>
             {/* Gradiente sutil na base para indicar continuidade */}
-            <div className="pointer-events-none absolute bottom-0 inset-x-0 h-6 bg-gradient-to-t from-background via-background/60 to-transparent rounded-b-xl" />
+            <div className="pointer-events-none absolute bottom-0 inset-x-0 h-6 bg-linear-to-t from-background via-background/60 to-transparent rounded-b-xl" />
           </div>
         ) : (
           <div className="space-y-3">

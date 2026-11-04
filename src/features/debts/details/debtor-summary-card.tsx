@@ -42,9 +42,9 @@ export function DebtorSummaryCard({ debtor }: DebtorSummaryCardProps) {
           <div className="size-11 rounded-2xl bg-zinc-800 text-white font-mono font-bold flex items-center justify-center text-sm border border-zinc-700 shrink-0">
             {initials}
           </div>
-          <div>
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <h4 className="font-heading text-base font-bold text-white">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <h4 className="font-heading text-base font-bold text-white truncate min-w-0">
                 {debtor.formattedName}
               </h4>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 whitespace-nowrap shrink-0">

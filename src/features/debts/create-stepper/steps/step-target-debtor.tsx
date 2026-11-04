@@ -1,12 +1,10 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import type { DebtorItemFormatted } from "@/commons/models/debtor";
 import { getNameInitials } from "@/commons/utils/format";
 import {
   FaMagnifyingGlass,
-  FaUserPlus,
   FaCheck,
   FaArrowRight,
   FaUser,

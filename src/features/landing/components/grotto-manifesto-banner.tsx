@@ -158,7 +158,7 @@ export function GrottoVisualShowcase() {
       </div>
 
       {/* Palco Panorâmico de Ponta a Ponta (100% Width) */}
-      <div className="relative w-full min-h-[250px] sm:min-h-0 aspect-[16/10] sm:aspect-[1920/1071]">
+      <div className="relative w-full min-h-62.5 sm:min-h-0 aspect-16/10 sm:aspect-1920/1071">
         {/* Camada 1: Arte Vetorial background.svg Escurecida para Harmonizar com o Tema Dark + Parallax */}
         <div
           ref={artLayerRef}
@@ -185,13 +185,13 @@ export function GrottoVisualShowcase() {
           className="absolute inset-0 pointer-events-none"
         >
           {/* Pulso luminoso sobre os monitores verdes do Tubarão */}
-          <div className="hidden lg:block grotto-screen-pulse absolute top-[34%] left-[48%] w-[26%] h-[42%] rounded-full bg-emerald-400/18 blur-[64px] opacity-35 mix-blend-screen" />
+          <div className="hidden lg:block grotto-screen-pulse absolute top-[34%] left-[48%] w-[26%] h-[42%] rounded-full bg-emerald-400/18 blur-3xl opacity-35 mix-blend-screen" />
 
           {/* Pulso luminoso sobre o ícone do Pix */}
           <div className="hidden lg:block grotto-screen-pulse absolute bottom-[12%] left-[52%] w-[16%] h-[24%] rounded-full bg-emerald-300/20 blur-[48px] opacity-30 mix-blend-screen" />
 
           {/* Pulso quente no celular do peixe-palhaço */}
-          <div className="hidden lg:block grotto-screen-pulse absolute bottom-[14%] left-[5%] w-[12%] h-[20%] rounded-full bg-amber-300/15 blur-[40px] opacity-30 mix-blend-screen" />
+          <div className="hidden lg:block grotto-screen-pulse absolute bottom-[14%] left-[5%] w-[12%] h-[20%] rounded-full bg-amber-300/15 blur-2xl opacity-30 mix-blend-screen" />
 
           {/* Bolhas bioluminescentes subindo por toda a extensão da gruta */}
           {BIOLUMINESCENT_BUBBLES.map((b, idx) => (
@@ -206,17 +206,17 @@ export function GrottoVisualShowcase() {
         {/* Camada 3: Fusão Mais Profunda no Topo e na Base para Conectar à Página Escura */}
         <div
           aria-hidden="true"
-          className="hidden lg:block absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-background via-background/70 to-transparent pointer-events-none"
+          className="hidden lg:block absolute inset-x-0 top-0 h-28 bg-linear-to-b from-background via-background/70 to-transparent pointer-events-none"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-background via-background/70 to-transparent pointer-events-none"
+          className="absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-background via-background/70 to-transparent pointer-events-none"
         />
 
         {/* Camada 4: Texto Estático no Quadrante Superior Esquerdo Livre da Caverna */}
         <div className="hidden lg:block absolute inset-x-0 top-[8%] z-10">
           <div className="w-full mx-auto px-6 max-w-5xl md:max-w-7xl">
-            <div className="max-w-[440px] xl:max-w-[480px] space-y-4">
+            <div className="max-w-110 xl:max-w-120 space-y-4">
               <h2 className="font-heading text-3xl xl:text-4xl font-bold tracking-tight text-white leading-[1.15] drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]">
                 Eles sempre dizem &ldquo;amanhã eu pago&rdquo;. O Tubarão cobra
                 hoje.
@@ -253,7 +253,7 @@ export function GrottoVisualShowcase() {
 
 export function FinalClosingBanner() {
   return (
-    <section className="relative w-full overflow-hidden border-b border-border/60 bg-gradient-to-b from-emerald-950/45 via-zinc-900/90 to-zinc-950 py-14 sm:py-24">
+    <section className="relative w-full overflow-hidden border-b border-border/60 bg-linear-to-b from-emerald-950/45 via-zinc-900/90 to-zinc-950 py-14 sm:py-24">
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(16,185,129,0.18),transparent_65%)] pointer-events-none"

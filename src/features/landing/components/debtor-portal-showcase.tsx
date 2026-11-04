@@ -90,7 +90,7 @@ export function DebtorPortalShowcase() {
     <section
       ref={sectionRef}
       id="portal-devedor"
-      className="relative w-full py-12 sm:py-24 border-b border-emerald-500/20 bg-gradient-to-br from-emerald-950/60 via-zinc-900/95 to-emerald-950/35 overflow-hidden scroll-mt-16 sm:scroll-mt-20"
+      className="relative w-full py-12 sm:py-24 border-b border-emerald-500/20 bg-linear-to-br from-emerald-950/60 via-zinc-900/95 to-emerald-950/35 overflow-hidden scroll-mt-16 sm:scroll-mt-20"
     >
       {/* Iluminação Ambiental Verde Esmeralda de Contraste */}
       <div

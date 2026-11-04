@@ -77,16 +77,17 @@ export function ReceiptViewerDialog({
   const lastTapRef = React.useRef<number>(0);
 
   // Reseta zoom, posição e modal de exclusão sempre que abrir ou trocar de imagem
-  React.useEffect(() => {
+  const [prevViewerKey, setPrevViewerKey] = React.useState<string | null>(null);
+  const currentViewerKey = open ? `${open}-${imageUrl}` : null;
+  if (currentViewerKey !== prevViewerKey) {
+    setPrevViewerKey(currentViewerKey);
     if (open) {
       setZoomPercent(100);
       setPan({ x: 0, y: 0 });
       setIsDragging(false);
       setIsConfirmDeleteOpen(false);
-      dragStartRef.current = null;
-      pinchStartRef.current = null;
     }
-  }, [open, imageUrl]);
+  }
 
   // Se o zoom voltar para 100%, centraliza a imagem novamente
   const updateZoom = React.useCallback((nextZoom: number) => {

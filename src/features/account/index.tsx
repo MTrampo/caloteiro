@@ -20,7 +20,6 @@ import {
   FaKey,
   FaCheck,
   FaShieldHalved,
-  FaArrowRight,
   FaRotateRight,
 } from "react-icons/fa6";
 import {

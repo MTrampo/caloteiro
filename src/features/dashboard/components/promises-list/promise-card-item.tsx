@@ -45,7 +45,7 @@ export function PromiseCardItem({ promise }: { promise: PromiseItem }) {
               </h4>
               {promise.debtorNickname && (
                 <span className="text-[11px] font-mono text-zinc-400 shrink-0 hidden sm:inline">
-                  "{promise.debtorNickname}"
+                  &ldquo;{promise.debtorNickname}&rdquo;
                 </span>
               )}
             </div>

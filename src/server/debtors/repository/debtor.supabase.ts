@@ -66,7 +66,7 @@ export const getDebtorsPaginatedSupabase = async (
     };
   }
 
-  let rawItems = (data as DebtorItem[]) || [];
+  const rawItems = (data as DebtorItem[]) || [];
   let items = rawItems.map(mapDebtorRow);
   let totalCount = count || 0;
 

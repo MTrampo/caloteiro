@@ -57,8 +57,8 @@ export function InstallmentCard({
           </div>
 
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <span className="font-heading font-bold text-sm text-white">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <span className="font-heading font-bold text-sm text-white truncate min-w-0">
                 Parcela {installment.installment_number} de {totalInstallments}
               </span>
               <span

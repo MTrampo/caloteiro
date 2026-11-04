@@ -1,8 +1,6 @@
 "use client"
 
-import * as React from "react"
 import { FaQuoteLeft } from "react-icons/fa6"
-import { getRandomWisdomQuote } from "../utils/greeting-helper"
 
 type CreditorWisdomProps = {
   initialWisdom: {
@@ -13,15 +11,7 @@ type CreditorWisdomProps = {
 }
 
 export function CreditorWisdom({ initialWisdom }: CreditorWisdomProps) {
-  const [wisdom, setWisdom] = React.useState(initialWisdom)
-
-  React.useEffect(() => {
-    setWisdom(initialWisdom)
-  }, [initialWisdom])
-
-  const handleShuffle = () => {
-    setWisdom(getRandomWisdomQuote())
-  }
+  const wisdom = initialWisdom;
 
   return (
     <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 p-5 sm:p-6 shadow-inner flex flex-col sm:flex-row sm:items-center justify-between gap-4">

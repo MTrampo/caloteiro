@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import {
   FaArrowRight,
   FaShieldHalved,
-  FaCoins,
   FaUsers,
   FaTriangleExclamation,
 } from "react-icons/fa6";

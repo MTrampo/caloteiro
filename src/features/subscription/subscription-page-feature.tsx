@@ -12,7 +12,6 @@ import { PlanChangeManager } from "./components/plan-change-manager";
 import {
   FaCreditCard,
   FaReceipt,
-  FaCheck,
   FaBan,
   FaArrowUpRightFromSquare,
   FaShieldHalved,

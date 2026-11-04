@@ -6,7 +6,7 @@ import { trackLegalReading } from "@/commons/utils/analytics";
 
 export function LegalDocReadingTracker() {
   const pathname = usePathname();
-  const startTimeRef = React.useRef<number>(Date.now());
+  const startTimeRef = React.useRef<number>(0);
   const milestone50Ref = React.useRef<boolean>(false);
   const milestone90Ref = React.useRef<boolean>(false);
 
