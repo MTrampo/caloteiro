@@ -1,0 +1,227 @@
+"use client"
+
+import * as React from "react"
+import { useRouter } from "next/navigation"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar"
+import {
+  FaCreditCard,
+  FaRightFromBracket,
+  FaUser,
+  FaLaptop,
+  FaMobileScreen,
+} from "react-icons/fa6"
+import { ChevronsUpDown } from "lucide-react"
+import Link from "next/link"
+import { signOutAction } from "@/actions/auth"
+import { formatProperName, getNameInitials } from "@/commons/utils/format"
+import { usePwaInstall } from "@/hooks/use-pwa-install"
+import { IosGuideDialog } from "@/components/pwa/ios-guide-dialog"
+import tlSvg from "@/commons/assets/svgs/tl.svg"
+import tbSvg from "@/commons/assets/svgs/tb.svg"
+import tccSvg from "@/commons/assets/svgs/tcc.svg"
+
+const SHARK_AVATARS: Record<string, string> = {
+  "tubarao-lixa": tlSvg.src,
+  "tubarao-branco": tbSvg.src,
+  "tubarao-cabeca-chato": tccSvg.src,
+}
+
+function resolveAvatarSrc(avatar?: string | null): string | undefined {
+  if (!avatar) return undefined
+  if (SHARK_AVATARS[avatar]) return SHARK_AVATARS[avatar]
+  if (
+    avatar.startsWith("http://") ||
+    avatar.startsWith("https://") ||
+    avatar.startsWith("/") ||
+    avatar.startsWith("data:")
+  ) {
+    return avatar
+  }
+  return undefined
+}
+
+export interface NavUserData {
+  name: string
+  nickname?: string | null
+  email: string
+  avatar?: string | null
+  plan?: string
+}
+
+export function NavUser({
+  user = {
+    name: "Tubarão",
+    nickname: null,
+    email: "tubarao@caloteiro.app",
+    avatar: "",
+    plan: "Tubarão Lixa",
+  },
+}: {
+  user?: NavUserData
+}) {
+  const { isMobile } = useSidebar()
+  const router = useRouter()
+  const [isPending, startTransition] = React.useTransition()
+  const [showIosGuide, setShowIosGuide] = React.useState(false)
+
+  const {
+    canInstall,
+    isStandalone,
+    isIOS,
+    isDesktop,
+    installTitle,
+    installApp,
+  } = usePwaInstall()
+
+  const handleInstallClick = async () => {
+    if (isIOS) {
+      setShowIosGuide(true)
+    } else {
+      await installApp()
+    }
+  }
+
+  // Formatação segura de nomes
+  const formattedNickname = user.nickname ? formatProperName(user.nickname) : null
+  const formattedFullName = user.name ? formatProperName(user.name) : "Tubarão"
+
+  // Dá preferência ao apelido/vulgo; se não tiver, usa o nome formatado
+  const displayName = formattedNickname || formattedFullName
+  const initials = getNameInitials(user.nickname || displayName, "TB")
+  const resolvedAvatarSrc = resolveAvatarSrc(user.avatar)
+
+  const handleSignOut = () => {
+    startTransition(async () => {
+      await signOutAction()
+      router.push("/entrar")
+      router.refresh()
+    })
+  }
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              />
+            }
+          >
+            <Avatar className="size-8 rounded-lg shrink-0 bg-zinc-900 border border-zinc-700/60 overflow-hidden">
+              <AvatarImage
+                src={resolvedAvatarSrc}
+                alt={displayName}
+                className="object-contain p-0.5"
+              />
+              <AvatarFallback className="rounded-lg bg-zinc-800 border border-zinc-700/80 text-zinc-100 font-bold font-mono text-xs">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 min-w-0 text-left text-sm leading-tight">
+              <span className="truncate font-semibold text-white" title={displayName}>
+                {displayName}
+              </span>
+              <span className="truncate text-xs text-muted-foreground font-mono" title={user.plan}>
+                {user.plan || "Tubarão Lixa"}
+              </span>
+            </div>
+            <ChevronsUpDown className="ml-auto size-3.5 shrink-0 text-muted-foreground" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="min-w-56 rounded-lg bg-zinc-900 border-zinc-800 text-zinc-200"
+            side={isMobile ? "bottom" : "right"}
+            align="end"
+            sideOffset={4}
+          >
+            <div className="flex items-center gap-2 px-2 py-2 text-left text-sm">
+              <Avatar className="size-8 rounded-lg shrink-0 bg-zinc-900 border border-zinc-700/60 overflow-hidden">
+                <AvatarImage
+                  src={resolvedAvatarSrc}
+                  alt={displayName}
+                  className="object-contain p-0.5"
+                />
+                <AvatarFallback className="rounded-lg bg-zinc-800 border border-zinc-700/80 text-zinc-100 font-bold font-mono text-xs">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 min-w-0 text-left text-sm leading-tight">
+                <span className="truncate font-semibold text-white" title={displayName}>
+                  {displayName}
+                </span>
+                <span className="truncate text-xs text-muted-foreground font-mono" title={user.email}>
+                  {user.email}
+                </span>
+              </div>
+            </div>
+            <DropdownMenuSeparator className="bg-zinc-800" />
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                render={<Link href="/painel/conta" />}
+                className="flex items-center gap-2 cursor-pointer text-zinc-300 hover:text-white"
+              >
+                <FaUser className="size-3.5 text-zinc-400" />
+                <span>Minha Conta</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                render={<Link href="/painel/conta/assinatura" />}
+                className="flex items-center gap-2 cursor-pointer text-zinc-300 hover:text-white"
+              >
+                <FaCreditCard className="size-3.5 text-zinc-400" />
+                <span>Assinatura</span>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            {!isStandalone && canInstall && (
+              <>
+                <DropdownMenuSeparator className="bg-zinc-800" />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={handleInstallClick}
+                    className="flex items-center gap-2 cursor-pointer text-emerald-400 hover:text-emerald-300 focus:text-emerald-300 focus:bg-zinc-800"
+                  >
+                    {isDesktop ? (
+                      <FaLaptop className="size-3.5 text-emerald-400" />
+                    ) : (
+                      <FaMobileScreen className="size-3.5 text-emerald-400" />
+                    )}
+                    <span>{installTitle}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </>
+            )}
+            <DropdownMenuSeparator className="bg-zinc-800" />
+            <DropdownMenuItem
+              className="flex items-center gap-2 cursor-pointer text-rose-400 hover:text-rose-300 focus:text-rose-300"
+              disabled={isPending}
+              onClick={handleSignOut}
+            >
+              <FaRightFromBracket className="size-3.5" />
+              <span>{isPending ? "Saindo..." : "Sair da Sessão"}</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+      <IosGuideDialog open={showIosGuide} onOpenChange={setShowIosGuide} />
+    </SidebarMenu>
+  )
+}

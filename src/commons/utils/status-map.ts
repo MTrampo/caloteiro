@@ -1,0 +1,87 @@
+import { CardAccent } from "@/components/cards/summary-card";
+import { FaCircleCheck, FaClock, FaUsers, FaUserXmark } from "react-icons/fa6";
+import { IconType } from "react-icons";
+
+export type MetricStatus = "LOW" | "STABLE" | "HIGH";
+
+export type SummaryCardConfig = {
+  key: string;
+  title: string;
+  accent: CardAccent;
+  icon: IconType;
+  helpText: string;
+};
+
+export const SUMMARY_CARD_CONFIGS: Record<string, SummaryCardConfig> = {
+  OPEN: {
+    key: "open",
+    title: "Em Aberto",
+    accent: "neutral",
+    icon: FaUsers,
+    helpText: "Total de devedores com promessas e pendências na pista.",
+  },
+  ON_TIME: {
+    key: "on_time",
+    title: "Em Dia",
+    accent: "emerald",
+    icon: FaCircleCheck,
+    helpText: "Milagreiros que honram os pagamentos sem você precisar mandar 10 áudios.",
+  },
+  OVERDUE: {
+    key: "overdue",
+    title: "Em Atraso",
+    accent: "amber",
+    icon: FaClock,
+    helpText: "Caloteiros em treinamento que sumiram do WhatsApp e esqueceram o Pix.",
+  },
+  DEFAULTED: {
+    key: "defaulted",
+    title: "Caloteiros",
+    accent: "rose",
+    icon: FaUserXmark,
+    helpText: "Casos graves com diploma de sumiço. Hora de agir ou aceitar o golpe.",
+  },
+  // Aliases retroativos
+  EM_ABERTO: {
+    key: "open",
+    title: "Em Aberto",
+    accent: "neutral",
+    icon: FaUsers,
+    helpText: "Total de devedores com promessas e pendências na pista.",
+  },
+  EM_DIA: {
+    key: "on_time",
+    title: "Em Dia",
+    accent: "emerald",
+    icon: FaCircleCheck,
+    helpText: "Milagreiros que honram os pagamentos sem você precisar mandar 10 áudios.",
+  },
+  EM_ATRASO: {
+    key: "overdue",
+    title: "Em Atraso",
+    accent: "amber",
+    icon: FaClock,
+    helpText: "Caloteiros em treinamento que sumiram do WhatsApp e esqueceram o Pix.",
+  },
+  CALOTEIROS: {
+    key: "defaulted",
+    title: "Caloteiros",
+    accent: "rose",
+    icon: FaUserXmark,
+    helpText: "Casos graves com diploma de sumiço. Hora de agir ou aceitar o golpe.",
+  },
+};
+
+export function formatTrendStatus(changePercent: number, isNegativeMetric = false) {
+  let status: MetricStatus = "STABLE";
+  if (changePercent > 0) status = "HIGH";
+  if (changePercent < 0) status = "LOW";
+
+  const formattedValue = `${changePercent > 0 ? "+" : ""}${changePercent.toFixed(0)}%`;
+
+  return {
+    status,
+    negative: isNegativeMetric,
+    statusText: formattedValue,
+  };
+}

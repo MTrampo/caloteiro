@@ -1,0 +1,233 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import { Logo } from "@/components/ui/logo";
+import { PublicHeader } from "@/components/headers/public-header";
+import { HeroCommandShowcase } from "./components/hero-command-showcase";
+import { NotebookVsGrottoComparison } from "./components/notebook-vs-grotto-comparison";
+import { GrottoCommandSimulation } from "./components/grotto-command-simulation";
+import { WhatsappWeaponsSimulator } from "./components/whatsapp-weapons-simulator";
+import { DebtorPortalShowcase } from "./components/debtor-portal-showcase";
+import { RealFeaturesBento } from "./components/real-features-bento";
+import {
+  GrottoVisualShowcase,
+  FinalClosingBanner,
+} from "./components/grotto-manifesto-banner";
+import { RoiAndTrustSection } from "./components/roi-and-trust-section";
+import { PlansShowcaseSection } from "./components/plans-showcase-section";
+import { LandingFaqSection } from "./components/landing-faq-section";
+import {
+  FaInstagram,
+  FaWhatsapp,
+  FaArrowUpRightFromSquare,
+} from "react-icons/fa6";
+
+interface LandingFeatureProps {
+  isLoggedIn?: boolean;
+}
+
+export function LandingFeature({ isLoggedIn = false }: LandingFeatureProps) {
+  return (
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      {/* Cabeçalho Unificado Padronizado com NavigationMenu */}
+      <PublicHeader isLoggedIn={isLoggedIn} />
+
+      {/* Conteúdo Principal da Apresentação (Seções 100% Full-Width com contraste e bordas de ponta a ponta) */}
+      <main className="flex-1 w-full overflow-x-clip">
+        <HeroCommandShowcase />
+        <NotebookVsGrottoComparison />
+        <GrottoCommandSimulation />
+        <WhatsappWeaponsSimulator />
+        <DebtorPortalShowcase />
+        <RealFeaturesBento />
+        <GrottoVisualShowcase />
+        <RoiAndTrustSection />
+        <PlansShowcaseSection />
+        <LandingFaqSection />
+        <FinalClosingBanner />
+      </main>
+
+      {/* Rodapé Completo da Gruta */}
+      <footer className="border-t border-border/60 bg-zinc-950/90 pt-10 sm:pt-12 pb-8 text-xs font-mono text-zinc-400">
+        <div className="mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl space-y-10">
+          {/* Topo do Rodapé: Marca + Canais Sociais + Colunas de Links */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-8 border-b border-zinc-800/80">
+            {/* Coluna 1: Identidade + Instagram & WhatsApp Suporte (6 cols) */}
+            <div className="md:col-span-6 space-y-4">
+              <Link href="/" className="inline-block cursor-pointer select-none">
+                <Logo size="md" showText />
+              </Link>
+
+              <p className="text-xs font-mono text-zinc-400 leading-relaxed max-w-sm">
+                A Gruta oficial do Tubarão. Marque suas presas, registre cada
+                caô com precisão cirúrgica e recupere o seu Pix sem pedir
+                desculpas por cobrar.
+              </p>
+
+              {/* Botões de Contato e Redes Sociais */}
+              <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                <a
+                  href="https://instagram.com/meutrampo.dev"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-zinc-800 bg-zinc-900/80 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-200 hover:text-white transition-all"
+                  title="Siga @meutrampo.dev no Instagram"
+                >
+                  <FaInstagram className="size-4 text-pink-400 shrink-0" />
+                  <span>@meutrampo.dev</span>
+                </a>
+
+                <a
+                  href="https://wa.me/5511911051247"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 transition-all"
+                  title="Falar com o Suporte no WhatsApp"
+                >
+                  <FaWhatsapp className="size-4 text-emerald-400 shrink-0" />
+                  <span>Suporte no WhatsApp</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Coluna 2: Navegação da Página (3 cols) */}
+            <div className="md:col-span-3 space-y-3">
+              <span className="font-heading text-xs font-bold uppercase tracking-wider text-white block">
+                Navegação
+              </span>
+              <ul className="space-y-2 text-zinc-400">
+                <li>
+                  <a
+                    href="#comparativo"
+                    className="hover:text-white transition-colors"
+                  >
+                    Caderninho vs. Gruta
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#central-gruta"
+                    className="hover:text-white transition-colors"
+                  >
+                    Central da Gruta
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#armas-whatsapp"
+                    className="hover:text-white transition-colors"
+                  >
+                    Armas de WhatsApp
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#arsenal"
+                    className="hover:text-white transition-colors"
+                  >
+                    Motor e Recursos
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#provas-e-garantias"
+                    className="hover:text-white transition-colors"
+                  >
+                    Provas & Garantias
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#planos"
+                    className="hover:text-white transition-colors"
+                  >
+                    Espécies e Planos
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#faq"
+                    className="hover:text-white transition-colors"
+                  >
+                    Dúvidas Frequentes
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Coluna 3: Acesso e Transparência (3 cols) */}
+            <div className="md:col-span-3 space-y-3">
+              <span className="font-heading text-xs font-bold uppercase tracking-wider text-white block">
+                Acesso & Regras
+              </span>
+              <ul className="space-y-2 text-zinc-400">
+                <li>
+                  <Link
+                    href="/cadastrar"
+                    className="hover:text-white transition-colors"
+                  >
+                    Criar Gruta Grátis
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/entrar"
+                    className="hover:text-white transition-colors"
+                  >
+                    Entrar na Conta
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/documentos/planos"
+                    className="hover:text-white transition-colors"
+                  >
+                    Comparativo de Planos
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/documentos/termos"
+                    className="hover:text-white transition-colors"
+                  >
+                    Termos de Uso
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/documentos/privacidade"
+                    className="hover:text-white transition-colors"
+                  >
+                    Política de Privacidade
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Barra Inferior: Copyright + Desenvolvido por Meu Trampo */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-500">
+            <p>
+              © {new Date().getFullYear()} Caloteiro — A Gruta do Tubarão. Todos
+              os direitos reservados.
+            </p>
+
+            <a
+              href="https://meutrampo.dev.br/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors"
+            >
+              <span>Desenvolvido por</span>
+              <strong className="text-white font-semibold underline decoration-emerald-500/60 underline-offset-4">
+                Meu Trampo
+              </strong>
+              <FaArrowUpRightFromSquare className="size-2.5 text-emerald-400" />
+            </a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

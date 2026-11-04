@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+/playwright-report/
+/test-results/
+/playwright/.auth/
 
 # next.js
 /.next/
@@ -19,6 +22,11 @@
 
 # production
 /build
+
+# agents
+/.gemini/
+/.agents/
+/.antigravitycli/
 
 # misc
 .DS_Store

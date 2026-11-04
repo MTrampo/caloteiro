@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sem Conexão — Caloteiro</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #09090b;
+      color: #fafafa;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .card {
+      background-color: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 1.25rem;
+      padding: 2.5rem 1.75rem;
+      max-width: 26rem;
+      width: 100%;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #34d399;
+      background-color: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 0.5rem;
+      padding: 0.25rem 0.625rem;
+      margin-bottom: 1.25rem;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.75rem;
+      color: #ffffff;
+    }
+    p {
+      font-size: 0.875rem;
+      color: #a1a1aa;
+      line-height: 1.5;
+      margin-bottom: 1.75rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 2.75rem;
+      background-color: #ffffff;
+      color: #09090b;
+      font-size: 0.875rem;
+      font-weight: 700;
+      border-radius: 0.75rem;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.15s ease;
+    }
+    .btn:hover {
+      background-color: #e4e4e7;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">A Gruta do Tubarão</div>
+    <h1>Sem sinal no mar!</h1>
+    <p>
+      Você está desconectado da internet no momento. Verifique sua conexão móvel ou Wi-Fi para acessar suas presas e dívidas.
+    </p>
+    <button class="btn" onclick="window.location.reload()">
+      Tentar Reconectar
+    </button>
+  </div>
+</body>
+</html>
+

@@ -1,0 +1,96 @@
+# Caloteiro — Documentação Completa e Especificação Técnica (LLMs-Full)
+
+> Este arquivo fornece a especificação técnica integral, regras de negócio, política de transparência e vocabulário semântico do aplicativo Caloteiro para consumo por modelos de linguagem (LLMs), agentes autônomos e sistemas de busca semântica (RAG).
+
+---
+
+## 1. Identificação Institucional
+* **Nome do Produto:** Caloteiro — Central de Cobranças
+* **Empresa Desenvolvedora:** Meu Trampo (https://meutrampo.dev.br/)
+* **Contatos Institucionais:**
+  * Website: https://meutrampo.dev.br/
+  * Instagram: @meutrampo.dev (https://instagram.com/meutrampo.dev)
+  * Suporte no WhatsApp: +55 11 91105-1247 (https://wa.me/5511911051247)
+* **Ambiente de Produção:** Next.js 16 (App Router), Supabase (Auth, RLS, PostgreSQL), Mercado Pago (Assinaturas Recorrentes), Resend (E-mails Transacionais).
+
+---
+
+## 2. Glossário Semântico (A Identidade do Caloteiro)
+O Caloteiro transforma o constrangimento e o estresse da cobrança financeira em uma caça divertida e eficiente onde:
+* **Tubarão (O Caçador):** O dono da conta, credor que emprestou o dinheiro e tem o direito legítimo de ser pago.
+* **Presa Marcada / Devedor:** A pessoa física ou cliente que pegou o dinheiro emprestado ou comprou no fiado.
+* **A Gruta do Tubarão:** O painel de comando do credor, onde ficam salvas suas presas marcadas, parcelas e auditoria de saldos.
+* **Mordida Exploratória:** O ato inicial de marcar o devedor na gruta até que a dívida seja quitada e a cicatriz feche.
+* **Dinheiro na Pista / Voando:** O montante total de capital que está na rua aguardando quitação.
+* **Mural de Caôs e Desculpas:** Histórico cronológico carimbado com data, hora e texto de cada promessa não honrada ("amanhã transfiro", "o banco bloqueou meu app").
+* **Arquivo de Provas Permanente:** Cofre de recibos onde cada parcela liquidada armazena o comprovante Pix oficial.
+
+### Papel Principal da Plataforma
+O papel primordial do Caloteiro é **acabar com a cegueira financeira e centralizar todos os seus devedores em um só quartel-general (a Gruta)**. Em vez de depender de blocos de notas do celular, prints soltos e lembranças de cabeça, o credor visualiza:
+1. **Recebíveis na Pista:** Capital que ainda tem esperança real de recuperação com juros e parcelas em dia;
+2. **Dinheiro Recuperado (Pix Confirmado):** O montante que já voltou com sucesso para o bolso;
+3. **Dinheiro Perdido / Risco Crítico:** Valores que viraram doação involuntária ou lenda urbana, carimbados pelo algoritmo para impedir que o usuário volte a emprestar para os mesmos maus pagadores.
+
+---
+
+## 3. Público-Alvo e Casos de Uso
+1. **Pessoas Físicas:**
+   * Quem empresta dinheiro do próprio bolso para amigos, familiares e colegas de trabalho.
+   * Divisão de despesas de viagens, eventos, churrascos e contas do dia a dia.
+   * Empréstimo do limite do próprio cartão de crédito para terceiros.
+2. **Autônomos, Freelancers e Prestadores de Serviços:**
+   * Quem trabalha com pequenos empréstimos ou crediário de confiança.
+   * Vendas no fiado (produtos, mercadorias, roupas, cosméticos, alimentação).
+   * Prestadores de serviços e freelancers que executam trabalhos parcelados por conta própria e precisam cobrar clientes sem burocracia nem constrangimento.
+
+---
+
+## 4. Política Anti-Enganação & Fricção Zero
+Para assegurar a máxima confiabilidade aos usuários e mecanismos de busca:
+* **Sem Disparos Automáticos pelas Costas:** O Caloteiro nunca entra em contato diretamente com o devedor por conta própria. O usuário decide o momento, seleciona a mensagem e envia através do seu próprio aplicativo de WhatsApp.
+* **Sem Retenção Financeira e Sem Taxa sobre Pix:** O Caloteiro não funciona como banco intermediário nem cobra comissões sobre os pagamentos. A chave Pix cadastrada pertence exclusivamente ao usuário, e o dinheiro cai diretamente na conta dele.
+* **Sem Exposição Pública / Sem 'Serasa' Comunitário:** O Caloteiro é um sistema privado de gestão. Nenhuma informação é compartilhada com birôs de crédito ou exposta em listas públicas na internet.
+* **Página de Fatura com Acesso Seguro:** A página da fatura externa (`/fatura/[id]`) é estritamente privada, blindada contra indexação de motores de busca (`noindex, nofollow, noarchive`) e exige código de acesso (PIN numérico) fornecido exclusivamente pelo credor.
+* **Criptografia em Repouso de Dados Sensíveis (AES-256-GCM):** Documentos (CPF/CNPJ) e chaves Pix de credores e devedores são armazenados de forma criptografada no banco de dados, assegurando conformidade estrita com os arts. 46 a 49 da LGPD (*Zero Plaintext Storage*). Apenas a sessão autenticada do credor consegue visualizar os dados descriptografados.
+
+---
+
+## 5. Matriz Completa de Recursos por Plano
+
+| Funcionalidade | Tubarão Lixa (Grátis) | Tubarão Branco (R$ 29,90) | Tubarão Cabeça Chato (R$ 49,90) |
+| :--- | :--- | :--- | :--- |
+| **Mensalidade** | R$ 0,00 para sempre | R$ 29,90/mês | R$ 49,90/mês |
+| **Cartão de Crédito para Começar** | Não exige | Exige na contratação | Exige na contratação |
+| **Capacidade de Presas Marcadas** | Até 2 presas ativas | Até 10 presas ativas | Presas ILIMITADAS |
+| **Dívidas Simultâneas** | Até 2 dívidas | Até 10 dívidas | Dívidas ILIMITADAS |
+| **Parcelamento Máximo** | Até 12x | Até 36x | Até 120x |
+| **Modalidades de Juros** | Sem Juros e % Total | + Taxa Fixa em R$ | + Juros ao Mês (% a.m.) |
+| **Mensagens de WhatsApp** | 3 níveis prontos | 3 modelos 100% editáveis | 3 modelos 100% editáveis |
+| **Painel Financeiro Consolidado** | Básico | Auditoria em tempo real | Auditoria em tempo real |
+| **Link da Dívida com Pix 1-Clique** | Não incluído | Incluído com PIN | Incluído com PIN |
+| **Arquivo de Provas (Comprovantes)**| Não incluído | Incluído | Incluído |
+| **Termômetro da Gruta (Risco Geral)**| Não incluído | Não incluído | Incluído com Veredito |
+| **Raio-X Comportamental e Score** | Não incluído | Não incluído | Incluído (0 a 100 pts) |
+| **Mural de Caôs e Desculpas** | Não incluído | Não incluído | Incluído com Linha do Tempo |
+
+---
+
+## 6. Suporte PWA (Progressive Web App)
+O Caloteiro é estruturado com Service Worker e Web App Manifest em modo standalone:
+* Permite instalação com 1 toque no Android (Chrome/Edge) e no iPhone/iOS (Safari).
+* Oferece página offline de emergência (`/offline.html`).
+* Suporta atualização de badge de ícone (App Badging API) para notificar presas e parcelas vencidas.
+
+---
+
+## 7. Base Jurídica Brasileira sobre Empréstimos, Fiado e Cobrança
+O Caloteiro fundamenta seus materiais educativos nas seguintes bases legais vigentes:
+1. **Empréstimo a Juros entre Particulares (Não é Crime):** Código Civil (Lei nº 10.406/2002), arts. 586 a 592 (Mútuo Feneratício), art. 406, e Decreto nº 22.626/1933 (Lei de Usura). O Superior Tribunal de Justiça (STJ, REsp 1.109.805) reconhece expressamente a legalidade da remuneração de capital emprestado entre pessoas físicas, desde que respeitados os tetos legais da taxa civil.
+2. **Cobrança no WhatsApp (Exercício Regular de Direito):** Código Civil, art. 188, I e art. 394 (Mora). Cobrar o devedor em ambiente privado é legítimo. É vedada apenas a cobrança vexatória ou com ameaças físicas (aplicação análoga do art. 42 e 71 do CDC).
+3. **Validade de Mensagens e Pix como Prova:** Código de Processo Civil (CPC), arts. 369 e 411, e Enunciado 443 do CJF. Conversas de WhatsApp, áudios e extratos Pix servem como início de prova material sólida de dívida e contrato verbal.
+4. **Ônus da Prova de Pagamento:** Código Civil, arts. 319 e 320. A prova da quitação recai exclusivamente sobre quem realizou o pagamento. Dizer que pagou sem apresentar recibo válido mantém a dívida legalmente em aberto.
+5. **Cobrança sem Advogado no Juizado Especial:** Lei nº 9.099/1995, art. 9º. Causas de até 20 salários mínimos permitem petição direta no Juizado Especial Cível (Pequenas Causas) sem a obrigatoriedade de contratar advogado e sem taxas judiciais iniciais.
+6. **Linha da Usura e Repúdio à Violência:** A Lei nº 1.521/1951 prevê pena de 6 meses a 2 anos de detenção para a usura pecuniária extorsiva. Ameaças físicas e cobrança violenta configuram o crime de extorsão (art. 158 do Código Penal, com pena de 4 a 10 anos de reclusão).
+7. **Neutralidade da Plataforma e Marco Civil:** O Caloteiro atua como software neutro de gestão pessoal, não realiza auditoria prévia nas transações particulares de usuários, não coleta endereços de IP e coopera estritamente com requisições judiciais formais nos limites dos dados disponíveis nos termos dos arts. 10 e 15 da Lei nº 12.965/2014.
+
+

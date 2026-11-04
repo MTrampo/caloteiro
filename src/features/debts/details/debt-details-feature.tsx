@@ -1,0 +1,464 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { DebtDetailsFormatted, InstallmentFormatted } from "@/commons/models/debt";
+import type { UserPermissions } from "@/commons/models/subscription";
+import { DebtKpis } from "./debt-kpis";
+import { DebtorSummaryCard } from "./debtor-summary-card";
+import { InstallmentsList } from "./installments-list";
+import { PaymentModal } from "./payment-modal";
+import { ExcuseModal } from "./excuse-modal";
+import { DebtPortalMenu } from "./debt-portal-menu";
+import { AgreementRulesCard } from "./agreement-rules-card";
+import { ReceiptViewerDialog } from "./receipt-viewer-dialog";
+import { AttachInstallmentReceiptModal } from "./attach-installment-receipt-modal";
+import { AttachLoanReceiptModal } from "./attach-loan-receipt-modal";
+import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action";
+import { deleteDebtReceiptAction } from "@/actions/debts";
+import { toast } from "sonner";
+import {
+  FaArrowLeft,
+  FaHandHoldingDollar,
+  FaFileInvoiceDollar,
+  FaEye,
+  FaPaperclip,
+  FaLink,
+  FaWhatsapp,
+  FaArrowUpRightFromSquare,
+  FaLock,
+} from "react-icons/fa6";
+import { Button } from "@/components/ui/button";
+
+interface DebtDetailsFeatureProps {
+  initialDebt: DebtDetailsFormatted;
+  permissions?: UserPermissions;
+}
+
+export function DebtDetailsFeature({
+  initialDebt,
+  permissions = {
+    maxDebtors: 2,
+    canCustomTemplates: false,
+    canExportReports: false,
+    canAccessFinancial: false,
+    canDebtorPortal: false,
+    canRiskScore: false,
+    canAttachReceipts: false,
+    isFreePlan: true,
+    isSubscriptionActive: false,
+  },
+}: DebtDetailsFeatureProps) {
+  const router = useRouter();
+  const debt = initialDebt;
+
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = React.useState(false);
+  const [isExcuseModalOpen, setIsExcuseModalOpen] = React.useState(false);
+  const [isPortalModalOpen, setIsPortalModalOpen] = React.useState(false);
+  const [selectedInstallmentForPayment, setSelectedInstallmentForPayment] =
+    React.useState<InstallmentFormatted | null>(null);
+  const [selectedInstallmentForExcuse, setSelectedInstallmentForExcuse] =
+    React.useState<InstallmentFormatted | null>(null);
+  const [selectedInstallmentForReceipt, setSelectedInstallmentForReceipt] =
+    React.useState<InstallmentFormatted | null>(null);
+  const [isAttachReceiptModalOpen, setIsAttachReceiptModalOpen] = React.useState(false);
+  const [isAttachLoanReceiptModalOpen, setIsAttachLoanReceiptModalOpen] =
+    React.useState(false);
+  const [viewerContext, setViewerContext] = React.useState<{
+    url: string;
+    title: string;
+    target: "loan" | "installment";
+    installmentId?: string;
+  } | null>(null);
+  const [isDeletingReceipt, startDeleteTransition] = React.useTransition();
+
+  const handleOpenGeneralPayment = () => {
+    if (debt.isLocked) {
+      toast.error("Esta presa está trancada na jaula! Faça upgrade para registrar pagamentos.");
+      return;
+    }
+    setSelectedInstallmentForPayment(null);
+    setIsPaymentModalOpen(true);
+  };
+
+  const handleOpenInstallmentPayment = (installment: InstallmentFormatted) => {
+    if (debt.isLocked) {
+      toast.error("Esta presa está trancada na jaula! Faça upgrade para registrar pagamentos.");
+      return;
+    }
+    setSelectedInstallmentForPayment(installment);
+    setIsPaymentModalOpen(true);
+  };
+
+  const handleOpenExcuseModal = (installment: InstallmentFormatted) => {
+    if (debt.isLocked) {
+      toast.error("Esta presa está trancada na jaula! Faça upgrade para registrar desculpas.");
+      return;
+    }
+    setSelectedInstallmentForExcuse(installment);
+    setIsExcuseModalOpen(true);
+  };
+
+  const handleDataRefresh = () => {
+    router.refresh();
+  };
+
+  const paymentDefaultAmount = selectedInstallmentForPayment
+    ? Math.max(
+        0,
+        Number(selectedInstallmentForPayment.nominal_amount) -
+          Number(selectedInstallmentForPayment.paid_amount)
+      )
+    : undefined;
+
+  return (
+    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full pb-32 sm:pb-6">
+      {/* Banner da Jaula do Tubarão (quando a dívida estiver trancada por cota do plano) */}
+      {debt.isLocked && (
+        <div className="rounded-2xl border border-rose-900/60 bg-rose-950/40 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm shadow-black/40">
+          <div className="flex items-start gap-3">
+            <div className="size-9 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0 mt-0.5">
+              <FaLock className="size-4" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-heading text-sm sm:text-base font-bold text-white">
+                Presa Trancada na Jaula do Tubarão
+              </h4>
+              <p className="text-xs font-mono text-zinc-300 leading-relaxed">
+                {debt.lockedReason || "Esta dívida possui maior valor em aberto e foi bloqueada pelo limite do seu plano atual. Você não pode dar baixa no Pix, enviar recados nem editar este acordo até fazer o upgrade."}
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/painel/planos"
+            className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-heading font-bold text-xs shrink-0 transition-colors cursor-pointer w-full sm:w-auto"
+          >
+            Destravar Presa Agora
+          </Link>
+        </div>
+      )}
+
+      {/* Cabeçalho da Dívida (Solto, sem card, sem ícones no título h2) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+        <div className="space-y-1 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <Link
+              href="/painel/dividas"
+              className="text-zinc-400 hover:text-white transition-colors p-1.5 -ml-1 rounded-xl hover:bg-zinc-800 shrink-0"
+              title="Voltar para a lista de dívidas"
+            >
+              <FaArrowLeft className="size-4" />
+            </Link>
+            <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white truncate min-w-0">
+              {debt.title}
+            </h2>
+            <span
+              className={`text-[10px] font-mono px-2 py-0.5 rounded-full border shrink-0 whitespace-nowrap ${debt.statusBadgeClass}`}
+            >
+              {debt.statusLabel}
+            </span>
+          </div>
+
+          <p className="text-xs sm:text-sm text-zinc-400 font-mono">
+            Acordo firmado com {debt.debtor.formattedName} em {debt.formattedLoanDate} • Primeiro vencimento: {debt.formattedFirstDueDate}
+          </p>
+        </div>
+
+        {/* Menu do Link da Fatura + Botão de Ação CTA Principal */}
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0 pt-1 sm:pt-0 w-full sm:w-auto">
+          <DebtPortalMenu
+            debtId={debt.id}
+            debtTitle={debt.title}
+            debtorName={debt.debtor.formattedName}
+            initialEnabled={debt.publicLinkEnabled}
+            initialAccessCode={debt.publicAccessCode}
+            canDebtorPortal={permissions.canDebtorPortal}
+            onUpdated={handleDataRefresh}
+            isMobileDialogOpen={isPortalModalOpen}
+            onMobileDialogOpenChange={setIsPortalModalOpen}
+          />
+
+          {!debt.isFullySettled && !debt.isLocked && (
+            <Button
+              type="button"
+              variant="default"
+              size="lg"
+              onClick={handleOpenGeneralPayment}
+              className="hidden sm:inline-flex"
+            >
+              <FaHandHoldingDollar className="size-3.5" />
+              <span>Pingou o Pix!</span>
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* 4 Cards de Métricas e KPIs Financeiros */}
+      <DebtKpis debt={debt} />
+
+      {/* Comprovante Pix do Tubarão (Transferência Inicial enviada ao devedor) */}
+      {!debt.isLocked && (
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-start sm:items-center gap-3">
+            <div
+              className={`size-9 rounded-xl flex items-center justify-center shrink-0 border ${
+                debt.loanReceiptUrl
+                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                  : "bg-zinc-800/80 text-zinc-400 border-zinc-700/60"
+              }`}
+            >
+              <FaFileInvoiceDollar className="size-4" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <h4 className="font-heading text-sm font-bold text-white">
+                  Comprovante Pix do Tubarão (Transferência Inicial)
+                </h4>
+                {debt.loanReceiptUrl ? (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold whitespace-nowrap">
+                    Prova na Gruta
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700 font-semibold whitespace-nowrap">
+                    Não anexado
+                  </span>
+                )}
+              </div>
+              <p className="text-xs font-mono text-zinc-400 leading-relaxed">
+                {debt.loanReceiptUrl
+                  ? "Comprovante do Pix ou transferência que você enviou ao devedor na formalização da dívida."
+                  : "Organize seus próprios Pix: anexe o comprovante do valor que você transferiu para esta presa."}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
+            {debt.loanReceiptUrl ? (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setViewerContext({
+                      url: debt.loanReceiptUrl!,
+                      title: "Comprovante Pix do Tubarão",
+                      target: "loan",
+                    })
+                  }
+                  className="w-full sm:w-auto text-xs font-mono text-zinc-200 hover:text-white border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 cursor-pointer"
+                >
+                  <FaEye className="size-3 text-emerald-400" />
+                  <span>Ver Comprovante</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsAttachLoanReceiptModalOpen(true)}
+                  className="w-full sm:w-auto text-xs font-mono text-zinc-400 hover:text-white hover:bg-zinc-800/70 cursor-pointer"
+                >
+                  <FaPaperclip className="size-3" />
+                  <span>Substituir</span>
+                </Button>
+              </>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAttachLoanReceiptModalOpen(true)}
+                className="w-full sm:w-auto text-xs font-mono text-zinc-200 hover:text-white border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 cursor-pointer"
+              >
+                <FaPaperclip className="size-3 text-emerald-400" />
+                <span>Anexar Comprovante</span>
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Alerta de Quebra de Acordo + Cláusulas e Gatilho de Tolerância */}
+      <AgreementRulesCard
+        debt={debt}
+        isFreePlan={permissions.isFreePlan}
+        onUpdated={handleDataRefresh}
+      />
+
+      {/* Resumo da Presa Marcada */}
+      <DebtorSummaryCard debtor={debt.debtor} />
+
+      {/* Seção Principal: Lista de Parcelas */}
+      <InstallmentsList
+        installments={debt.installments}
+        onPayInstallment={handleOpenInstallmentPayment}
+        onAddExcuse={handleOpenExcuseModal}
+        onViewReceipt={(url, installmentId, installmentNumber) =>
+          setViewerContext({
+            url,
+            title: `Comprovante • Parcela ${installmentNumber} de ${debt.installments.length}`,
+            target: "installment",
+            installmentId,
+          })
+        }
+        onAttachReceipt={(inst) => {
+          setSelectedInstallmentForReceipt(inst);
+          setIsAttachReceiptModalOpen(true);
+        }}
+      />
+
+      {/* Modal: Pingou o Pix! */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        debtId={debt.id}
+        defaultAmount={paymentDefaultAmount}
+        remainingDebtAmount={debt.formattedRemainingAmount}
+        isReceiptLocked={permissions.isFreePlan}
+        onSuccess={handleDataRefresh}
+        onPreviewReceipt={(url) =>
+          setViewerContext({
+            url,
+            title: "Pré-visualização do Comprovante",
+            target: "installment",
+          })
+        }
+      />
+
+      {/* Modal: Anexar Comprovante à Parcela */}
+      <AttachInstallmentReceiptModal
+        isOpen={isAttachReceiptModalOpen}
+        onClose={() => {
+          setIsAttachReceiptModalOpen(false);
+          setSelectedInstallmentForReceipt(null);
+        }}
+        debtId={debt.id}
+        installment={selectedInstallmentForReceipt}
+        totalInstallments={debt.installments.length}
+        isReceiptLocked={permissions.isFreePlan}
+        onSuccess={handleDataRefresh}
+        onPreviewReceipt={(url) =>
+          setViewerContext({
+            url,
+            title: "Pré-visualização do Comprovante",
+            target: "installment",
+          })
+        }
+      />
+
+      {/* Modal: Anexar / Substituir Comprovante Pix do Tubarão na Dívida */}
+      <AttachLoanReceiptModal
+        isOpen={isAttachLoanReceiptModalOpen}
+        onClose={() => setIsAttachLoanReceiptModalOpen(false)}
+        debtId={debt.id}
+        debtTitle={debt.title}
+        formattedOriginalAmount={debt.formattedOriginalAmount}
+        hasExistingReceipt={Boolean(debt.loanReceiptUrl)}
+        isReceiptLocked={permissions.isFreePlan}
+        onSuccess={handleDataRefresh}
+        onPreviewReceipt={(url) =>
+          setViewerContext({
+            url,
+            title: "Pré-visualização do Comprovante",
+            target: "loan",
+          })
+        }
+      />
+
+      {/* Modal: Anotar Caô / Desculpa */}
+      <ExcuseModal
+        isOpen={isExcuseModalOpen}
+        onClose={() => setIsExcuseModalOpen(false)}
+        installment={selectedInstallmentForExcuse}
+        onSuccess={handleDataRefresh}
+      />
+
+      {/* Modal: Visualizador de Comprovante em Tela Cheia com Zoom, Download e Exclusão */}
+      <ReceiptViewerDialog
+        open={Boolean(viewerContext)}
+        onOpenChange={(open) => {
+          if (!open) setViewerContext(null);
+        }}
+        imageUrl={viewerContext?.url || null}
+        title={viewerContext?.title}
+        isDeleting={isDeletingReceipt}
+        onDelete={
+          viewerContext
+            ? async () => {
+                await new Promise<void>((resolve) => {
+                  startDeleteTransition(async () => {
+                    const res = await deleteDebtReceiptAction({
+                      debtId: debt.id,
+                      target: viewerContext.target,
+                      installmentId: viewerContext.installmentId,
+                    });
+
+                    if (!res.success) {
+                      toast.error(res.error || "Não foi possível excluir o comprovante.");
+                      resolve();
+                      return;
+                    }
+
+                    toast.success(res.message || "Comprovante excluído com sucesso!");
+                    setViewerContext(null);
+                    handleDataRefresh();
+                    resolve();
+                  });
+                });
+              }
+            : undefined
+        }
+      />
+
+      {/* Ações Flutuantes no Mobile (FAB Multi-Ações com 3 pontinhos e transição para ✕) */}
+      <MobileFloatingAction
+        ariaLabel="Ações da dívida"
+        actions={[
+          ...(!debt.isFullySettled
+            ? [
+                {
+                  label: "Pingou o Pix!",
+                  icon: <FaHandHoldingDollar className="size-4 text-emerald-400" />,
+                  onClick: handleOpenGeneralPayment,
+                  variant: "emerald" as const,
+                },
+              ]
+            : []),
+          {
+            label: "Configurar Link da Fatura",
+            icon: <FaLink className="size-4 text-amber-400" />,
+            onClick: () => setIsPortalModalOpen(true),
+          },
+          ...(debt.publicLinkEnabled
+            ? [
+                {
+                  label: "Copiar Convite p/ WhatsApp",
+                  icon: <FaWhatsapp className="size-4 text-emerald-400" />,
+                  onClick: () => {
+                    const url = `${window.location.origin}/fatura/${debt.id}`;
+                    const firstName =
+                      debt.debtor.formattedName.split(" ")[0] ||
+                      debt.debtor.formattedName;
+                    const message =
+                      `Olá, ${firstName}! Segue o link privado para você acompanhar os valores e parcelas do nosso acordo (${debt.title}):\n\n` +
+                      `Link da fatura: ${url}\n` +
+                      `Código de acesso exclusivo: *${debt.publicAccessCode}*\n\n` +
+                      `Pode ficar tranquilo(a), a página é protegida por código e somente quem tem esse código consegue visualizar.`;
+                    navigator.clipboard.writeText(message);
+                    toast.success("Convite com link e código copiado!");
+                  },
+                },
+              ]
+            : []),
+          {
+            label: "Abrir Fatura da Presa",
+            icon: <FaArrowUpRightFromSquare className="size-4 text-zinc-300" />,
+            href: `/fatura/${debt.id}`,
+          },
+        ]}
+      />
+    </div>
+  );
+}
+

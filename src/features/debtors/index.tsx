@@ -1,0 +1,329 @@
+"use client"
+
+import * as React from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { FaMagnifyingGlass, FaUserPlus, FaRotateRight, FaGaugeHigh } from "react-icons/fa6"
+import { Button } from "@/components/ui/button"
+import { NewButton } from "@/components/buttons/new-button"
+import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action"
+import { DebtorCard } from "./components/debtor-card"
+import { DebtorCardSkeleton } from "./components/debtor-card-skeleton"
+import { getDebtorsAction } from "@/actions/debtors"
+import type { DebtorItemFormatted } from "./types"
+import type { UserPlanLimits } from "@/commons/models/subscription"
+
+interface DebtorsFeatureProps {
+  initialDebtors?: DebtorItemFormatted[]
+  initialHasMore?: boolean
+  initialTotalCount?: number
+  planLimits?: UserPlanLimits | null
+}
+
+const ITEMS_PER_PAGE = 12
+
+export function DebtorsFeature({
+  initialDebtors = [],
+  initialHasMore = false,
+  initialTotalCount = 0,
+  planLimits,
+}: DebtorsFeatureProps) {
+  const router = useRouter()
+  const [debtors, setDebtors] = React.useState<DebtorItemFormatted[]>(initialDebtors)
+  const [searchTerm, setSearchTerm] = React.useState("")
+  const [page, setPage] = React.useState(1)
+  const [hasMore, setHasMore] = React.useState(initialHasMore)
+  const [totalCount, setTotalCount] = React.useState(initialTotalCount)
+  const [isLoadingMore, setIsLoadingMore] = React.useState(false)
+  const [isSearching, setIsSearching] = React.useState(false)
+
+  // Sincroniza estado local durante o render quando props do servidor (router.refresh) mudarem
+  const [prevInitialDebtors, setPrevInitialDebtors] = React.useState(initialDebtors)
+  if (initialDebtors !== prevInitialDebtors) {
+    setPrevInitialDebtors(initialDebtors)
+    if (!searchTerm.trim() && page === 1) {
+      setDebtors(initialDebtors)
+      setHasMore(initialHasMore)
+      setTotalCount(initialTotalCount)
+    }
+  }
+
+  // Referência para o sentinela do infinite scroll
+  const observerTarget = React.useRef<HTMLDivElement | null>(null)
+  const isMountedRef = React.useRef(false)
+
+  // Busca reativa com debounce
+  React.useEffect(() => {
+    if (!isMountedRef.current) {
+      isMountedRef.current = true
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true)
+      const res = await getDebtorsAction({
+        page: 1,
+        limit: ITEMS_PER_PAGE,
+        search: searchTerm,
+      })
+
+      if (res.success && res.data) {
+        setDebtors(res.data.items)
+        setHasMore(res.data.hasMore)
+        setTotalCount(res.data.totalCount)
+        setPage(1)
+      }
+      setIsSearching(false)
+    }, 350)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  // Infinite Scroll: carregar próxima página ao atingir o final da tela
+  const loadMoreDebtors = React.useCallback(async () => {
+    if (isLoadingMore || !hasMore || isSearching) return
+
+    setIsLoadingMore(true)
+    const nextPage = page + 1
+
+    const res = await getDebtorsAction({
+      page: nextPage,
+      limit: ITEMS_PER_PAGE,
+      search: searchTerm,
+    })
+
+    const data = res.data
+    if (res.success && data) {
+      setDebtors((prev) => [...prev, ...data.items])
+      setHasMore(data.hasMore)
+      setTotalCount(data.totalCount)
+      setPage(nextPage)
+    }
+
+    setIsLoadingMore(false)
+  }, [page, hasMore, isLoadingMore, isSearching, searchTerm])
+
+  // Observador de interseção do sentinela
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore && !isLoadingMore && !isSearching) {
+          loadMoreDebtors()
+        }
+      },
+      { threshold: 0.1, rootMargin: "100px" }
+    )
+
+    const currentTarget = observerTarget.current
+    if (currentTarget) {
+      observer.observe(currentTarget)
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget)
+      }
+    }
+  }, [loadMoreDebtors, hasMore, isLoadingMore, isSearching])
+
+  const handleDebtorUpdated = React.useCallback(
+    (updatedDebtor: DebtorItemFormatted) => {
+      setDebtors((prev) =>
+        prev.map((d) =>
+          d.id === updatedDebtor.id ? { ...d, ...updatedDebtor } : d
+        )
+      )
+      router.refresh()
+    },
+    [router]
+  )
+
+  const handleDebtorDeleted = React.useCallback(
+    (deletedId: string) => {
+      setDebtors((prev) => prev.filter((d) => d.id !== deletedId))
+      setTotalCount((prev) => Math.max(0, prev - 1))
+      router.refresh()
+    },
+    [router]
+  )
+
+  return (
+    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full pb-24 sm:pb-6">
+      {/* Cabeçalho da Lista de Devedores (Solto, sem card, sem ícones no título h2) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+        <div className="space-y-1">
+          <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white">
+            Devedores
+          </h2>
+          <p className="text-xs sm:text-sm text-zinc-400 font-mono">
+            Registro e rastreio de quem pegou seu dinheiro emprestado e jurou que pagava na sexta-feira.
+          </p>
+        </div>
+
+        {/* Ações no Topo (Desktop: Exibidas no cabeçalho; Mobile: Unificadas no FAB flutuante) */}
+        <div className="hidden sm:flex items-center gap-2">
+          {planLimits?.canRiskScore && (
+            <Button
+              variant="outline"
+              size="sm"
+              render={<Link href="/painel/termometro" />}
+              className="h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white justify-center"
+            >
+              <FaGaugeHigh className="size-3.5 text-amber-400 mr-1.5" />
+              <span>Termômetro da Gruta</span>
+            </Button>
+          )}
+          <NewButton
+            href="/painel/devedores/novo"
+            label="Cadastrar Devedor"
+            icon="user-plus"
+            isLocked={planLimits?.isDebtorLimitReached}
+            lockReason="debtor"
+            maxAllowed={planLimits?.maxDebtors ?? 2}
+            planName={planLimits?.planName ?? "Tubarão Lixa"}
+          />
+        </div>
+      </div>
+
+      {/* Barra de Busca (Sem Tabs obsoletas) */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-md">
+          <FaMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-500" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar por nome, telefone ou CPF..."
+            className="w-full bg-card border border-border rounded-xl pl-9 pr-4 py-2 text-xs font-mono text-white placeholder:text-zinc-500 focus:outline-hidden focus:border-zinc-700 shadow-xs"
+          />
+        </div>
+
+        {/* Contador de Devedores */}
+        <div className="text-xs font-mono text-zinc-400 shrink-0 flex items-center gap-2">
+          {planLimits?.maxDebtors !== null && planLimits?.maxDebtors !== undefined ? (
+            <>
+              <span>
+                {totalCount} / {planLimits.maxDebtors} no tanque
+              </span>
+              {planLimits.isDebtorLimitReached && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                  Limite atingido
+                </span>
+              )}
+            </>
+          ) : planLimits?.maxDebtors === null ? (
+            <span>{totalCount} {totalCount === 1 ? "devedor no tanque" : "devedores no tanque"} (Ilimitado)</span>
+          ) : (
+            <span>{totalCount} {totalCount === 1 ? "devedor cadastrado" : "devedores cadastrados"}</span>
+          )}
+        </div>
+      </div>
+
+      {/* Estado de Carregamento da Busca com Skeletons */}
+      {isSearching ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <DebtorCardSkeleton key={`searching-skeleton-${idx}`} />
+          ))}
+        </div>
+      ) : debtors.length > 0 ? (
+        <>
+          {/* Grid Responsivo de Cards de Devedores */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {debtors.map((debtor) => (
+              <DebtorCard
+                key={debtor.id}
+                debtor={debtor}
+                onDebtorUpdated={handleDebtorUpdated}
+                onDebtorDeleted={handleDebtorDeleted}
+              />
+            ))}
+
+            {/* Skeletons adicionais durante o Infinite Scroll */}
+            {isLoadingMore && (
+              <>
+                <DebtorCardSkeleton />
+                <DebtorCardSkeleton />
+                <DebtorCardSkeleton />
+              </>
+            )}
+          </div>
+
+          {/* Elemento Sentinela do Infinite Scroll */}
+          <div ref={observerTarget} className="h-6 w-full" />
+        </>
+      ) : searchTerm.trim() ? (
+        /* Fallback de Busca Vazia (Solto, sem card, centralizado) */
+        <div className="py-16 sm:py-24 text-center space-y-4 max-w-md mx-auto">
+          <div className="space-y-1.5">
+            <h3 className="font-heading text-base font-bold text-white">
+              Nenhum devedor encontrado para &ldquo;{searchTerm}&rdquo;
+            </h3>
+            <p className="text-xs sm:text-sm font-mono text-zinc-400">
+              O caloteiro conseguiu escapar da busca ou você digitou o nome errado?
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setSearchTerm("")}
+          >
+            <FaRotateRight className="size-3" />
+            <span>Limpar Busca</span>
+          </Button>
+        </div>
+      ) : (
+        /* Empty State Principal do Tanque (Solto, sem card, centralizado) */
+        <div className="py-16 sm:py-24 text-center space-y-5 max-w-md mx-auto">
+          <div className="space-y-2">
+            <h3 className="font-heading text-lg font-bold text-white">
+              Nenhuma presa marcada na sua gruta
+            </h3>
+            <p className="text-xs sm:text-sm font-mono text-zinc-400 leading-relaxed">
+              Ou você é abençoado, ou finalmente aprendeu a dizer &ldquo;não&rdquo;. Se alguém te pediu um Pix emprestado hoje, cadastre agora antes que suma no mundo.
+            </p>
+          </div>
+
+          <div className="pt-2">
+            <NewButton
+              href="/painel/devedores/novo"
+              label="Cadastrar Primeiro Devedor"
+              icon="user-plus"
+              isLocked={planLimits?.isDebtorLimitReached}
+              lockReason="debtor"
+              maxAllowed={planLimits?.maxDebtors ?? 2}
+              planName={planLimits?.planName ?? "Tubarão Lixa"}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Ação Flutuante no Mobile (FAB Multi-Ações com 3 pontinhos e transição para ✕) */}
+      <MobileFloatingAction
+        ariaLabel="Ações de devedores"
+        actions={[
+          {
+            label: "Novo Devedor",
+            icon: <FaUserPlus className="size-5" />,
+            href: "/painel/devedores/novo",
+            isLocked: planLimits?.isDebtorLimitReached,
+            lockReason: "debtor",
+            maxAllowed: planLimits?.maxDebtors ?? 2,
+            planName: planLimits?.planName ?? "Tubarão Lixa",
+            variant: "emerald",
+          },
+          ...(planLimits?.canRiskScore
+            ? [
+                {
+                  label: "Termômetro da Gruta",
+                  icon: <FaGaugeHigh className="size-4 text-amber-400" />,
+                  href: "/painel/termometro",
+                },
+              ]
+            : []),
+        ]}
+      />
+    </div>
+  )
+}

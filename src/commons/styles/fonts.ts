@@ -1,6 +1,6 @@
-import { Syne, Plus_Jakarta_Sans } from 'next/font/google';
+import { Outfit, Plus_Jakarta_Sans } from 'next/font/google';
 
-export const fontTitle = Syne({
+export const fontTitle = Outfit({
   subsets: ['latin'],
   weight: ['700', '800'],
   variable: '--font-title',

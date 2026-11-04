@@ -10,7 +10,7 @@ Você é um assistente de codificação sénior a atuar neste projeto. Siga rigo
 * **Framework:** Next.js 16 (App Router)
 * **Estilização:** Tailwind CSS
 * **Componentes de UI:** Shadcn UI
-* **Backend as a Service / DB:** Supabase (Autenticação com @supabase/ssr, Base de Dados, Storage, RLS)
+* **serverend as a Service / DB:** Supabase (Autenticação com @supabase/ssr, Base de Dados, Storage, RLS)
 * **Validação:** Zod
 * **Pagamentos:** Mercado Pago
 
@@ -22,7 +22,7 @@ Respeite estritamente a localização e a responsabilidade de cada pasta. Não c
 * `src/components/*`: Componentes reutilizáveis compostos (buttons, cards, dialogs, forms, etc.).
 * `src/features`: Componentes de escopo específico ou blocos de páginas (debtors, debts, dashboard, etc.).
 * `src/actions`: Módulos de integração (Server Actions) entre a interface e o domínio de negócio.
-* `src/back`: Camada de domínio, regras de negócio e persistência, dividida por módulos (ex: `src/back/debtors`).
+* `src/server`: Camada de domínio, regras de negócio e persistência, dividida por módulos (ex: `src/server/debtors`).
 * `src/store`: Gestão de estado global de cliente (se estritamente necessário, via Zustand).
 * `src/commons`: Utilitários, esquemas Zod partilhados, enums, modelos, tipos globais e clientes base.
 * `src/schemas`: Scripts de migração SQL, políticas RLS e definições de tabelas do Supabase.
@@ -30,20 +30,27 @@ Respeite estritamente a localização e a responsabilidade de cada pasta. Não c
 ## 3. Fluxo de Dados e Regras de Camadas (Crucial)
 O fluxo de execução deve respeitar uma hierarquia rigorosa: **UI -> Action -> Service -> Repository**.
 
-* **UI (Pages/Features):** Consomem as Actions. Podem ser Server Components ou Client Components.
+* **UI (Pages/Features):** Consomem as Actions.
+  * As páginas em `src/app/*` (ex: `src/app/painel/page.tsx`) devem atuar como **Server Components puros**, responsáveis pela busca de dados iniciais, leitura de parâmetros de rota e delegação do conteúdo principal para os módulos correspondentes em `src/features/*`.
+  * Os componentes em `src/features/*` contêm os blocos visuais de cada funcionalidade e concentram as interações do cliente (`'use client'`) apenas onde estritamente necessário.
 * **Actions (`src/actions`):**
-  * Devem conter obrigatoriamente a diretiva `'use server'` no topo do ficheiro.
-  * Têm de validar a sessão do utilizador autenticado antes de qualquer chamada.
+  * Devem conter obrigatoriamente a diretiva `'use server'` no topo do ficheiro (único local onde essa diretiva é permitida).
+  * Têm de validar a sessão do utilizador autenticado antes de qualquer chamada (utilizando `getUserLoggedApi()` do domínio `account/service/auth.api`).
   * Têm de validar a entrada de dados via **Zod** antes de chamar a camada de Service.
   * Retornam sempre uma resposta tipada padronizada: `{ success: true, data: T }` ou `{ success: false, error: string }`.
-  * Não acedem à base de dados diretamente; delegam a execução aos Services.
-* **Services (`src/back/[dominio]/service/*.api.ts`):**
+  * **Nunca acedem à base de dados nem instanciam `serverSupabase()` diretamente;** delegam toda execução aos Services.
+* **Camada Server (`src/server`): Blindagem Obrigatória com `server-only`:**
+  * **Obrigatoriedade de Blindagem:** Todo ficheiro criado dentro de `src/server/**` (seja repository, service ou infraestrutura do servidor) **DEVE conter obrigatoriamente `import "server-only";` na primeiríssima linha do arquivo**.
+  * **Proibição de `'use server'`:** É terminantemente PROIBIDO adicionar `'use server'` na camada `src/server`. `'use server'` transforma funções em endpoints RPC públicos na internet, o que causaria bypass de autenticação e falha crítica de segurança.
+* **Services (`src/server/[dominio]/service/*.api.ts`):**
+  * Devem conter `import "server-only";` no topo.
   * Concentram toda a regra de negócio (cálculos de juros, penalizações, validações de contrato).
   * São orquestrados apenas pelas Actions.
   * Consomem os Repositories para carregar ou gravar dados.
-* **Repositories (`src/back/[dominio]/repository/*.supabase.ts`):**
+* **Repositories (`src/server/[dominio]/repository/*.supabase.ts`):**
+  * Devem conter `import "server-only";` no topo.
   * Contêm a lógica de acesso a dados (Supabase, consultas e mutações).
-  * Operam com o cliente Supabase associado à sessão do utilizador (`@supabase/ssr`).
+  * São os **únicos locais autorizados** a consumir os clientes Supabase de servidor (`serverSupabase` e `internalSupabase`).
   * Toda e qualquer operação de escrita e leitura deve respeitar o isolamento por utilizador (`userId`) e políticas ativas de Row Level Security (RLS).
   * O tipo de dados deve seguir a tipagem gerada do Supabase (`src/commons/types/database.types.ts`).
 
@@ -62,3 +69,54 @@ O fluxo de execução deve respeitar uma hierarquia rigorosa: **UI -> Action -> 
 
 ## 6. Documentação e Ferramental (MCP)
 * Sempre que precisar de confirmar especificações do Supabase, Mercado Pago, Next.js ou Shadcn UI, utilize os recursos MCP disponíveis para validar padrões actualizados antes de gerar soluções complexas.
+
+## 7. Padrões de Layout e Consistência de Telas (Anti-Card Inception)
+* **Espaçamento Raiz Unificado:** Toda tela do painel (`src/features/*`) deve utilizar invariavelmente o espaçamento padrão `flex-1 p-4 sm:p-6 space-y-6 w-full`. Nenhuma tela deve restringir a largura com `max-w-*` arbitrário que cause desalinhamento.
+* **Cabeçalhos de Página Soltos (Sem Card):** O topo da tela (saudação de boas-vindas, título da página ou resumo principal) **NUNCA** deve ser colocado dentro de um card (`bg-card border`). Deve ser renderizado diretamente no fluxo da página (`flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1`), com o título à esquerda e ações/seletores à direita (ex: botão `Nova Dívida`).
+* **Tipografia de Títulos Padronizada (SEM ÍCONES):** O título principal de toda tela deve ter a classe exata `h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white"` acompanhado de subtítulo `p className="text-xs sm:text-sm text-zinc-400 font-mono"`. **É terminantemente PROIBIDO adicionar emojis ou ícones gráficos antes ou depois do texto nos títulos (h1, h2, h3).** O título deve ser texto puro e limpo.
+* **Seções e Listagens de Dados:** Cabeçalhos de listas e seções (ex: Promessas, Ocorrências do Dia, Lista de Devedores) devem ser diretos no layout (`space-y-4 pt-1`). Os itens da lista devem ser os cards individuais (`space-y-3` ou `grid`). **É estritamente proibido criar um card gigante externo que envolva uma lista inteira de cards internos ("card inception").**
+* **Uso Correto de Cards:** Utilize cards (`rounded-2xl border border-border bg-card`) apenas para unidades semânticas individuais: cards de KPI numéricos, gráficos analíticos, ou cada card individual de dívida/devedor.
+* **Nomenclatura Semântica:** Mantenha sempre "Dívidas" em vez de "Cobranças", e "Dívida" em vez de "Ficha".
+* **PROIBIÇÃO ABSOLUTA DE BADGES/PÍLULAS NO TOPO:** É terminantemente PROIBIDO adicionar badges, tags ou pílulas (ex: "CENTRAL DE INTELIGÊNCIA", "RESGATE DE ACESSO", badges de categoria ou status) acima de títulos no topo de páginas ou no cabeçalho de e-mails. O cabeçalho deve ser limpo e direto (apenas logo e título), sem enfeites de badge flutuantes que poluem o visual.
+* **PROIBIÇÃO DE BOTÕES REDUNDANTES DE FECHAR/CANCELAR EM MODAIS/DIALOGS:** Quando um modal ou dialog já possui o botão de fechar 'X' (ícone) no topo, **É TERMINANTEMENTE PROIBIDO** adicionar botões como "Cancelar", "Fechar", "Voltar" ou "Deixar para depois" no rodapé. O rodapé do modal deve conter única e exclusivamente o botão de ação principal (CTA), alinhado à direita e com o estilo padronizado na cor branca (ou cor de perigo em casos de exclusão definitiva).
+* **PROIBIÇÃO ABSOLUTA DE 'RADAR' E 'FICHA', E ADOÇÃO DA TRÍADE (TUBARÃO ➔ PRESA MARCADA ➔ GRUTA):** É terminantemente PROIBIDO utilizar as palavras "radar", "ficha" ou "fichado" no sistema. Em limites de planos, capacidade de armazenamento, avisos de bloqueio, e-mails e empty states, utilize a identidade da **Gruta** (o covil/território do Tubarão) e **Presa Marcada** (devedor que recebeu a mordida exploratória do tubarão até que pague o Pix), ex: "capacidade da sua gruta: 10 presas marcadas", "marcada na gruta desde...", "marcar novos caloteiros". Mantenha "devedor" apenas nos campos e formulários de cadastro técnico (ex: "Nome do devedor", "CPF").
+* **DIRETRIZ MANDATÓRIA: MOBILE-FIRST & RIGOR EXTREMO EM TELAS COMPACTAS (320px / iPhone 5):**
+  * **80% dos usuários acessam o Caloteiro via dispositivos móveis.** O design e a experiência mobile são a prioridade máxima do produto.
+  * Usamos o **iPhone 5 (320px)** como nossa régua de ouro: se o layout for impecável e sem quebras em 320px, ele será excepcional em qualquer smartphone moderno do mercado.
+  * Toda tela, landing page, simulação, card, modal ou formulário **DEVE ser rigorosamente testada e 100% funcional em telas a partir de 320px**.
+  * **Zero Truncamento Feio e Quebras Deselegantes:** É expressamente proibido espremer elementos horizontalmente forçando textos a truncar (`...`), badges a encolher ou moedas a quebrar linha (`R$` numa linha e `0,00` na outra). Sempre utilize `whitespace-nowrap` em valores monetários e tags críticas.
+  * **Empilhamento Inteligente e Botões Full-Width no Mobile:** Em telas compactas, elementos lado a lado (ex: títulos e badges, chaves Pix e botões de cópia, botões de ação e status) devem empilhar verticalmente (`flex flex-col sm:flex-row`, `grid-cols-1 sm:grid-cols-2`). Botões de ação no mobile devem expandir com `w-full sm:w-auto` para toque confortável e área de clique generosa.
+  * **Componentes Dedicados para Mobile:** Quando um layout de desktop (tabelas densas, simuladores em bento, steppers com 4 colunas) não puder ser reduzido com elegância, é permitido e encorajado criar componentes ou variações visuais dedicadas para mobile (`block sm:hidden` / `hidden sm:block`) para garantir usabilidade cirúrgica.
+
+## 8. Organização de Validações, Modelos e Assinaturas de Métodos (Clean Code)
+* **Separação Rígida entre `validations` e `models`:**
+  * `src/commons/validations/`: Responsabilidade exclusiva para esquemas de validação de runtime com Zod (`z.object`, `z.email()`, etc.). Não deve conter interfaces TypeScript manuais.
+  * `src/commons/models/`: Responsabilidade exclusiva para contratos e tipagens estáticas em TypeScript (Interfaces de domínio, DTOs de entrada e saída, e tipos inferidos de formulários).
+* **Espelhamento de Arquivos 1:1:** O nome dos arquivos em `src/commons/validations` deve espelhar exatamente os de `src/commons/models` (ex: `validations/user.ts` <-> `models/user.ts`, `validations/subscription.ts` <-> `models/subscription.ts`).
+* **Sintaxe Zod 4 Atualizada:** É obrigatório o uso de `z.email(...)` em vez da sintaxe depreciada `z.string().email(...)`.
+* **Proibição de Parâmetros Soltos em Excesso (DTOs Obrigatórios):**
+  * É proibido criar funções em Repositories ou Services com mais de 2 parâmetros primitivos soltos (ex: `fn(userId, name, email, nickname, avatar, phone)`).
+  * Toda mutação ou conjunto de parâmetros com 3 ou mais campos deve obrigatoriamente ser agrupado em uma interface DTO/Payload tipada em `src/commons/models` (ex: `CreateProfilePayload`, `UpdateSubscriptionPayload`).
+
+## 9. Testes Automatizados e Política de Qualidade (Foco Server)
+* **Escopo Inicial dos Testes:** Os testes automatizados devem cobrir estritamente a camada de regras de negócio do servidor (`src/server/**`), com foco primordial em `Services` e lógica matemática/financeira.
+* **Cobertura Obrigatória de Regras de Negócio:**
+  * Toda nova regra de negócio ou Service criado (cálculos de inteligência financeira, juros, multas, divisão de parcelas, amortização, regras de limite de planos do Tubarão, transições de status de dívidas e assinaturas) **DEVE obrigatoriamente ser acompanhada da criação imediata de seus respectivos testes unitários**.
+  * É expressamente proibido entregar novos Services ou mutações em `src/server` sem a suite de testes unitários associada no Vitest.
+* **Política de Correção de Bugs e Testes de Regressão:**
+  * Toda vez que um bug for identificado e corrigido, **é obrigatório criar um teste de regressão automatizado** que reproduza o cenário da falha e comprove a sua resolução definitiva.
+  * O teste de regressão deve ser mantido de forma permanente na suite de testes para garantir que o erro nunca volte a ocorrer.
+* **Localização e Estrutura dos Arquivos de Teste:**
+  * Os testes devem residir dentro da pasta de testes do próprio domínio: `src/server/[dominio]/test/[nome].api.test.ts` (ex: `src/server/debts/test/debt.api.test.ts`).
+  * Repositories e dependências externas (ex: chamadas de rede do Supabase, Mercado Pago, Resend) devem ser mockados nos testes de Service para garantir execução ultrarrápida, determinística e sem efeitos colaterais.
+* **Blindagem do `server-only` em Testes:**
+  * O setup global dos testes deve mockar o pacote `server-only` para que os arquivos da camada `src/server` possam ser executados pelo test runner em ambiente Node/Vitest sem erros de runtime.
+
+## 10. Padronização de Idioma no Código (Codebase in English)
+* **Nomes de Arquivos Fora de `src/app` Estritamente em Inglês:** Todos os arquivos de Services, Repositories, Models, Validations, Actions, Testes, Utils, Hooks e Components devem ser nomeados exclusivamente em **inglês** (ex: `tracking.api.ts`, `tracking.supabase.ts`, `tracking.ts`, `debt.api.ts`).
+  * A única exceção de arquivos em português são as rotas de páginas do App Router dentro de `src/app/**` (ex: `src/app/painel/dividas/acompanhamento/page.tsx`).
+* **Identificadores de Código (Variáveis, Funções e Tipos em Inglês):** Todo nome de variável, função, método, classe, interface, DTO, type alias e enum deve ser escrito estritamente em **inglês** (ex: `TrackingSummaryData`, `getTrackingDataApi`, `installments`, `overdueCount`, `open`, `overdue`).
+* **Exceções Legítimas para o Português:**
+  * Rotas de URL de páginas em `src/app/**`.
+  * Descrições textuais de testes em `describe` e `it` no Vitest.
+  * Textos de interface voltados ao usuário (cópias de tela, rótulos de botões, títulos, mensagens de toast, templates de e-mail e glossário do Tubarão).
