@@ -88,7 +88,7 @@ export function DebtsFeature({ initialData, planLimits }: DebtsFeatureProps) {
       <PriorityDebtorCard debtor={data.priorityDebtor} />
 
       {/* 4. Gráficos de Inteligência Financeira Lado a Lado (Distribuição da Carteira & Eficiência) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch min-w-0 w-full overflow-hidden">
         <PortfolioDistribution data={data.portfolio} />
         <DebtsEfficiency data={data.efficiency} />
       </div>

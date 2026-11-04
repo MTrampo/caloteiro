@@ -79,16 +79,16 @@ export function ResponsiveCardsCarousel({
       : "lg:grid-cols-4"
 
   return (
-    <div className={cn("w-full min-w-0", className)}>
+    <div className={cn("w-full min-w-0 overflow-hidden", className)}>
       {/* 1. Mobile & Tablet: Shadcn Carousel com Toque / Arraste */}
-      <div className="block lg:hidden w-full">
+      <div className="block lg:hidden w-full overflow-hidden">
         <Carousel
           setApi={setApi}
           opts={{
             align: "start",
             containScroll: "trimSnaps",
           }}
-          className="w-full"
+          className="w-full overflow-hidden"
         >
           <CarouselContent className="-ml-3 sm:-ml-4">
             {items.map((child, index) => (

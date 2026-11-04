@@ -38,8 +38,9 @@ export function PlanChangeModal({
   const [prevTargetId, setPrevTargetId] = React.useState<string | null>(null);
 
   // Reseta a caixa de confirmação quando o plano selecionado muda durante a renderização
-  if (targetPlan?.id !== prevTargetId) {
-    setPrevTargetId(targetPlan?.id ?? null);
+  const currentTargetId = targetPlan?.id ?? null;
+  if (currentTargetId !== prevTargetId) {
+    setPrevTargetId(currentTargetId);
     setIsConfirmed(false);
   }
 

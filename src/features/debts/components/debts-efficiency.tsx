@@ -29,11 +29,11 @@ export function DebtsEfficiency({ data }: DebtsEfficiencyProps) {
   const { globalEfficiencyScore, totalPrevisto, totalRecebido, series, metrics } = data
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs flex flex-col justify-between gap-6 h-full">
+    <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-xs flex flex-col justify-between gap-6 h-full min-w-0 w-full overflow-hidden">
       {/* Cabeçalho com Título e Badge de Eficiência */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div className="space-y-0.5">
-          <h3 className="font-heading text-lg sm:text-xl font-bold text-white tracking-tight">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 min-w-0">
+        <div className="space-y-0.5 min-w-0">
+          <h3 className="font-heading text-lg sm:text-xl font-bold text-white tracking-tight truncate">
             Eficiência das Dívidas
           </h3>
           <p className="text-xs sm:text-sm text-zinc-400 font-mono">
@@ -42,19 +42,19 @@ export function DebtsEfficiency({ data }: DebtsEfficiencyProps) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold shadow-2xs">
-            <FaCircleCheck className="size-3.5" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold shadow-2xs whitespace-nowrap">
+            <FaCircleCheck className="size-3.5 shrink-0" />
             <span>{globalEfficiencyScore}% Recuperado</span>
           </div>
-          <span className="text-[11px] font-mono text-zinc-400 hidden sm:inline">
+          <span className="text-[11px] font-mono text-zinc-400 hidden sm:inline whitespace-nowrap">
             ({formatCompactCurrencyBRL(totalRecebido)} de {formatCompactCurrencyBRL(totalPrevisto)})
           </span>
         </div>
       </div>
 
       {/* Gráfico de Barras Comparativo (Previsto vs. Recebido) */}
-      <div className="space-y-2">
-        <ChartContainer config={chartConfig} className="h-44 sm:h-48 w-full aspect-auto">
+      <div className="space-y-2 min-w-0 w-full overflow-hidden">
+        <ChartContainer config={chartConfig} className="h-44 sm:h-48 w-full max-w-full min-w-0 aspect-auto overflow-hidden">
           <BarChart
             data={series}
             margin={{ top: 10, right: 10, left: -16, bottom: 0 }}

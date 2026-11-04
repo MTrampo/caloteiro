@@ -30,7 +30,7 @@ async function syncSubscriptionCookieFromDb(
   try {
     const { data: subRow } = await supabase
       .from("subscriptions")
-      .select("id, mp_status, current_period_end, plan:plans(slug)")
+      .select("id, mp_status, current_period_end, plan:plans!subscriptions_plan_id_fkey(slug)")
       .eq("user_id", currentUserId)
       .maybeSingle();
 
