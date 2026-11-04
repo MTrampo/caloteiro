@@ -16,6 +16,7 @@ export interface HomeCommandFeatureProps {
   initialPunchline?: string;
   initialTimeGreeting?: string;
   canCopyPix?: boolean;
+  canAttachReceipts?: boolean;
   planLimits?: UserPlanLimits | null;
 }
 
@@ -24,6 +25,7 @@ export function HomeCommandFeature({
   initialPunchline,
   initialTimeGreeting,
   canCopyPix = true,
+  canAttachReceipts = false,
   planLimits,
 }: HomeCommandFeatureProps) {
   const [data] = React.useState<CommandCenterData>(initialData);
@@ -84,6 +86,7 @@ export function HomeCommandFeature({
             feed={data.feed}
             pixKeyDefault={data.creditorPixKey}
             canCopyPix={canCopyPix}
+            canAttachReceipts={canAttachReceipts}
           />
         </>
       )}

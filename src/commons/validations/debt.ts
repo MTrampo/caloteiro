@@ -155,3 +155,16 @@ export const attachInstallmentReceiptSchema = z.object({
     .max(500, "Caminho de comprovante inválido."),
 });
 
+/**
+ * Esquema de validação para anexo do comprovante Pix da própria dívida (empréstimo do Tubarão)
+ */
+export const attachLoanReceiptSchema = z.object({
+  debtId: z.string().uuid("Identificador da dívida inválido."),
+  receipt_path: z
+    .string()
+    .trim()
+    .min(1, "Caminho do comprovante obrigatório.")
+    .max(500, "Caminho de comprovante inválido."),
+});
+
+

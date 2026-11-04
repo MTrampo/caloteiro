@@ -4,7 +4,6 @@ import * as React from "react";
 import { toast } from "sonner";
 import { attachInstallmentReceiptAction } from "@/actions/debts";
 import {
-  FaPaperclip,
   FaXmark,
   FaCheck,
   FaSpinner,
@@ -75,12 +74,11 @@ export function AttachInstallmentReceiptModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xs animate-in fade-in-50">
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-[calc(100vw-1.5rem)] sm:w-full max-w-md p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl animate-in zoom-in-95 max-h-[calc(100dvh-2.5rem)] overflow-y-auto overscroll-contain">
-        {/* Cabeçalho do Modal */}
+        {/* Cabeçalho do Modal (Sem ícone no h3 conforme Diretriz 7) */}
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1">
-            <h3 className="font-heading text-lg font-bold text-white flex items-center gap-2">
-              <FaPaperclip className="size-4 text-emerald-400 shrink-0" />
-              <span>Anexar Comprovante</span>
+            <h3 className="font-heading text-lg font-bold text-white">
+              Anexar Comprovante
             </h3>
             <p className="text-xs font-mono text-zinc-400">
               Parcela {installment.installment_number} de {totalInstallments} •{" "}

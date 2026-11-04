@@ -19,6 +19,7 @@ import type {
   RegisterPaymentPayload,
   RegisterExcusePayload,
   AttachInstallmentReceiptPayload,
+  AttachLoanReceiptPayload,
   UpdateDebtPortalConfigPayload,
   UpdateDebtAgreementRulesPayload,
   UpdateDebtBreachStatusPayload,
@@ -54,6 +55,7 @@ import {
   updateDebtAgreementRulesSupabase,
   getPublicDebtByIdSupabase,
   getPublicDebtContextByIdSupabase,
+  updateDebtLoanReceiptSupabase,
   deleteDebtSupabase,
 } from "../repository/debt.supabase";
 import {
@@ -1241,6 +1243,67 @@ export const attachInstallmentReceiptApi = async (
       installmentId: payload.installmentId,
     },
     message: "Comprovante anexado à parcela com sucesso!",
+  });
+};
+
+/**
+ * Anexa ou substitui o comprovante da transferência inicial (Pix do Tubarão) em uma dívida existente
+ * Exclusivo para planos pagos (Tubarão Branco e Tubarão Cabeça Chato)
+ */
+export const attachLoanReceiptApi = async (
+  userId: string,
+  payload: AttachLoanReceiptPayload
+): Promise<ResponseProps<{ success: boolean; debtId: string }>> => {
+  const lockStatus = await checkDebtLockedStatusApi(payload.debtId, userId);
+  if (lockStatus.isLocked) {
+    return ApiResponse.Forbidden({
+      message:
+        lockStatus.reason ||
+        "Presa trancada na jaula! Esta dívida possui maior valor em aberto e foi bloqueada devido ao limite do seu plano atual.",
+      error: "DEBT_LOCKED_BY_PLAN",
+    });
+  }
+
+  // 1. Verificação de permissões do plano (Planos pagos)
+  const permissions = await getUserPermissionsOrCacheApi(userId);
+  const canAttach = !permissions.isFreePlan || Boolean(permissions.canAttachReceipts);
+
+  if (!canAttach) {
+    return ApiResponse.Forbidden({
+      message:
+        "O anexo de comprovantes é exclusivo dos planos Tubarão Branco e Tubarão Cabeça Chato! Faça o upgrade para liberar.",
+      error: "RECEIPTS_NOT_ALLOWED_ON_PLAN",
+    });
+  }
+
+  // 2. Busca a dívida para verificar existência e isolamento por usuário
+  const debt = await getDebtByIdSupabase(payload.debtId, userId);
+  if (!debt) {
+    return ApiResponse.NotFound({
+      message: "Dívida não encontrada na gruta deste Tubarão.",
+    });
+  }
+
+  // 3. Atualiza o comprovante inicial da dívida
+  const { success, error } = await updateDebtLoanReceiptSupabase({
+    debtId: payload.debtId,
+    userId,
+    receiptPath: payload.receipt_path.trim(),
+  });
+
+  if (!success || error) {
+    return ApiResponse.InternalError({
+      message: "Erro ao anexar comprovante de transferência à dívida.",
+      error: error || undefined,
+    });
+  }
+
+  return ApiResponse.Ok({
+    data: {
+      success: true,
+      debtId: payload.debtId,
+    },
+    message: "Comprovante do empréstimo salvo na gruta com sucesso!",
   });
 };
 

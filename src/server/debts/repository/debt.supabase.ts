@@ -514,3 +514,31 @@ export const getPublicDebtContextByIdSupabase = async (
   };
 };
 
+/**
+ * Atualiza o comprovante de transferência inicial (Pix do Tubarão) em uma dívida existente
+ */
+export const updateDebtLoanReceiptSupabase = async (payload: {
+  debtId: string;
+  userId: string;
+  receiptPath: string;
+}): Promise<{ success: boolean; error: string | null }> => {
+  const supabase = await serverSupabase();
+
+  const { error } = await supabase
+    .from("debts")
+    .update({
+      loan_receipt_path: payload.receiptPath,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", payload.debtId)
+    .eq("user_id", payload.userId);
+
+  if (error) {
+    console.error("[updateDebtLoanReceiptSupabase] Erro ao atualizar comprovante da dívida:", error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true, error: null };
+};
+
+

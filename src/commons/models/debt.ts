@@ -171,6 +171,11 @@ export interface AttachInstallmentReceiptPayload {
   receipt_path: string;
 }
 
+export interface AttachLoanReceiptPayload {
+  debtId: string;
+  receipt_path: string;
+}
+
 export interface UpdateDebtPortalConfigPayload {
   debtId: string;
   userId: string;

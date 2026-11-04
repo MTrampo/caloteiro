@@ -1,10 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import type { FeedOccurrence } from "../types";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { registerDebtPaymentAction } from "@/actions/debts";
 import {
   FaArrowRight,
   FaCheck,
@@ -14,25 +14,33 @@ import {
   FaClock,
   FaCircleCheck,
 } from "react-icons/fa6";
-import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { SegmentedTabs, type SegmentedTabItem } from "@/components/ui/segmented-tabs";
+import { PaymentModal } from "@/features/debts/details/payment-modal";
+import { ReceiptViewerDialog } from "@/features/debts/details/receipt-viewer-dialog";
 
 interface DailyFeedProps {
   feed: FeedOccurrence[];
   pixKeyDefault?: string;
   canCopyPix?: boolean;
+  canAttachReceipts?: boolean;
 }
 
 export function DailyFeed({
   feed,
   pixKeyDefault = "",
   canCopyPix = false,
+  canAttachReceipts = false,
 }: DailyFeedProps) {
+  const router = useRouter();
   const [selectedFilter, setSelectedFilter] = React.useState<"all" | "overdue" | "upcoming">("all");
   const [copiedId, setCopiedId] = React.useState<string | null>(null);
   const [paidIds, setPaidIds] = React.useState<string[]>([]);
-  const [payingIds, setPayingIds] = React.useState<string[]>([]);
+  const [selectedItemForPayment, setSelectedItemForPayment] =
+    React.useState<FeedOccurrence | null>(null);
+  const [previewReceiptUrl, setPreviewReceiptUrl] = React.useState<string | null>(
+    null
+  );
 
   const handleCopyPix = (id: string, key?: string) => {
     if (!canCopyPix) return;
@@ -47,28 +55,8 @@ export function DailyFeed({
     setTimeout(() => setCopiedId(null), 2500);
   };
 
-  const handleConfirmPix = async (item: FeedOccurrence) => {
-    try {
-      setPayingIds((prev) => [...prev, item.id]);
-      const res = await registerDebtPaymentAction(item.debtId, {
-        amount: item.nominalAmount,
-        notes: "Baixa rápida registrada pelo Painel",
-      });
-
-      if (res.success) {
-        setPaidIds((prev) => [...prev, item.id]);
-        toast.success(
-          "Milagre na praça! Caiu o Pix. Menos uma facada no seu peito."
-        );
-      } else {
-        toast.error(res.error || "Não foi possível registrar o pagamento.");
-      }
-    } catch (err) {
-      console.error("[DailyFeed:handleConfirmPix] Erro ao registrar baixa:", err);
-      toast.error("Erro inesperado ao registrar o pagamento.");
-    } finally {
-      setPayingIds((prev) => prev.filter((id) => id !== item.id));
-    }
+  const handleOpenPaymentModal = (item: FeedOccurrence) => {
+    setSelectedItemForPayment(item);
   };
 
   const getWhatsAppUrl = (item: FeedOccurrence) => {
@@ -181,7 +169,6 @@ export function DailyFeed({
         <div className="space-y-3">
           {displayedItems.map((item) => {
             const isPaid = paidIds.includes(item.id) || item.type === "recently_paid";
-            const isPaying = payingIds.includes(item.id);
 
             return (
               <div
@@ -342,18 +329,10 @@ export function DailyFeed({
                       <Button
                         size="sm"
                         variant="outline"
-                        disabled={isPaying}
-                        onClick={() => handleConfirmPix(item)}
+                        onClick={() => handleOpenPaymentModal(item)}
                         className="order-4 sm:order-3 w-full sm:w-auto h-8.5 text-xs font-mono font-bold bg-zinc-900/80 hover:bg-zinc-800 border-zinc-800 text-zinc-300 hover:text-white cursor-pointer justify-center"
                       >
-                        {isPaying ? (
-                          <div className="flex items-center gap-1">
-                            <Loader2 className="size-3 animate-spin shrink-0" />
-                            <span>Baixando...</span>
-                          </div>
-                        ) : (
-                          <span>Pingou o Pix?</span>
-                        )}
+                        <span>Pingou o Pix?</span>
                       </Button>
                     </>
                   )}
@@ -363,6 +342,44 @@ export function DailyFeed({
           })}
         </div>
       )}
+
+      {/* Modal de Confirmação de Pix + Anexo de Comprovante */}
+      <PaymentModal
+        isOpen={Boolean(selectedItemForPayment)}
+        onClose={() => setSelectedItemForPayment(null)}
+        debtId={selectedItemForPayment?.debtId ?? ""}
+        defaultAmount={
+          selectedItemForPayment
+            ? Math.max(
+                0,
+                Number(selectedItemForPayment.nominalAmount) -
+                  Number(selectedItemForPayment.paidAmount ?? 0)
+              )
+            : undefined
+        }
+        contextSubtitle={
+          selectedItemForPayment
+            ? `${selectedItemForPayment.debtorName} • ${selectedItemForPayment.installmentText}`
+            : undefined
+        }
+        isReceiptLocked={!canAttachReceipts}
+        onSuccess={() => {
+          if (selectedItemForPayment) {
+            setPaidIds((prev) => [...prev, selectedItemForPayment.id]);
+          }
+          router.refresh();
+        }}
+        onPreviewReceipt={(url) => setPreviewReceiptUrl(url)}
+      />
+
+      {/* Visualizador em Tela Cheia para o Comprovante Anexado */}
+      <ReceiptViewerDialog
+        open={Boolean(previewReceiptUrl)}
+        onOpenChange={(open) => {
+          if (!open) setPreviewReceiptUrl(null);
+        }}
+        imageUrl={previewReceiptUrl}
+      />
     </div>
   );
 }

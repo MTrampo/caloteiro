@@ -21,6 +21,7 @@ import {
   updateDebtAgreementRulesApi,
   updateDebtBreachStatusApi,
   attachInstallmentReceiptApi,
+  attachLoanReceiptApi,
   checkPublicDebtGateApi,
   verifyPublicDebtInvoiceAccessApi,
   getPublicDebtInvoiceDataApi,
@@ -1613,6 +1614,97 @@ describe("Serviço de Dívidas (debt.api.ts)", () => {
         userId,
         { receipt_path: "tubarao/payment/proof.webp" }
       );
+    });
+  });
+
+  describe("attachLoanReceiptApi (Anexo Posterior de Comprovante de Transferência Inicial do Tubarão)", () => {
+    it("deve retornar Forbidden se a dívida estiver trancada na jaula", async () => {
+      vi.mocked(debtQuotaService.checkDebtLockedStatusApi).mockResolvedValue({
+        isLocked: true,
+        reason: "Presa trancada na jaula!",
+      });
+
+      const res = await attachLoanReceiptApi(userId, {
+        debtId: "debt-123",
+        receipt_path: "tubarao/loan/proof.webp",
+      });
+
+      expect(res.status).toBe(403);
+      expect(res.error).toBe("DEBT_LOCKED_BY_PLAN");
+      expect(res.message).toContain("Presa trancada na jaula!");
+    });
+
+    it("deve retornar Forbidden se o usuário estiver no plano gratuito", async () => {
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        freePermissions
+      );
+
+      const res = await attachLoanReceiptApi(userId, {
+        debtId: "debt-123",
+        receipt_path: "tubarao/loan/proof.webp",
+      });
+
+      expect(res.status).toBe(403);
+      expect(res.error).toBe("RECEIPTS_NOT_ALLOWED_ON_PLAN");
+    });
+
+    it("deve retornar NotFound se a dívida não existir para o usuário", async () => {
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        unlimitedPermissions
+      );
+      vi.mocked(debtSupabase.getDebtByIdSupabase).mockResolvedValue(null);
+
+      const res = await attachLoanReceiptApi(userId, {
+        debtId: "debt-inexistente",
+        receipt_path: "tubarao/loan/proof.webp",
+      });
+
+      expect(res.status).toBe(404);
+      expect(res.message).toContain("Dívida não encontrada");
+    });
+
+    it("deve atualizar com sucesso o loan_receipt_path da dívida no plano pago", async () => {
+      vi.mocked(subscriptionService.getUserPermissionsOrCacheApi).mockResolvedValue(
+        unlimitedPermissions
+      );
+      vi.mocked(debtSupabase.getDebtByIdSupabase).mockResolvedValue({
+        id: "debt-123",
+        user_id: userId,
+        debtor_id: "debtor-1",
+        title: "Empréstimo Pix",
+        original_amount: 1000,
+        total_amount: 1000,
+        installments_count: 1,
+        loan_date: "2026-10-01",
+        first_due_date: "2026-11-01",
+        interest_type: "none",
+        interest_rate: 0,
+        category: "personal_loan",
+        payment_method: "pix",
+        status: "pending",
+        settled_at: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      vi.mocked(debtSupabase.updateDebtLoanReceiptSupabase).mockResolvedValue({
+        success: true,
+        error: null,
+      });
+
+      const res = await attachLoanReceiptApi(userId, {
+        debtId: "debt-123",
+        receipt_path: "tubarao/loan/proof.webp",
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.data?.success).toBe(true);
+      expect(res.data?.debtId).toBe("debt-123");
+      expect(debtSupabase.updateDebtLoanReceiptSupabase).toHaveBeenCalledWith({
+        debtId: "debt-123",
+        userId,
+        receiptPath: "tubarao/loan/proof.webp",
+      });
     });
   });
 

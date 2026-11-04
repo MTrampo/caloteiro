@@ -12,6 +12,7 @@ import {
   updateDebtAgreementRulesSchema,
   updateDebtBreachStatusSchema,
   attachInstallmentReceiptSchema,
+  attachLoanReceiptSchema,
   verifyDebtInvoiceAccessSchema,
 } from '@/commons/validations/debt';
 import {
@@ -23,6 +24,7 @@ import {
   updateDebtAgreementRulesApi,
   updateDebtBreachStatusApi,
   attachInstallmentReceiptApi,
+  attachLoanReceiptApi,
   getPublicDebtInvoiceDataApi,
   deleteDebtApi,
 } from '@/server/debts/service/debt.api';
@@ -569,6 +571,52 @@ export async function attachInstallmentReceiptAction(
   } catch (error) {
     console.error('[attachInstallmentReceiptAction] Erro inesperado:', error);
     return { success: false, error: 'Ocorreu um erro ao anexar o comprovante à parcela.' };
+  }
+}
+
+/**
+ * Anexa ou substitui o comprovante Pix de transferência inicial do Tubarão na dívida
+ */
+export async function attachLoanReceiptAction(
+  rawData: unknown
+): Promise<{ success: boolean; data?: { debtId: string }; message?: string; error?: string }> {
+  try {
+    const userRes = await getUserLoggedApi();
+    const userId = userRes.data?.user?.id;
+    if (!userId) {
+      return { success: false, error: 'Acesso não autorizado. Faça login novamente.' };
+    }
+
+    const validation = attachLoanReceiptSchema.safeParse(rawData);
+    if (!validation.success) {
+      return {
+        success: false,
+        error: validation.error.issues[0]?.message || 'Dados inválidos do comprovante da transferência.',
+      };
+    }
+
+    const result = await attachLoanReceiptApi(userId, validation.data);
+    if (!result.data) {
+      return {
+        success: false,
+        error: result.message || 'Não foi possível anexar o comprovante de transferência.',
+      };
+    }
+
+    invalidateUserDataCache({ userId, debtId: validation.data.debtId });
+    revalidatePath(`/painel/dividas/${validation.data.debtId}`);
+    revalidatePath('/painel/dividas');
+    revalidatePath('/painel');
+    revalidatePath(`/fatura/${validation.data.debtId}`);
+
+    return {
+      success: true,
+      data: { debtId: result.data.debtId },
+      message: result.message,
+    };
+  } catch (error) {
+    console.error('[attachLoanReceiptAction] Erro inesperado:', error);
+    return { success: false, error: 'Ocorreu um erro ao anexar o comprovante da transferência.' };
   }
 }
 

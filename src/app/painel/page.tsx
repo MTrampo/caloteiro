@@ -67,6 +67,7 @@ export default async function PainelPage() {
         initialPunchline={initialPunchline}
         initialTimeGreeting={initialTimeGreeting}
         canCopyPix={permissions?.canCustomTemplates ?? false}
+        canAttachReceipts={permissions?.canAttachReceipts ?? false}
         planLimits={planLimits}
       />
     </>

@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { DatePicker } from "@/components/ui/date-picker";
 import { ReceiptAttachmentField } from "@/components/forms/receipt-attachment-field";
+import { ReceiptViewerDialog } from "@/features/debts/details/receipt-viewer-dialog";
 import { maskCurrency, parseCurrencyToNumber } from "@/commons/utils/masks";
 
 export interface DebtTermsFormData {
@@ -86,6 +87,10 @@ export function StepTermsAndInterest({
   onPrev,
   onNext,
 }: StepTermsAndInterestProps) {
+  const [previewReceiptUrl, setPreviewReceiptUrl] = React.useState<string | null>(
+    null
+  );
+
   // Limites de parcelas do plano
   const maxInstallmentsAllowed = permissions.isFreePlan
     ? 12
@@ -427,12 +432,13 @@ export function StepTermsAndInterest({
         {/* Anexo de Comprovante de Empréstimo / Transferência Inicial */}
         <div className="pt-2 border-t border-zinc-800/60">
           <ReceiptAttachmentField
-            label="Comprovante de Transferência do Empréstimo (Opcional)"
-            description="Guarde a prova do Pix/transferência enviada para o devedor."
+            label="Comprovante Pix do Tubarão (Opcional)"
+            description="Guarde a prova do Pix/transferência que você enviou para o devedor."
             folder="loan"
             isLocked={permissions.isFreePlan}
             value={formData.loan_receipt_path || null}
             onChange={(path) => onChange({ loan_receipt_path: path })}
+            onPreviewClick={(url) => setPreviewReceiptUrl(url)}
           />
         </div>
       </div>
@@ -628,6 +634,15 @@ export function StepTermsAndInterest({
           <FaArrowRight className="size-3" />
         </Button>
       </div>
+
+      <ReceiptViewerDialog
+        open={Boolean(previewReceiptUrl)}
+        onOpenChange={(open) => {
+          if (!open) setPreviewReceiptUrl(null);
+        }}
+        imageUrl={previewReceiptUrl}
+        title="Comprovante Pix do Tubarão"
+      />
     </form>
   );
 }

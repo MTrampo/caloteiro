@@ -14,14 +14,15 @@ import { DebtPortalMenu } from "./debt-portal-menu";
 import { AgreementRulesCard } from "./agreement-rules-card";
 import { ReceiptViewerDialog } from "./receipt-viewer-dialog";
 import { AttachInstallmentReceiptModal } from "./attach-installment-receipt-modal";
+import { AttachLoanReceiptModal } from "./attach-loan-receipt-modal";
 import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action";
 import { toast } from "sonner";
 import {
   FaArrowLeft,
   FaHandHoldingDollar,
-  FaCalendarDays,
   FaFileInvoiceDollar,
   FaEye,
+  FaPaperclip,
   FaLink,
   FaWhatsapp,
   FaArrowUpRightFromSquare,
@@ -61,6 +62,8 @@ export function DebtDetailsFeature({
   const [selectedInstallmentForReceipt, setSelectedInstallmentForReceipt] =
     React.useState<InstallmentFormatted | null>(null);
   const [isAttachReceiptModalOpen, setIsAttachReceiptModalOpen] = React.useState(false);
+  const [isAttachLoanReceiptModalOpen, setIsAttachLoanReceiptModalOpen] =
+    React.useState(false);
   const [viewerImageUrl, setViewerImageUrl] = React.useState<string | null>(null);
 
   const handleOpenGeneralPayment = () => {
@@ -189,36 +192,79 @@ export function DebtDetailsFeature({
       {/* 4 Cards de Métricas e KPIs Financeiros */}
       <DebtKpis debt={debt} />
 
-      {/* Comprovante do Empréstimo Inicial (se houver) */}
-      {debt.loanReceiptUrl && (
-        <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="size-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
+      {/* Comprovante Pix do Tubarão (Transferência Inicial enviada ao devedor) */}
+      {!debt.isLocked && (
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-start sm:items-center gap-3">
+            <div
+              className={`size-9 rounded-xl flex items-center justify-center shrink-0 border ${
+                debt.loanReceiptUrl
+                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                  : "bg-zinc-800/80 text-zinc-400 border-zinc-700/60"
+              }`}
+            >
               <FaFileInvoiceDollar className="size-4" />
             </div>
-            <div>
-              <h4 className="font-heading text-sm font-bold text-white flex items-center gap-2">
-                <span>Comprovante de Transferência Inicial</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
-                  Prova da Gruta
-                </span>
-              </h4>
-              <p className="text-xs font-mono text-zinc-400 mt-0.5">
-                Comprovante do valor enviado ao devedor na formalização do empréstimo.
+            <div className="space-y-0.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <h4 className="font-heading text-sm font-bold text-white">
+                  Comprovante Pix do Tubarão (Transferência Inicial)
+                </h4>
+                {debt.loanReceiptUrl ? (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold whitespace-nowrap">
+                    Prova na Gruta
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700 font-semibold whitespace-nowrap">
+                    Não anexado
+                  </span>
+                )}
+              </div>
+              <p className="text-xs font-mono text-zinc-400 leading-relaxed">
+                {debt.loanReceiptUrl
+                  ? "Comprovante do Pix ou transferência que você enviou ao devedor na formalização da dívida."
+                  : "Organize seus próprios Pix: anexe o comprovante do valor que você transferiu para esta presa."}
               </p>
             </div>
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setViewerImageUrl(debt.loanReceiptUrl)}
-            className="text-xs font-mono text-zinc-300 hover:text-white border-zinc-800"
-          >
-            <FaEye className="size-3 text-emerald-400" />
-            <span>Ver Comprovante</span>
-          </Button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
+            {debt.loanReceiptUrl ? (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setViewerImageUrl(debt.loanReceiptUrl)}
+                  className="w-full sm:w-auto text-xs font-mono text-zinc-200 hover:text-white border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 cursor-pointer"
+                >
+                  <FaEye className="size-3 text-emerald-400" />
+                  <span>Ver Comprovante</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsAttachLoanReceiptModalOpen(true)}
+                  className="w-full sm:w-auto text-xs font-mono text-zinc-400 hover:text-white hover:bg-zinc-800/70 cursor-pointer"
+                >
+                  <FaPaperclip className="size-3" />
+                  <span>Substituir</span>
+                </Button>
+              </>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAttachLoanReceiptModalOpen(true)}
+                className="w-full sm:w-auto text-xs font-mono text-zinc-200 hover:text-white border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 cursor-pointer"
+              >
+                <FaPaperclip className="size-3 text-emerald-400" />
+                <span>Anexar Comprovante</span>
+              </Button>
+            )}
+          </div>
         </div>
       )}
 
@@ -266,6 +312,19 @@ export function DebtDetailsFeature({
         debtId={debt.id}
         installment={selectedInstallmentForReceipt}
         totalInstallments={debt.installments.length}
+        isReceiptLocked={permissions.isFreePlan}
+        onSuccess={handleDataRefresh}
+        onPreviewReceipt={(url) => setViewerImageUrl(url)}
+      />
+
+      {/* Modal: Anexar / Substituir Comprovante Pix do Tubarão na Dívida */}
+      <AttachLoanReceiptModal
+        isOpen={isAttachLoanReceiptModalOpen}
+        onClose={() => setIsAttachLoanReceiptModalOpen(false)}
+        debtId={debt.id}
+        debtTitle={debt.title}
+        formattedOriginalAmount={debt.formattedOriginalAmount}
+        hasExistingReceipt={Boolean(debt.loanReceiptUrl)}
         isReceiptLocked={permissions.isFreePlan}
         onSuccess={handleDataRefresh}
         onPreviewReceipt={(url) => setViewerImageUrl(url)}
