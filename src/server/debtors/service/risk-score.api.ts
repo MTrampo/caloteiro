@@ -17,6 +17,7 @@ import {
   type GrottoThermometerData,
   type RiskScoreBadge,
   type RiskScoreFactor,
+  type RiskScoreTimelineEvent,
   type ThermometerDebtorItem,
   type ThermometerGroup,
   type WhatsappWeaponLevel,
@@ -109,6 +110,261 @@ export function buildWeaponWhatsappUrl(params: {
 
   const fullPhone = cleanPhone.startsWith("55") ? cleanPhone : `55${cleanPhone}`;
   return `https://wa.me/${fullPhone}?text=${encodeURIComponent(message)}`;
+}
+
+/**
+ * Constrói a linha do tempo cronológica com cada acontecimento real da presa
+ * Ordenado do MAIS RECENTE PRIMEIRO (Ordem Decrescente)
+ */
+export function buildRiskScoreTimeline(
+  input: CalculateDebtorRiskScoreInput,
+  todayStr: string
+): RiskScoreTimelineEvent[] {
+  const events: Array<{
+    id: string;
+    date: string;
+    formattedDate: string;
+    title: string;
+    description: string;
+    points: number;
+    type: "healing" | "bleeding" | "base";
+  }> = [];
+
+  const debtMap = new Map<string, string>();
+  for (const d of input.debts) {
+    debtMap.set(d.id, d.title);
+  }
+
+  const instMap = new Map<string, (typeof input.installments)[0]>();
+  for (const i of input.installments) {
+    instMap.set(i.id, i);
+  }
+
+  // 1. Ponto de Partida na Gruta
+  const baseDate =
+    input.debtorCreatedAt ||
+    (input.debts.length > 0 && input.debts[input.debts.length - 1].created_at) ||
+    todayStr;
+
+  events.push({
+    id: `base-${input.debtorId}`,
+    date: baseDate,
+    formattedDate: formatDate(baseDate),
+    title: "Ponto de Partida na Gruta",
+    description: "Presa marcada na gruta • Início no nível Peixe Ensaboado",
+    points: INITIAL_RISK_SCORE,
+    type: "base",
+  });
+
+  // Mapeia pagamentos por dívida
+  const paymentsByDebt = new Map<string, string[]>();
+  for (const p of input.payments) {
+    const list = paymentsByDebt.get(p.debt_id) || [];
+    list.push(p.paid_at);
+    paymentsByDebt.set(p.debt_id, list);
+  }
+
+  // 2. Pagamentos e Parcelas Vencidas
+  for (const inst of input.installments) {
+    const nominalCents = Math.round(Number(inst.nominal_amount || 0) * 100);
+    const paidCents = Math.round(Number(inst.paid_amount || 0) * 100);
+    const isPaid = inst.status === "paid" || (nominalCents > 0 && paidCents >= nominalCents);
+
+    if (isPaid) {
+      const debtPayments = paymentsByDebt.get(inst.debt_id);
+      const effectivePaidDateStr =
+        (debtPayments && debtPayments[0]) || inst.updated_at || inst.due_date;
+      const paidCalendarStr = getCalendarDateInSaoPaulo(effectivePaidDateStr);
+      const delayDays = diffCalendarDays(inst.due_date, paidCalendarStr);
+      const debtTitle = debtMap.get(inst.debt_id) || "Acordo";
+
+      if (delayDays < 0) {
+        const days = Math.abs(delayDays);
+        events.push({
+          id: `pay-early-${inst.id}`,
+          date: effectivePaidDateStr,
+          formattedDate: formatDate(effectivePaidDateStr),
+          title: "Pix adiantado na conta",
+          description: `Parcela ${inst.installment_number} de "${debtTitle}" paga ${days} ${days === 1 ? "dia" : "dias"} antes do vencimento`,
+          points: 6,
+          type: "healing",
+        });
+      } else if (delayDays === 0) {
+        events.push({
+          id: `pay-ontime-${inst.id}`,
+          date: effectivePaidDateStr,
+          formattedDate: formatDate(effectivePaidDateStr),
+          title: "Pix pago rigorosamente no prazo",
+          description: `Parcela ${inst.installment_number} de "${debtTitle}" honrada no dia do vencimento`,
+          points: 4,
+          type: "healing",
+        });
+      } else if (delayDays <= 5) {
+        events.push({
+          id: `pay-light-delay-${inst.id}`,
+          date: effectivePaidDateStr,
+          formattedDate: formatDate(effectivePaidDateStr),
+          title: "Atraso leve na parcela quitada",
+          description: `Parcela ${inst.installment_number} de "${debtTitle}" paga com ${delayDays} ${delayDays === 1 ? "dia" : "dias"} de atraso`,
+          points: -2,
+          type: "bleeding",
+        });
+      } else {
+        events.push({
+          id: `pay-heavy-delay-${inst.id}`,
+          date: effectivePaidDateStr,
+          formattedDate: formatDate(effectivePaidDateStr),
+          title: "Atraso crítico na parcela quitada",
+          description: `Parcela ${inst.installment_number} de "${debtTitle}" paga com ${delayDays} dias de atraso`,
+          points: -5,
+          type: "bleeding",
+        });
+      }
+    } else {
+      const overdueDays = diffCalendarDays(inst.due_date, todayStr);
+      if (overdueDays > 0) {
+        const debtTitle = debtMap.get(inst.debt_id) || "Acordo";
+        if (overdueDays <= 5) {
+          events.push({
+            id: `overdue-light-${inst.id}`,
+            date: inst.due_date,
+            formattedDate: formatDate(inst.due_date),
+            title: "Parcela vencida recentemente",
+            description: `Parcela ${inst.installment_number} de "${debtTitle}" venceu há ${overdueDays} ${overdueDays === 1 ? "dia" : "dias"} e não pingou o Pix`,
+            points: -8,
+            type: "bleeding",
+          });
+        } else if (overdueDays <= 15) {
+          events.push({
+            id: `overdue-medium-${inst.id}`,
+            date: inst.due_date,
+            formattedDate: formatDate(inst.due_date),
+            title: "Parcela em atraso médio ativo",
+            description: `Parcela ${inst.installment_number} de "${debtTitle}" em atraso há ${overdueDays} dias`,
+            points: -15,
+            type: "bleeding",
+          });
+        } else {
+          events.push({
+            id: `overdue-heavy-${inst.id}`,
+            date: inst.due_date,
+            formattedDate: formatDate(inst.due_date),
+            title: "Parcela em atraso crítico ativo",
+            description: `Parcela ${inst.installment_number} de "${debtTitle}" com atraso grave de ${overdueDays} dias`,
+            points: -25,
+            type: "bleeding",
+          });
+        }
+      }
+    }
+  }
+
+  // 3. Acordos quitados e Acordos quebrados
+  for (const debt of input.debts) {
+    if (debt.status === "settled") {
+      const settledDate = debt.settled_at || debt.updated_at || debt.created_at || todayStr;
+      events.push({
+        id: `debt-settled-${debt.id}`,
+        date: settledDate,
+        formattedDate: formatDate(settledDate),
+        title: "Acordo 100% quitado até o fim",
+        description: `Dívida "${debt.title}" foi totalmente liquidada e honrada`,
+        points: 10,
+        type: "healing",
+      });
+    }
+
+    const isBreached = debt.status === "defaulted" || debt.status === "judicial";
+    if (isBreached) {
+      const breachedDate = debt.updated_at || debt.created_at || todayStr;
+      events.push({
+        id: `debt-breached-${debt.id}`,
+        date: breachedDate,
+        formattedDate: formatDate(breachedDate),
+        title: "Quebra de acordo declarada",
+        description: `Acordo "${debt.title}" entrou em quebra / tolerância estourada`,
+        points: -30,
+        type: "bleeding",
+      });
+    }
+  }
+
+  // 4. Caôs e Desculpas
+  for (const exc of input.excuses) {
+    const inst = instMap.get(exc.installment_id);
+    const debtTitle = (inst && debtMap.get(inst.debt_id)) || "Acordo";
+    const instNumber = inst ? ` na parcela ${inst.installment_number}` : "";
+    const excuseDate = exc.created_at || todayStr;
+
+    // 4a. Registro do caô
+    events.push({
+      id: `excuse-reg-${exc.id}`,
+      date: excuseDate,
+      formattedDate: formatDate(excuseDate),
+      title: "Meteção de louco / Caô anotado",
+      description: `"${exc.excuse_text}"${instNumber} de "${debtTitle}" (prometeu p/ ${formatDate(exc.promised_date)})`,
+      points: -6,
+      type: "bleeding",
+    });
+
+    // 4b. Promessa cumprida ou furada
+    const isHonored =
+      exc.was_honored === true ||
+      (inst && (inst.status === "paid" || Number(inst.paid_amount || 0) >= Number(inst.nominal_amount || 0)));
+
+    if (isHonored) {
+      const honoredDate = exc.promised_date || excuseDate;
+      events.push({
+        id: `excuse-honored-${exc.id}`,
+        date: honoredDate,
+        formattedDate: formatDate(honoredDate),
+        title: "Promessa de caô honrada no prazo",
+        description: `Cumpriu a nova promessa de pagamento${instNumber} de "${debtTitle}"`,
+        points: 3,
+        type: "healing",
+      });
+    } else if (
+      exc.was_honored === false ||
+      (inst && inst.status !== "paid" && diffCalendarDays(exc.promised_date, todayStr) > 0)
+    ) {
+      const brokenDate = exc.promised_date || todayStr;
+      events.push({
+        id: `excuse-broken-${exc.id}`,
+        date: brokenDate,
+        formattedDate: formatDate(brokenDate),
+        title: "Promessa de caô vencida e não cumprida",
+        description: `Prometeu pagar até ${formatDate(exc.promised_date)}${instNumber} de "${debtTitle}", mas furou a promessa`,
+        points: -10,
+        type: "bleeding",
+      });
+    }
+  }
+
+  // Ordenação crescente por data para calcular a evolução progressiva do Score
+  events.sort((a, b) => {
+    const timeA = new Date(a.date).getTime() || 0;
+    const timeB = new Date(b.date).getTime() || 0;
+    if (timeA !== timeB) return timeA - timeB;
+    if (a.type === "base") return -1;
+    if (b.type === "base") return 1;
+    return 0;
+  });
+
+  let runningScore = INITIAL_RISK_SCORE;
+  const eventsWithSnapshot = events.map((event) => {
+    if (event.type === "base") {
+      runningScore = INITIAL_RISK_SCORE;
+    } else {
+      runningScore = Math.max(0, Math.min(100, runningScore + event.points));
+    }
+    return {
+      ...event,
+      scoreSnapshot: runningScore,
+    };
+  });
+
+  // Retorna com os MAIS RECENTES PRIMEIRO (Ordem Decrescente)
+  return eventsWithSnapshot.reverse();
 }
 
 /**
@@ -535,6 +791,17 @@ export function calculateDebtorRiskScore(
     openExposureAmount,
   });
 
+  const sortedFactors = factors.slice().sort((a, b) => {
+    if (a.type === "base") return -1;
+    if (b.type === "base") return 1;
+    if (a.type === "healing" && b.type === "bleeding") return -1;
+    if (a.type === "bleeding" && b.type === "healing") return 1;
+    if (a.type === "healing" && b.type === "healing") return b.points - a.points;
+    return Math.abs(b.points) - Math.abs(a.points);
+  });
+
+  const timeline = buildRiskScoreTimeline(input, todayStr);
+
   return {
     score: finalScore,
     tier,
@@ -555,7 +822,8 @@ export function calculateDebtorRiskScore(
     totalInstallmentsCount,
     openExposureAmount,
     badges,
-    factors,
+    factors: sortedFactors,
+    timeline,
     punctualityRate,
     averageDaysToPay,
     settledDebtsCount,
@@ -600,6 +868,7 @@ export const enrichDebtorsWithRiskScoreApi = async (
       debtorId: debtor.id,
       debtorName: debtor.name,
       debtorPhone: debtor.phone,
+      debtorCreatedAt: debtor.created_at,
       creditorPixKey: bundle.creditorPixKey,
       debts: debtorDebts,
       installments: debtorInstallments,
@@ -666,6 +935,7 @@ export const getDebtorRaioXApi = async (
         debtorId: bundle.debtor.id,
         debtorName: bundle.debtor.name,
         debtorPhone: bundle.debtor.phone,
+        debtorCreatedAt: bundle.debtor.created_at,
         creditorPixKey: bundle.creditorPixKey,
         debts: bundle.debts,
         installments: bundle.installments,
@@ -679,9 +949,15 @@ export const getDebtorRaioXApi = async (
         riskScore,
       };
 
-      // Mapeia dívidas do devedor
+      // Mapeia dívidas do devedor (ordenadas do mais recente primeiro)
+      const sortedDebts = bundle.debts.slice().sort((a, b) => {
+        const timeA = new Date(a.created_at || a.loan_date).getTime() || 0;
+        const timeB = new Date(b.created_at || b.loan_date).getTime() || 0;
+        return timeB - timeA;
+      });
+
       const debtMap = new Map<string, { title: string }>();
-      const debtsFormatted: DebtorRaioXDebtItem[] = bundle.debts.map((debt) => {
+      const debtsFormatted: DebtorRaioXDebtItem[] = sortedDebts.map((debt) => {
         debtMap.set(debt.id, { title: debt.title });
         const debtInsts = bundle.installments.filter((i) => i.debt_id === debt.id);
 
@@ -738,6 +1014,8 @@ export const getDebtorRaioXApi = async (
           formattedPaidAmount: formatBRL(paidAmount),
           formattedRemainingAmount: formatBRL(remainingAmount),
           formattedLoanDate: formatDate(debt.loan_date),
+          created_at: debt.created_at,
+          loan_date: debt.loan_date,
           installmentsCount: debtInsts.length || debt.installments_count || 1,
           paidInstallmentsCount: paidCount,
           overdueInstallmentsCount: overdueCount,
@@ -757,7 +1035,13 @@ export const getDebtorRaioXApi = async (
         });
       }
 
-      const excusesFormatted: DebtorRaioXExcuseItem[] = bundle.excuses.map((exc) => {
+      const sortedExcuses = bundle.excuses.slice().sort((a, b) => {
+        const timeA = new Date(a.created_at || a.promised_date).getTime() || 0;
+        const timeB = new Date(b.created_at || b.promised_date).getTime() || 0;
+        return timeB - timeA;
+      });
+
+      const excusesFormatted: DebtorRaioXExcuseItem[] = sortedExcuses.map((exc) => {
         const instInfo = instMap.get(exc.installment_id);
         const debtId = instInfo?.debtId || "";
         const debtTitle = debtMap.get(debtId)?.title || "Acordo na Gruta";
@@ -769,6 +1053,7 @@ export const getDebtorRaioXApi = async (
           promisedDate: exc.promised_date,
           formattedPromisedDate: formatDate(exc.promised_date),
           formattedCreatedAt: formatDate(exc.created_at),
+          created_at: exc.created_at,
           wasHonored,
           debtId,
           debtTitle,

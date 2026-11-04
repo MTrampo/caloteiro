@@ -109,6 +109,17 @@ export interface RiskScoreFactor {
   type: "healing" | "bleeding" | "base";
 }
 
+export interface RiskScoreTimelineEvent {
+  id: string;
+  date: string;
+  formattedDate: string;
+  title: string;
+  description: string;
+  points: number;
+  type: "healing" | "bleeding" | "base";
+  scoreSnapshot?: number;
+}
+
 export interface DebtorRiskScoreSummary {
   score: number;
   tier: BiologicalTier;
@@ -133,6 +144,7 @@ export interface DebtorRiskScoreSummary {
 
 export interface DebtorRiskScoreResult extends DebtorRiskScoreSummary {
   factors: RiskScoreFactor[];
+  timeline: RiskScoreTimelineEvent[];
   punctualityRate: number;
   averageDaysToPay: number;
   settledDebtsCount: number;
@@ -156,6 +168,8 @@ export interface DebtorRaioXDebtItem {
   formattedPaidAmount: string;
   formattedRemainingAmount: string;
   formattedLoanDate: string;
+  created_at?: string | null;
+  loan_date?: string | null;
   installmentsCount: number;
   paidInstallmentsCount: number;
   overdueInstallmentsCount: number;
@@ -167,6 +181,7 @@ export interface DebtorRaioXExcuseItem {
   promisedDate: string;
   formattedPromisedDate: string;
   formattedCreatedAt: string;
+  created_at?: string | null;
   wasHonored: boolean;
   debtId: string;
   debtTitle: string;
@@ -220,6 +235,7 @@ export interface CalculateDebtorRiskScoreInput {
   debtorId: string;
   debtorName: string;
   debtorPhone: string;
+  debtorCreatedAt?: string | null;
   creditorPixKey?: string | null;
   referenceDate?: Date;
   debts: Array<{
@@ -229,6 +245,9 @@ export interface CalculateDebtorRiskScoreInput {
     original_amount: number;
     total_amount: number | null;
     max_late_installments?: number | null;
+    settled_at?: string | null;
+    created_at?: string | null;
+    updated_at?: string | null;
   }>;
   installments: Array<{
     id: string;

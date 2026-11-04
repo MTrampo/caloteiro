@@ -642,6 +642,10 @@ export function StepTermsAndInterest({
         }}
         imageUrl={previewReceiptUrl}
         title="Comprovante Pix do Tubarão"
+        onDelete={() => {
+          onChange({ loan_receipt_path: null });
+          setPreviewReceiptUrl(null);
+        }}
       />
     </form>
   );

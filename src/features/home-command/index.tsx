@@ -28,7 +28,7 @@ export function HomeCommandFeature({
   canAttachReceipts = false,
   planLimits,
 }: HomeCommandFeatureProps) {
-  const [data] = React.useState<CommandCenterData>(initialData);
+  const data = initialData;
 
   const punchline =
     initialPunchline ??

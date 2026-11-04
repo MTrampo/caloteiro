@@ -64,12 +64,17 @@ self.addEventListener('fetch', (event) => {
   // Ao responder, descartamos páginas obsoletas do PAGES_CACHE para garantir que a próxima conferência offline reflita a mutação.
   if (request.method !== 'GET') {
     event.respondWith(
-      fetch(request).then((res) => {
+      (async () => {
+        const res = await fetch(request);
         if (res && res.status >= 200 && res.status < 300) {
-          caches.delete(PAGES_CACHE).catch(() => {});
+          try {
+            await caches.delete(PAGES_CACHE);
+          } catch {
+            // Ignora falha de limpeza de cache
+          }
         }
         return res;
-      })
+      })()
     );
     return;
   }

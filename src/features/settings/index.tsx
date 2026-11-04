@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -130,6 +131,7 @@ export function SettingsFeature({
     isSubscriptionActive: false,
   },
 }: SettingsFeatureProps) {
+  const router = useRouter()
   // Card 1: Chave Pix
   const [pixType, setPixType] = React.useState<string>(normalizePixType(initialSettings?.pix_key_type))
   const [pixKey, setPixKey] = React.useState(initialSettings?.pix_key || "")
@@ -219,6 +221,7 @@ export function SettingsFeature({
       if (res.success) {
         setSavedSuccess(true)
         toast.success("Armas de cobrança e taxas calibradas no cofre!")
+        router.refresh()
         setTimeout(() => setSavedSuccess(false), 3000)
       } else {
         toast.error(res.error)

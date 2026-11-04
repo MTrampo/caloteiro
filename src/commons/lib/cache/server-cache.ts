@@ -24,11 +24,13 @@ export function invalidateUserDataCache(params: InvalidateUserDataCacheParams): 
   if (!userId) return;
 
   const masterTag = CACHE_TAGS.userData(userId);
+  const settingsTag = CACHE_TAGS.userSettings(userId);
 
   try {
     // 1. Invalidação imediata para Server Actions (read-your-own-writes no Next.js 16)
     if (typeof updateTag === "function") {
       updateTag(masterTag);
+      updateTag(settingsTag);
       if (debtId) {
         updateTag(CACHE_TAGS.debtDetails(debtId));
         updateTag(CACHE_TAGS.debtReceipts(debtId));
@@ -43,6 +45,7 @@ export function invalidateUserDataCache(params: InvalidateUserDataCacheParams): 
     try {
       if (typeof revalidateTag === "function") {
         revalidateTag(masterTag, { expire: 0 });
+        revalidateTag(settingsTag, { expire: 0 });
         if (debtId) {
           revalidateTag(CACHE_TAGS.debtDetails(debtId), { expire: 0 });
           revalidateTag(CACHE_TAGS.debtReceipts(debtId), { expire: 0 });

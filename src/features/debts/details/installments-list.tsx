@@ -37,7 +37,7 @@ interface InstallmentsListProps {
   installments: InstallmentFormatted[];
   onPayInstallment: (installment: InstallmentFormatted) => void;
   onAddExcuse: (installment: InstallmentFormatted) => void;
-  onViewReceipt?: (url: string) => void;
+  onViewReceipt?: (url: string, installmentId: string, installmentNumber: number) => void;
   onAttachReceipt?: (installment: InstallmentFormatted) => void;
 }
 

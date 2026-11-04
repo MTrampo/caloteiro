@@ -16,7 +16,7 @@ interface InstallmentCardProps {
   totalInstallments: number;
   onPayInstallment: (installment: InstallmentFormatted) => void;
   onAddExcuse: (installment: InstallmentFormatted) => void;
-  onViewReceipt?: (url: string) => void;
+  onViewReceipt?: (url: string, installmentId: string, installmentNumber: number) => void;
   onAttachReceipt?: (installment: InstallmentFormatted) => void;
 }
 
@@ -114,7 +114,13 @@ export function InstallmentCard({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => onViewReceipt?.(installment.receiptUrl!)}
+                onClick={() =>
+                  onViewReceipt?.(
+                    installment.receiptUrl!,
+                    installment.id,
+                    installment.installment_number
+                  )
+                }
                 className="w-full sm:w-auto h-9 font-mono text-[11px] sm:text-xs font-bold border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 cursor-pointer"
               >
                 <FaEye className="size-3 shrink-0" />

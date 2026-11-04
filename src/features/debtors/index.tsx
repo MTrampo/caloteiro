@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { FaMagnifyingGlass, FaUserPlus, FaRotateRight, FaGaugeHigh } from "react-icons/fa6"
 import { Button } from "@/components/ui/button"
 import { NewButton } from "@/components/buttons/new-button"
@@ -27,6 +28,7 @@ export function DebtorsFeature({
   initialTotalCount = 0,
   planLimits,
 }: DebtorsFeatureProps) {
+  const router = useRouter()
   const [debtors, setDebtors] = React.useState<DebtorItemFormatted[]>(initialDebtors)
   const [searchTerm, setSearchTerm] = React.useState("")
   const [page, setPage] = React.useState(1)
@@ -34,6 +36,15 @@ export function DebtorsFeature({
   const [totalCount, setTotalCount] = React.useState(initialTotalCount)
   const [isLoadingMore, setIsLoadingMore] = React.useState(false)
   const [isSearching, setIsSearching] = React.useState(false)
+
+  // Sincroniza estado local quando props do servidor (router.refresh) mudam
+  React.useEffect(() => {
+    if (!searchTerm.trim() && page === 1) {
+      setDebtors(initialDebtors)
+      setHasMore(initialHasMore)
+      setTotalCount(initialTotalCount)
+    }
+  }, [initialDebtors, initialHasMore, initialTotalCount, searchTerm, page])
 
   // Referência para o sentinela do infinite scroll
   const observerTarget = React.useRef<HTMLDivElement | null>(null)
@@ -120,14 +131,19 @@ export function DebtorsFeature({
           d.id === updatedDebtor.id ? { ...d, ...updatedDebtor } : d
         )
       )
+      router.refresh()
     },
-    []
+    [router]
   )
 
-  const handleDebtorDeleted = React.useCallback((deletedId: string) => {
-    setDebtors((prev) => prev.filter((d) => d.id !== deletedId))
-    setTotalCount((prev) => Math.max(0, prev - 1))
-  }, [])
+  const handleDebtorDeleted = React.useCallback(
+    (deletedId: string) => {
+      setDebtors((prev) => prev.filter((d) => d.id !== deletedId))
+      setTotalCount((prev) => Math.max(0, prev - 1))
+      router.refresh()
+    },
+    [router]
+  )
 
   return (
     <div className="flex-1 p-4 sm:p-6 space-y-6 w-full pb-24 sm:pb-6">

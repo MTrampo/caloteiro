@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { creditorSettingsSchema } from "@/commons/validations/user";
 import type {
   CreditorSettingsFormInputs,
@@ -93,6 +94,8 @@ export async function saveCreditorSettingsAction(
     }
 
     invalidateUserDataCache({ userId: user.id });
+    revalidatePath("/painel/configuracoes");
+    revalidatePath("/painel");
 
     return {
       success: true,

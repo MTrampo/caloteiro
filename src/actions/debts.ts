@@ -13,6 +13,7 @@ import {
   updateDebtBreachStatusSchema,
   attachInstallmentReceiptSchema,
   attachLoanReceiptSchema,
+  deleteDebtReceiptSchema,
   verifyDebtInvoiceAccessSchema,
 } from '@/commons/validations/debt';
 import {
@@ -25,6 +26,7 @@ import {
   updateDebtBreachStatusApi,
   attachInstallmentReceiptApi,
   attachLoanReceiptApi,
+  deleteDebtReceiptApi,
   getPublicDebtInvoiceDataApi,
   deleteDebtApi,
 } from '@/server/debts/service/debt.api';
@@ -100,9 +102,14 @@ export async function createDebtAction(
       };
     }
 
-    invalidateUserDataCache({ userId, debtId: result.data.debtId });
+    invalidateUserDataCache({
+      userId,
+      debtId: result.data.debtId,
+      debtorId: validation.data.debtor_id,
+    });
     revalidatePath('/painel/dividas');
     revalidatePath('/painel/dividas/acompanhamento');
+    revalidatePath(`/painel/devedores/${validation.data.debtor_id}`);
     revalidatePath('/painel');
 
     return { success: true, data: result.data };
@@ -175,7 +182,7 @@ export async function registerDebtPaymentAction(
   rawData: unknown
 ): Promise<{
   success: boolean;
-  data?: { settled: boolean; amortizedAmount: number };
+  data?: { settled: boolean; amortizedAmount: number; debtorId: string };
   message?: string;
   error?: string;
 }> {
@@ -206,10 +213,16 @@ export async function registerDebtPaymentAction(
       };
     }
 
-    invalidateUserDataCache({ userId, debtId });
+    invalidateUserDataCache({
+      userId,
+      debtId,
+      debtorId: result.data.debtorId,
+    });
     revalidatePath(`/painel/dividas/${debtId}`);
     revalidatePath('/painel/dividas');
     revalidatePath('/painel/dividas/acompanhamento');
+    revalidatePath(`/painel/devedores/${result.data.debtorId}`);
+    revalidatePath('/painel/termometro');
     revalidatePath('/painel');
     revalidatePath(`/fatura/${debtId}`);
 
@@ -253,9 +266,16 @@ export async function registerDebtExcuseAction(
       };
     }
 
-    invalidateUserDataCache({ userId });
+    invalidateUserDataCache({
+      userId,
+      debtId: result.data.debtId,
+      debtorId: result.data.debtorId,
+    });
+    revalidatePath(`/painel/dividas/${result.data.debtId}`);
+    revalidatePath(`/painel/devedores/${result.data.debtorId}`);
     revalidatePath('/painel');
     revalidatePath('/painel/dividas');
+    revalidatePath('/painel/dividas/acompanhamento');
     revalidatePath('/painel/termometro');
 
     return {
@@ -621,6 +641,52 @@ export async function attachLoanReceiptAction(
 }
 
 /**
+ * Exclui o comprovante físico do storage e limpa a referência na dívida ou parcela
+ */
+export async function deleteDebtReceiptAction(
+  rawData: unknown
+): Promise<{ success: boolean; data?: { debtId: string }; message?: string; error?: string }> {
+  try {
+    const userRes = await getUserLoggedApi();
+    const userId = userRes.data?.user?.id;
+    if (!userId) {
+      return { success: false, error: 'Acesso não autorizado. Faça login novamente.' };
+    }
+
+    const validation = deleteDebtReceiptSchema.safeParse(rawData);
+    if (!validation.success) {
+      return {
+        success: false,
+        error: validation.error.issues[0]?.message || 'Dados inválidos para exclusão do comprovante.',
+      };
+    }
+
+    const result = await deleteDebtReceiptApi(userId, validation.data);
+    if (!result.data) {
+      return {
+        success: false,
+        error: result.message || 'Não foi possível excluir o comprovante.',
+      };
+    }
+
+    invalidateUserDataCache({ userId, debtId: validation.data.debtId });
+    revalidatePath(`/painel/dividas/${validation.data.debtId}`);
+    revalidatePath('/painel/dividas');
+    revalidatePath('/painel');
+    revalidatePath(`/fatura/${validation.data.debtId}`);
+
+    return {
+      success: true,
+      data: { debtId: result.data.debtId },
+      message: result.message,
+    };
+  } catch (error) {
+    console.error('[deleteDebtReceiptAction] Erro inesperado:', error);
+    return { success: false, error: 'Ocorreu um erro ao excluir o comprovante.' };
+  }
+}
+
+/**
  * Remove uma dívida e suas parcelas da gruta
  * Libera automaticamente a cota de dívidas ativas
  */
@@ -646,10 +712,16 @@ export async function deleteDebtAction(
       };
     }
 
-    invalidateUserDataCache({ userId, debtId });
+    invalidateUserDataCache({
+      userId,
+      debtId,
+      debtorId: result.data.debtorId,
+    });
     revalidatePath('/painel');
     revalidatePath('/painel/dividas');
     revalidatePath('/painel/dividas/acompanhamento');
+    revalidatePath(`/painel/devedores/${result.data.debtorId}`);
+    revalidatePath('/painel/termometro');
 
     return {
       success: true,

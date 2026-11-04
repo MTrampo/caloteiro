@@ -167,4 +167,14 @@ export const attachLoanReceiptSchema = z.object({
     .max(500, "Caminho de comprovante inválido."),
 });
 
+/**
+ * Esquema de validação para exclusão de comprovante (empréstimo inicial ou parcela)
+ */
+export const deleteDebtReceiptSchema = z.object({
+  debtId: z.string().uuid("Identificador da dívida inválido."),
+  target: z.enum(["loan", "installment"]),
+  installmentId: z.string().uuid("Identificador da parcela inválido.").optional(),
+});
+
+
 

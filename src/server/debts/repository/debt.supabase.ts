@@ -520,7 +520,7 @@ export const getPublicDebtContextByIdSupabase = async (
 export const updateDebtLoanReceiptSupabase = async (payload: {
   debtId: string;
   userId: string;
-  receiptPath: string;
+  receiptPath: string | null;
 }): Promise<{ success: boolean; error: string | null }> => {
   const supabase = await serverSupabase();
 

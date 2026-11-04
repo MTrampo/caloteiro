@@ -15,6 +15,10 @@ type CreditorWisdomProps = {
 export function CreditorWisdom({ initialWisdom }: CreditorWisdomProps) {
   const [wisdom, setWisdom] = React.useState(initialWisdom)
 
+  React.useEffect(() => {
+    setWisdom(initialWisdom)
+  }, [initialWisdom])
+
   const handleShuffle = () => {
     setWisdom(getRandomWisdomQuote())
   }

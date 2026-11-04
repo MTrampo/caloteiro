@@ -1,5 +1,7 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import { invalidateUserDataCache } from "@/commons/lib/cache/server-cache";
 import {
   getActivePlansApi,
   cancelSubscriptionApi,
@@ -132,6 +134,10 @@ export async function cancelSubscriptionAction(
       };
     }
 
+    invalidateUserDataCache({ userId: user.id });
+    revalidatePath("/painel/conta/assinatura");
+    revalidatePath("/painel");
+
     return {
       success: true,
       data: null,
@@ -184,6 +190,10 @@ export async function changeSubscriptionPlanAction(
         error: res.message || "Não foi possível alterar seu plano no momento.",
       };
     }
+
+    invalidateUserDataCache({ userId: user.id });
+    revalidatePath("/painel/conta/assinatura");
+    revalidatePath("/painel");
 
     return {
       success: true,

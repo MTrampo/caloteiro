@@ -22,11 +22,13 @@ import {
   updateDebtBreachStatusApi,
   attachInstallmentReceiptApi,
   attachLoanReceiptApi,
+  deleteDebtReceiptApi,
   checkPublicDebtGateApi,
   verifyPublicDebtInvoiceAccessApi,
   getPublicDebtInvoiceDataApi,
 } from "../service/debt.api";
 import * as debtSupabase from "../repository/debt.supabase";
+import * as receiptStorageSupabase from "../repository/receipt-storage.supabase";
 import * as debtorSupabase from "@/server/debtors/repository/debtor.supabase";
 import * as subscriptionService from "@/server/account/service/subscription.api";
 import * as debtQuotaService from "../service/debt-quota.api";
@@ -1708,6 +1710,134 @@ describe("Serviço de Dívidas (debt.api.ts)", () => {
     });
   });
 
+  describe("deleteDebtReceiptApi (Exclusão Definitiva de Comprovantes)", () => {
+    it("deve barrar a exclusão com 403 Forbidden se a dívida estiver trancada na jaula", async () => {
+      vi.mocked(debtQuotaService.checkDebtLockedStatusApi).mockResolvedValue({
+        isLocked: true,
+        reason: "Presa trancada na jaula!",
+      });
+
+      const res = await deleteDebtReceiptApi(userId, {
+        debtId: "debt-locked",
+        target: "loan",
+      });
+
+      expect(res.status).toBe(403);
+      expect(res.error).toBe("DEBT_LOCKED_BY_PLAN");
+    });
+
+    it("deve excluir o comprovante inicial do empréstimo (loan) com remoção do storage e limpeza no banco", async () => {
+      vi.mocked(debtQuotaService.checkDebtLockedStatusApi).mockResolvedValue({
+        isLocked: false,
+      });
+      vi.mocked(debtSupabase.getDebtByIdSupabase).mockResolvedValue({
+        id: "debt-10",
+        user_id: userId,
+        debtor_id: "debtor-1",
+        title: "Empréstimo",
+        original_amount: 1000,
+        total_amount: 1000,
+        installments_count: 1,
+        loan_date: "2026-01-01",
+        first_due_date: "2026-02-01",
+        interest_type: "none",
+        interest_rate: 0,
+        category: "personal_loan",
+        payment_method: "pix",
+        status: "pending",
+        settled_at: null,
+        notes: null,
+        loan_receipt_path: `${userId}/loan/file-123.webp`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      vi.mocked(receiptStorageSupabase.deleteReceiptFileSupabase).mockResolvedValue({
+        success: true,
+        error: null,
+      });
+      vi.mocked(debtSupabase.updateDebtLoanReceiptSupabase).mockResolvedValue({
+        success: true,
+        error: null,
+      });
+
+      const res = await deleteDebtReceiptApi(userId, {
+        debtId: "debt-10",
+        target: "loan",
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.data?.success).toBe(true);
+      expect(receiptStorageSupabase.deleteReceiptFileSupabase).toHaveBeenCalledWith(
+        `${userId}/loan/file-123.webp`
+      );
+      expect(debtSupabase.updateDebtLoanReceiptSupabase).toHaveBeenCalledWith({
+        debtId: "debt-10",
+        userId,
+        receiptPath: null,
+      });
+    });
+
+    it("deve excluir o comprovante de uma parcela com remoção do storage e limpeza no banco", async () => {
+      vi.mocked(debtQuotaService.checkDebtLockedStatusApi).mockResolvedValue({
+        isLocked: false,
+      });
+      vi.mocked(debtSupabase.getInstallmentByIdSupabase).mockResolvedValue({
+        id: "inst-20",
+        debt_id: "debt-20",
+        debtor_id: "debtor-1",
+        installment_number: 1,
+        nominal_amount: 500,
+        paid_amount: 500,
+        due_date: "2026-02-01",
+        status: "paid",
+        receipt_path: `${userId}/payment/receipt-456.webp`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        user_id: userId,
+      });
+      vi.mocked(receiptStorageSupabase.deleteReceiptFileSupabase).mockResolvedValue({
+        success: true,
+        error: null,
+      });
+      vi.mocked(debtSupabase.updateInstallmentSupabase).mockResolvedValue({
+        success: true,
+        error: null,
+      });
+
+      const res = await deleteDebtReceiptApi(userId, {
+        debtId: "debt-20",
+        target: "installment",
+        installmentId: "inst-20",
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.data?.success).toBe(true);
+      expect(receiptStorageSupabase.deleteReceiptFileSupabase).toHaveBeenCalledWith(
+        `${userId}/payment/receipt-456.webp`
+      );
+      expect(debtSupabase.updateInstallmentSupabase).toHaveBeenCalledWith(
+        "inst-20",
+        userId,
+        { receipt_path: null }
+      );
+    });
+
+    it("deve retornar 404 se a dívida não pertencer ao usuário", async () => {
+      vi.mocked(debtQuotaService.checkDebtLockedStatusApi).mockResolvedValue({
+        isLocked: false,
+      });
+      vi.mocked(debtSupabase.getDebtByIdSupabase).mockResolvedValue(null);
+
+      const res = await deleteDebtReceiptApi(userId, {
+        debtId: "debt-alheia",
+        target: "loan",
+      });
+
+      expect(res.status).toBe(404);
+      expect(res.message).toContain("Dívida não encontrada");
+    });
+  });
+
   describe("Jaula do Tubarão e Travas Zero Trust (Dívidas Trancadas)", () => {
     it("deve barrar registerDebtPaymentApi com 403 Forbidden se a dívida estiver trancada na jaula", async () => {
       vi.mocked(debtQuotaService.checkDebtLockedStatusApi).mockResolvedValue({
@@ -1773,6 +1903,54 @@ describe("Serviço de Dívidas (debt.api.ts)", () => {
 
       const res = await debtSupabase.deleteDebtSupabase("debt-123", userId);
       expect(res.success).toBe(true);
+    });
+
+    it("registerDebtExcuseApi deve retornar debtId e debtorId junto com excuseId para garantir invalidação cirúrgica de cache em tempo real", async () => {
+      vi.mocked(debtSupabase.getInstallmentByIdSupabase).mockResolvedValue({
+        id: "inst-cache-1",
+        debt_id: "debt-cache-99",
+        debtor_id: "debtor-cache-77",
+        user_id: userId,
+        installment_number: 2,
+        nominal_amount: 350,
+        paid_amount: 0,
+        due_date: "2026-11-15",
+        status: "pending",
+        receipt_path: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      vi.mocked(debtQuotaService.checkDebtLockedStatusApi).mockResolvedValue({
+        isLocked: false,
+      });
+
+      vi.mocked(debtSupabase.createExcuseSupabase).mockResolvedValue({
+        data: {
+          id: "excuse-cache-123",
+          installment_id: "inst-cache-1",
+          debtor_id: "debtor-cache-77",
+          user_id: userId,
+          excuse_text: "Cachorro comeu o cartão",
+          promised_date: "2026-11-20",
+          was_honored: null,
+          created_at: new Date().toISOString(),
+        },
+        error: null,
+      });
+
+      const res = await registerDebtExcuseApi(userId, {
+        installment_id: "inst-cache-1",
+        excuse_text: "Cachorro comeu o cartão",
+        promised_date: "2026-11-20",
+      });
+
+      expect(res.status).toBe(HttpStatusEnum.Created);
+      expect(res.data).toEqual({
+        excuseId: "excuse-cache-123",
+        debtId: "debt-cache-99",
+        debtorId: "debtor-cache-77",
+      });
     });
   });
 });

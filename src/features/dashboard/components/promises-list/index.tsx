@@ -46,6 +46,17 @@ export function PromisesList({
   const sentinelRef = React.useRef<HTMLDivElement | null>(null)
   const isFirstRender = React.useRef(true)
 
+  // Sincroniza com novos dados vindos do servidor (router.refresh) quando na página inicial sem filtro customizado
+  React.useEffect(() => {
+    if (activeTab === "OPEN" && !debouncedSearch && sortBy === "late_first" && page === 1) {
+      setItems(initialData)
+      setHasMore(initialHasMore)
+      setCounts(initialCounts)
+    } else {
+      setCounts(initialCounts)
+    }
+  }, [initialData, initialHasMore, initialCounts, activeTab, debouncedSearch, sortBy, page])
+
   // Debounce do campo de busca (300ms)
   React.useEffect(() => {
     const timer = setTimeout(() => {

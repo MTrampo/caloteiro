@@ -73,6 +73,13 @@ export function AgreementRulesCard({
   const [isPending, startTransition] = React.useTransition();
   const [copiedAlertMsg, setCopiedAlertMsg] = React.useState(false);
 
+  // Sincroniza estados locais quando a dívida atualizar após mutação/revalidação
+  React.useEffect(() => {
+    setNotes(debt.notes || "");
+    setMaxLate(debt.maxLateInstallments);
+    setShowOnInvoice(debt.showNotesOnInvoice);
+  }, [debt.notes, debt.maxLateInstallments, debt.showNotesOnInvoice]);
+
   const handleOpenEdit = () => {
     setNotes(debt.notes || "");
     setMaxLate(debt.maxLateInstallments);

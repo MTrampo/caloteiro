@@ -385,5 +385,86 @@ describe("Motor de Score de Risco e Termômetro da Gruta (risk-score.api.ts)", (
 
       expect(enriched[0].riskScore).toBeNull();
     });
+
+    it("calculateDebtorRiskScore deve gerar a linha do tempo cronológica com os acontecimentos mais recentes primeiro", () => {
+      const res = calculateDebtorRiskScore({
+        debtorId: "debtor-timeline",
+        debtorName: "Cleiton Lopes",
+        debtorPhone: "11999990000",
+        debtorCreatedAt: "2026-10-01T10:00:00Z",
+        referenceDate: new Date("2026-10-25T12:00:00Z"),
+        debts: [
+          {
+            id: "debt-1",
+            title: "Empréstimo da Moto",
+            status: "pending",
+            original_amount: 1000,
+            total_amount: 1000,
+            created_at: "2026-10-01T10:00:00Z",
+          },
+        ],
+        installments: [
+          {
+            id: "inst-1",
+            debt_id: "debt-1",
+            installment_number: 1,
+            due_date: "2026-10-10",
+            nominal_amount: 500,
+            paid_amount: 500,
+            status: "paid",
+            updated_at: "2026-10-08T14:00:00Z", // Paga 2 dias antes (+6 pts)
+          },
+          {
+            id: "inst-2",
+            debt_id: "debt-1",
+            installment_number: 2,
+            due_date: "2026-10-20",
+            nominal_amount: 500,
+            paid_amount: 0,
+            status: "pending", // Vencida há 5 dias (-8 pts)
+          },
+        ],
+        payments: [
+          {
+            id: "pay-1",
+            debt_id: "debt-1",
+            amount: 500,
+            paid_at: "2026-10-08T14:00:00Z",
+          },
+        ],
+        excuses: [
+          {
+            id: "exc-1",
+            installment_id: "inst-2",
+            excuse_text: "Vou receber meu vale dia 22",
+            promised_date: "2026-10-22",
+            created_at: "2026-10-21T09:00:00Z", // Caô anotado (-6 pts)
+            was_honored: false, // Promessa furada no dia 22 (-10 pts)
+          },
+        ],
+      });
+
+      expect(res.timeline).toBeDefined();
+      expect(res.timeline.length).toBeGreaterThan(1);
+
+      // O mais recente primeiro (índice 0 deve ser o evento com maior timestamp)
+      const firstEvent = res.timeline[0];
+      const lastEvent = res.timeline[res.timeline.length - 1];
+
+      // O último evento na ordem decrescente deve ser o ponto de partida original (50 pts)
+      expect(lastEvent.type).toBe("base");
+      expect(lastEvent.points).toBe(50);
+      expect(lastEvent.title).toContain("Ponto de Partida");
+
+      // O primeiro evento deve ser o caô furado no dia 22 ou o caô anotado no dia 21
+      expect(new Date(firstEvent.date).getTime()).toBeGreaterThan(
+        new Date(lastEvent.date).getTime()
+      );
+
+      // Verificação da evolução de saldo do score
+      expect(firstEvent.scoreSnapshot).toBe(res.score);
+      expect(res.factors.some((f) => f.type === "healing")).toBe(true);
+      expect(res.factors.some((f) => f.type === "bleeding")).toBe(true);
+    });
   });
 });

@@ -20,6 +20,7 @@ import type {
   RegisterExcusePayload,
   AttachInstallmentReceiptPayload,
   AttachLoanReceiptPayload,
+  DeleteDebtReceiptPayload,
   UpdateDebtPortalConfigPayload,
   UpdateDebtAgreementRulesPayload,
   UpdateDebtBreachStatusPayload,
@@ -61,6 +62,7 @@ import {
 import {
   createSignedReceiptUrlsSupabase,
   getCachedSignedReceiptUrlsSupabase,
+  deleteReceiptFileSupabase,
 } from "../repository/receipt-storage.supabase";
 import {
   getUserPermissionsOrCacheApi,
@@ -525,7 +527,7 @@ export const registerDebtPaymentApi = async (
   debtId: string,
   userId: string,
   payload: RegisterPaymentPayload
-): Promise<ResponseProps<{ settled: boolean; amortizedAmount: number }>> => {
+): Promise<ResponseProps<{ settled: boolean; amortizedAmount: number; debtorId: string }>> => {
   const lockStatus = await checkDebtLockedStatusApi(debtId, userId);
   if (lockStatus.isLocked) {
     return ApiResponse.Forbidden({
@@ -617,6 +619,7 @@ export const registerDebtPaymentApi = async (
     data: {
       settled: allPaid,
       amortizedAmount: payload.amount,
+      debtorId: debt.debtor_id,
     },
     message: allPaid
       ? "CANCELEM O VELÓRIO! Ele pagou tudo! Dívida honrada e liquidada com sucesso!"
@@ -630,7 +633,9 @@ export const registerDebtPaymentApi = async (
 export const registerDebtExcuseApi = async (
   userId: string,
   payload: RegisterExcusePayload
-): Promise<ResponseProps<{ excuseId: string }>> => {
+): Promise<
+  ResponseProps<{ excuseId: string; debtId: string; debtorId: string }>
+> => {
   const installment = await getInstallmentByIdSupabase(payload.installment_id, userId);
   if (!installment) {
     return ApiResponse.NotFound({
@@ -664,7 +669,11 @@ export const registerDebtExcuseApi = async (
   }
 
   return ApiResponse.Created({
-    data: { excuseId: data.id },
+    data: {
+      excuseId: data.id,
+      debtId: installment.debt_id,
+      debtorId: installment.debtor_id,
+    },
     message: "Caô devidamente registrado! A contagem da nova promessa começou.",
   });
 };
@@ -1308,13 +1317,102 @@ export const attachLoanReceiptApi = async (
 };
 
 /**
+ * Exclui o comprovante físico do storage e limpa o registro da dívida ou parcela no banco
+ */
+export const deleteDebtReceiptApi = async (
+  userId: string,
+  payload: DeleteDebtReceiptPayload
+): Promise<ResponseProps<{ success: boolean; debtId: string }>> => {
+  const lockStatus = await checkDebtLockedStatusApi(payload.debtId, userId);
+  if (lockStatus.isLocked) {
+    return ApiResponse.Forbidden({
+      message:
+        lockStatus.reason ||
+        "Presa trancada na jaula! Esta dívida possui maior valor em aberto e foi bloqueada devido ao limite do seu plano atual.",
+      error: "DEBT_LOCKED_BY_PLAN",
+    });
+  }
+
+  if (payload.target === "loan") {
+    const debt = await getDebtByIdSupabase(payload.debtId, userId);
+    if (!debt) {
+      return ApiResponse.NotFound({
+        message: "Dívida não encontrada na gruta deste Tubarão.",
+      });
+    }
+
+    if (debt.loan_receipt_path) {
+      await deleteReceiptFileSupabase(debt.loan_receipt_path);
+    }
+
+    const { success, error } = await updateDebtLoanReceiptSupabase({
+      debtId: payload.debtId,
+      userId,
+      receiptPath: null,
+    });
+
+    if (!success || error) {
+      return ApiResponse.InternalError({
+        message: "Erro ao remover comprovante da dívida.",
+        error: error || undefined,
+      });
+    }
+
+    return ApiResponse.Ok({
+      data: { success: true, debtId: payload.debtId },
+      message: "Comprovante de empréstimo excluído da gruta com sucesso!",
+    });
+  }
+
+  // target === 'installment'
+  if (!payload.installmentId) {
+    return ApiResponse.BadRequest({
+      message: "Identificador da parcela obrigatório para exclusão do comprovante.",
+    });
+  }
+
+  const installment = await getInstallmentByIdSupabase(payload.installmentId, userId);
+  if (!installment) {
+    return ApiResponse.NotFound({
+      message: "Parcela não encontrada ou não pertence a este Tubarão.",
+    });
+  }
+
+  if (installment.debt_id !== payload.debtId) {
+    return ApiResponse.BadRequest({
+      message: "Esta parcela não pertence à dívida indicada.",
+    });
+  }
+
+  if (installment.receipt_path) {
+    await deleteReceiptFileSupabase(installment.receipt_path);
+  }
+
+  const { success, error } = await updateInstallmentSupabase(payload.installmentId, userId, {
+    receipt_path: null,
+  });
+
+  if (!success || error) {
+    return ApiResponse.InternalError({
+      message: "Erro ao remover comprovante da parcela.",
+      error: error || undefined,
+    });
+  }
+
+  return ApiResponse.Ok({
+    data: { success: true, debtId: payload.debtId },
+    message: "Comprovante da parcela excluído com sucesso!",
+  });
+};
+
+/**
  * Remove uma dívida da gruta (e suas parcelas em cascata)
  * A exclusão é sempre permitida e libera espaço para promover automaticamente outra dívida
  */
 export const deleteDebtApi = async (
   debtId: string,
   userId: string
-): Promise<ResponseProps<{ deleted: boolean }>> => {
+): Promise<ResponseProps<{ deleted: boolean; debtorId: string }>> => {
   const debt = await getDebtByIdSupabase(debtId, userId);
   if (!debt) {
     return ApiResponse.NotFound({
@@ -1331,7 +1429,7 @@ export const deleteDebtApi = async (
   }
 
   return ApiResponse.Ok({
-    data: { deleted: true },
+    data: { deleted: true, debtorId: debt.debtor_id },
     message: "Dívida removida da gruta com sucesso.",
   });
 };

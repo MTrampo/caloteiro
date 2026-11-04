@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cancelSubscriptionAction } from "@/actions/subscription";
@@ -30,6 +31,7 @@ export function SubscriptionPageFeature({
   plans,
   invoices,
 }: SubscriptionPageFeatureProps) {
+  const router = useRouter();
   const [isCanceling, setIsCanceling] = React.useState(false);
   const [cancelModalOpen, setCancelModalOpen] = React.useState(false);
   const [cancelReason, setCancelReason] = React.useState("");
@@ -64,6 +66,7 @@ export function SubscriptionPageFeature({
           "Cancelamento registrado! Seu acesso continuará ativo até o fim do período já pago."
         );
         setCancelModalOpen(false);
+        router.refresh();
       } else {
         toast.error(res.error || "Não foi possível cancelar no momento.");
       }

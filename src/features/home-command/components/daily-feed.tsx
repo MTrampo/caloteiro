@@ -42,6 +42,16 @@ export function DailyFeed({
     null
   );
 
+  // Limpa paidIds otimistas assim que os itens já chegarem com status "recently_paid" do servidor
+  React.useEffect(() => {
+    setPaidIds((prev) =>
+      prev.filter((id) => {
+        const current = feed.find((item) => item.id === id);
+        return current && current.type !== "recently_paid";
+      })
+    );
+  }, [feed]);
+
   const handleCopyPix = (id: string, key?: string) => {
     if (!canCopyPix) return;
     const keyToCopy = key || pixKeyDefault;

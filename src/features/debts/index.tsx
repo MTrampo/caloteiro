@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
 import { toast } from "sonner"
 import type { FinancialPeriod, FinancialAnalyticsResult } from "./types"
 import { DebtsHeader } from "./components/debts-header"
@@ -24,6 +24,13 @@ export function DebtsFeature({ initialData, planLimits }: DebtsFeatureProps) {
   const [period, setPeriod] = useState<FinancialPeriod>("month")
   const [data, setData] = useState<FinancialAnalyticsResult>(initialData)
   const [isPending, startTransition] = useTransition()
+
+  // Sincroniza quando initialData atualizar no servidor (router.refresh) no período padrão ("month")
+  useEffect(() => {
+    if (period === "month") {
+      setData(initialData)
+    }
+  }, [initialData, period])
 
   const handlePeriodChange = (newPeriod: FinancialPeriod) => {
     if (newPeriod === period) return

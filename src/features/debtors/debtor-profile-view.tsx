@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { DebtorRaioXData } from "@/commons/models/risk-score";
 import { formatBRL, formatDate } from "@/commons/utils/format";
@@ -33,6 +34,7 @@ import {
   FaPenToSquare,
   FaTrashCan,
   FaCircleQuestion,
+  FaScaleBalanced,
 } from "react-icons/fa6";
 
 interface DebtorProfileViewProps {
@@ -42,20 +44,43 @@ interface DebtorProfileViewProps {
 type DebtorSectionTab = "extrato" | "promessas" | "caos";
 
 export function DebtorProfileView({ data }: DebtorProfileViewProps) {
+  const router = useRouter();
   const { riskScore, debts, excuses } = data;
   const [currentDebtor, setCurrentDebtor] = React.useState(data.debtor);
   const [isEditOpen, setIsEditOpen] = React.useState(false);
+
+  // Sincroniza quando os dados do servidor (router.refresh) forem atualizados
+  React.useEffect(() => {
+    setCurrentDebtor(data.debtor);
+  }, [data.debtor]);
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
   const [isRulesOpen, setIsRulesOpen] = React.useState(false);
   const [copiedPix, setCopiedPix] = React.useState(false);
   const [activeSectionTab, setActiveSectionTab] =
     React.useState<DebtorSectionTab>("extrato");
 
+  // Ordenação explícita com os mais recentes primeiro para dívidas e caôs
+  const sortedDebts = React.useMemo(() => {
+    return debts.slice().sort((a, b) => {
+      const timeA = new Date(a.created_at || a.loan_date || 0).getTime() || 0;
+      const timeB = new Date(b.created_at || b.loan_date || 0).getTime() || 0;
+      return timeB - timeA;
+    });
+  }, [debts]);
+
+  const sortedExcuses = React.useMemo(() => {
+    return excuses.slice().sort((a, b) => {
+      const timeA = new Date(a.created_at || a.promisedDate || 0).getTime() || 0;
+      const timeB = new Date(b.created_at || b.promisedDate || 0).getTime() || 0;
+      return timeB - timeA;
+    });
+  }, [excuses]);
+
   const sectionTabs: SectionTabItem<DebtorSectionTab>[] = [
     {
       id: "extrato",
       label: "Extrato do Score",
-      count: riskScore.factors.length,
+      count: riskScore.timeline?.length || riskScore.factors.length,
       accent: "text-zinc-300",
     },
     {
@@ -461,53 +486,105 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
           />
         </div>
 
-        {/* Aba 1: Extrato de Cicatrização e Sangramento do Score */}
+        {/* Aba 1: Extrato Cronológico de Cicatrização e Sangramento do Score */}
         {activeSectionTab === "extrato" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {riskScore.factors.map((factor) => {
-              const isPositive = factor.type === "healing";
-              const isNegative = factor.type === "bleeding";
-              return (
-                <div
-                  key={factor.id}
-                  className="rounded-2xl border border-border bg-card p-3.5 sm:p-4 flex items-center justify-between gap-3 text-xs font-mono"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    {isPositive ? (
-                      <FaArrowTrendUp className="size-3.5 text-emerald-400 shrink-0" />
-                    ) : isNegative ? (
-                      <FaArrowTrendDown className="size-3.5 text-rose-400 shrink-0" />
-                    ) : (
-                      <span className="size-2.5 rounded-full bg-yellow-400 shrink-0" />
-                    )}
-                    <span className="text-zinc-200 text-xs leading-snug">
-                      {factor.label}
-                    </span>
+          <div className="space-y-4">
+            <div className="relative pl-6 sm:pl-8 space-y-3.5 before:absolute before:left-2.5 sm:before:left-3.5 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800">
+              {(riskScore.timeline && riskScore.timeline.length > 0
+                ? riskScore.timeline
+                : riskScore.factors.map((f, i) => ({
+                    id: f.id,
+                    date: new Date().toISOString(),
+                    formattedDate: "Base",
+                    title: f.label,
+                    description: f.label,
+                    points: f.points,
+                    type: f.type,
+                    scoreSnapshot: undefined,
+                  }))
+              ).map((event, index) => {
+                const isPositive = event.type === "healing";
+                const isNegative = event.type === "bleeding";
+                const isBase = event.type === "base";
+
+                return (
+                  <div key={event.id || index} className="relative group">
+                    {/* Nó Marcador da Linha do Tempo */}
+                    <div
+                      className={`absolute -left-6 sm:-left-8 top-3.5 size-5 sm:size-7 -translate-x-1/2 rounded-full border flex items-center justify-center shrink-0 ${
+                        isPositive
+                          ? "bg-zinc-950 border-emerald-500/40 text-emerald-400"
+                          : isNegative
+                          ? "bg-zinc-950 border-rose-500/40 text-rose-400"
+                          : "bg-zinc-950 border-yellow-500/40 text-yellow-400"
+                      }`}
+                    >
+                      {isPositive ? (
+                        <FaArrowTrendUp className="size-2.5 sm:size-3" />
+                      ) : isNegative ? (
+                        <FaArrowTrendDown className="size-2.5 sm:size-3" />
+                      ) : (
+                        <FaScaleBalanced className="size-2.5 sm:size-3" />
+                      )}
+                    </div>
+
+                    {/* Card do Evento na Linha do Tempo */}
+                    <div className="rounded-2xl border border-border bg-card p-4 space-y-2 hover:border-zinc-700 transition-colors">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2 min-w-0">
+                          <span className="font-heading font-bold text-sm sm:text-base text-white">
+                            {event.title}
+                          </span>
+                          <span className="text-[11px] font-mono text-zinc-400 flex items-center gap-1.5 whitespace-nowrap">
+                            <FaCalendarDays className="size-3 text-zinc-500 shrink-0" />
+                            {event.formattedDate}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                          <span
+                            className={`font-mono font-bold whitespace-nowrap px-2.5 py-0.5 rounded-lg border text-xs ${
+                              isPositive
+                                ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/25"
+                                : isNegative
+                                ? "text-rose-400 bg-rose-500/10 border-rose-500/25"
+                                : "text-yellow-400 bg-yellow-500/10 border-yellow-500/25"
+                            }`}
+                          >
+                            {isPositive
+                              ? `+${event.points} pts`
+                              : isBase
+                              ? "50 pts iniciais"
+                              : `${event.points} pts`}
+                          </span>
+
+                          {event.scoreSnapshot !== undefined && (
+                            <span
+                              className="text-[10px] font-mono font-bold text-zinc-300 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-md whitespace-nowrap"
+                              title="Score acumulado após este acontecimento"
+                            >
+                              Score: {event.scoreSnapshot} pts
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <p className="text-xs sm:text-[13px] font-mono text-zinc-300 leading-relaxed">
+                        {event.description}
+                      </p>
+                    </div>
                   </div>
-                  <span
-                    className={`font-bold whitespace-nowrap shrink-0 px-2 py-0.5 rounded-lg border text-[11px] ${
-                      isPositive
-                        ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/25"
-                        : isNegative
-                        ? "text-rose-400 bg-rose-500/10 border-rose-500/25"
-                        : "text-yellow-400 bg-yellow-500/10 border-yellow-500/25"
-                    }`}
-                  >
-                    {factor.points > 0 && factor.type !== "base"
-                      ? `+${factor.points} pts`
-                      : `${factor.points} pts`}
-                  </span>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
 
         {/* Aba 2: Promessas desta Presa */}
         {activeSectionTab === "promessas" &&
-          (debts.length > 0 ? (
+          (sortedDebts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-              {debts.map((debt) => (
+              {sortedDebts.map((debt) => (
                 <Link
                   key={debt.id}
                   href={`/painel/dividas/${debt.id}`}
@@ -564,9 +641,9 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
 
         {/* Aba 3: Mural de Caôs e Desculpas */}
         {activeSectionTab === "caos" &&
-          (excuses.length > 0 ? (
+          (sortedExcuses.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-              {excuses.map((exc) => (
+              {sortedExcuses.map((exc) => (
                 <div
                   key={exc.id}
                   className="rounded-2xl border border-border bg-card p-4 space-y-2 text-xs font-mono"
@@ -611,7 +688,10 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
         debtor={currentDebtor}
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
-        onSuccess={setCurrentDebtor}
+        onSuccess={(updated) => {
+          setCurrentDebtor(updated);
+          router.refresh();
+        }}
       />
 
       {/* Modal de Exclusão da Presa com Redirecionamento */}

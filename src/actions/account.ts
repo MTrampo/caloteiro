@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+import { invalidateUserDataCache } from '@/commons/lib/cache/server-cache';
 import { getUserLoggedApi } from '@/server/account/service/auth.api';
 import {
   updateProfileSchema,
@@ -47,6 +49,10 @@ export async function updateProfileAccountAction(
         error: result.message || 'Erro ao atualizar dados do perfil.',
       };
     }
+
+    invalidateUserDataCache({ userId });
+    revalidatePath('/painel/conta');
+    revalidatePath('/painel');
 
     return {
       success: true,
@@ -127,6 +133,10 @@ export async function confirmEmailChangeOtpAction(
         error: result.message || 'Erro ao confirmar a alteração do e-mail.',
       };
     }
+
+    invalidateUserDataCache({ userId });
+    revalidatePath('/painel/conta');
+    revalidatePath('/painel');
 
     return {
       success: true,

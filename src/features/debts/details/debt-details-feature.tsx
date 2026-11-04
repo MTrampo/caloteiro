@@ -16,6 +16,7 @@ import { ReceiptViewerDialog } from "./receipt-viewer-dialog";
 import { AttachInstallmentReceiptModal } from "./attach-installment-receipt-modal";
 import { AttachLoanReceiptModal } from "./attach-loan-receipt-modal";
 import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action";
+import { deleteDebtReceiptAction } from "@/actions/debts";
 import { toast } from "sonner";
 import {
   FaArrowLeft,
@@ -64,7 +65,13 @@ export function DebtDetailsFeature({
   const [isAttachReceiptModalOpen, setIsAttachReceiptModalOpen] = React.useState(false);
   const [isAttachLoanReceiptModalOpen, setIsAttachLoanReceiptModalOpen] =
     React.useState(false);
-  const [viewerImageUrl, setViewerImageUrl] = React.useState<string | null>(null);
+  const [viewerContext, setViewerContext] = React.useState<{
+    url: string;
+    title: string;
+    target: "loan" | "installment";
+    installmentId?: string;
+  } | null>(null);
+  const [isDeletingReceipt, startDeleteTransition] = React.useTransition();
 
   const handleOpenGeneralPayment = () => {
     if (debt.isLocked) {
@@ -235,7 +242,13 @@ export function DebtDetailsFeature({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setViewerImageUrl(debt.loanReceiptUrl)}
+                  onClick={() =>
+                    setViewerContext({
+                      url: debt.loanReceiptUrl!,
+                      title: "Comprovante Pix do Tubarão",
+                      target: "loan",
+                    })
+                  }
                   className="w-full sm:w-auto text-xs font-mono text-zinc-200 hover:text-white border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 cursor-pointer"
                 >
                   <FaEye className="size-3 text-emerald-400" />
@@ -283,7 +296,14 @@ export function DebtDetailsFeature({
         installments={debt.installments}
         onPayInstallment={handleOpenInstallmentPayment}
         onAddExcuse={handleOpenExcuseModal}
-        onViewReceipt={(url) => setViewerImageUrl(url)}
+        onViewReceipt={(url, installmentId, installmentNumber) =>
+          setViewerContext({
+            url,
+            title: `Comprovante • Parcela ${installmentNumber} de ${debt.installments.length}`,
+            target: "installment",
+            installmentId,
+          })
+        }
         onAttachReceipt={(inst) => {
           setSelectedInstallmentForReceipt(inst);
           setIsAttachReceiptModalOpen(true);
@@ -299,7 +319,13 @@ export function DebtDetailsFeature({
         remainingDebtAmount={debt.formattedRemainingAmount}
         isReceiptLocked={permissions.isFreePlan}
         onSuccess={handleDataRefresh}
-        onPreviewReceipt={(url) => setViewerImageUrl(url)}
+        onPreviewReceipt={(url) =>
+          setViewerContext({
+            url,
+            title: "Pré-visualização do Comprovante",
+            target: "installment",
+          })
+        }
       />
 
       {/* Modal: Anexar Comprovante à Parcela */}
@@ -314,7 +340,13 @@ export function DebtDetailsFeature({
         totalInstallments={debt.installments.length}
         isReceiptLocked={permissions.isFreePlan}
         onSuccess={handleDataRefresh}
-        onPreviewReceipt={(url) => setViewerImageUrl(url)}
+        onPreviewReceipt={(url) =>
+          setViewerContext({
+            url,
+            title: "Pré-visualização do Comprovante",
+            target: "installment",
+          })
+        }
       />
 
       {/* Modal: Anexar / Substituir Comprovante Pix do Tubarão na Dívida */}
@@ -327,7 +359,13 @@ export function DebtDetailsFeature({
         hasExistingReceipt={Boolean(debt.loanReceiptUrl)}
         isReceiptLocked={permissions.isFreePlan}
         onSuccess={handleDataRefresh}
-        onPreviewReceipt={(url) => setViewerImageUrl(url)}
+        onPreviewReceipt={(url) =>
+          setViewerContext({
+            url,
+            title: "Pré-visualização do Comprovante",
+            target: "loan",
+          })
+        }
       />
 
       {/* Modal: Anotar Caô / Desculpa */}
@@ -338,11 +376,41 @@ export function DebtDetailsFeature({
         onSuccess={handleDataRefresh}
       />
 
-      {/* Modal: Visualizador de Comprovante em Alta Resolução */}
+      {/* Modal: Visualizador de Comprovante em Tela Cheia com Zoom, Download e Exclusão */}
       <ReceiptViewerDialog
-        open={Boolean(viewerImageUrl)}
-        onOpenChange={(open) => !open && setViewerImageUrl(null)}
-        imageUrl={viewerImageUrl}
+        open={Boolean(viewerContext)}
+        onOpenChange={(open) => {
+          if (!open) setViewerContext(null);
+        }}
+        imageUrl={viewerContext?.url || null}
+        title={viewerContext?.title}
+        isDeleting={isDeletingReceipt}
+        onDelete={
+          viewerContext
+            ? async () => {
+                await new Promise<void>((resolve) => {
+                  startDeleteTransition(async () => {
+                    const res = await deleteDebtReceiptAction({
+                      debtId: debt.id,
+                      target: viewerContext.target,
+                      installmentId: viewerContext.installmentId,
+                    });
+
+                    if (!res.success) {
+                      toast.error(res.error || "Não foi possível excluir o comprovante.");
+                      resolve();
+                      return;
+                    }
+
+                    toast.success(res.message || "Comprovante excluído com sucesso!");
+                    setViewerContext(null);
+                    handleDataRefresh();
+                    resolve();
+                  });
+                });
+              }
+            : undefined
+        }
       />
 
       {/* Ações Flutuantes no Mobile (FAB Multi-Ações com 3 pontinhos e transição para ✕) */}
