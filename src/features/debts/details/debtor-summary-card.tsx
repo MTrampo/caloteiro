@@ -43,25 +43,23 @@ export function DebtorSummaryCard({ debtor }: DebtorSummaryCardProps) {
             {initials}
           </div>
           <div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <h4 className="font-heading text-base font-bold text-white">
                 {debtor.formattedName}
               </h4>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 whitespace-nowrap w-fit">
-                  {debtor.relationshipLabel}
-                </span>
-                {debtor.riskScore && (
-                  <span
-                    className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border whitespace-nowrap w-fit flex items-center gap-1 ${debtor.riskScore.badgeClass}`}
-                  >
-                    <FaGaugeHigh className="size-2.5" />
-                    <span>
-                      Score {debtor.riskScore.score} • {debtor.riskScore.tierShortLabel}
-                    </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 whitespace-nowrap shrink-0">
+                {debtor.relationshipLabel}
+              </span>
+              {debtor.riskScore && (
+                <span
+                  className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border whitespace-nowrap shrink-0 flex items-center gap-1 ${debtor.riskScore.badgeClass}`}
+                >
+                  <FaGaugeHigh className="size-2.5" />
+                  <span>
+                    Score {debtor.riskScore.score} • {debtor.riskScore.tierShortLabel}
                   </span>
-                )}
-              </div>
+                </span>
+              )}
             </div>
             {debtor.formattedNickname && (
               <p className="text-xs font-mono text-zinc-400">

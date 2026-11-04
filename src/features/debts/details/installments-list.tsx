@@ -4,7 +4,7 @@ import * as React from "react";
 import type { InstallmentFormatted } from "@/commons/models/debt";
 import { InstallmentCard } from "./installment-card";
 import { FaArrowDownWideShort } from "react-icons/fa6";
-import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -41,8 +41,6 @@ interface InstallmentsListProps {
   onAttachReceipt?: (installment: InstallmentFormatted) => void;
 }
 
-const PAGE_SIZE = 12;
-
 export function InstallmentsList({
   installments,
   onPayInstallment,
@@ -51,8 +49,6 @@ export function InstallmentsList({
   onAttachReceipt,
 }: InstallmentsListProps) {
   const [sortBy, setSortBy] = React.useState<InstallmentSortOption>("late_first");
-  const [visibleCount, setVisibleCount] = React.useState(PAGE_SIZE);
-  const sentinelRef = React.useRef<HTMLDivElement | null>(null);
 
   // Ordenação e Filtragem das Parcelas
   const processedInstallments = React.useMemo(() => {
@@ -93,43 +89,25 @@ export function InstallmentsList({
     return list;
   }, [installments, sortBy]);
 
-  const hasMore = visibleCount < processedInstallments.length;
-  const visibleInstallments = processedInstallments.slice(0, visibleCount);
-
-  // Infinite Scroll com IntersectionObserver
-  React.useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel || !hasMore) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, processedInstallments.length));
-        }
-      },
-      { rootMargin: "200px" }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [hasMore, processedInstallments.length]);
-
-  const handleLoadMore = () => {
-    setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, processedInstallments.length));
-  };
+  const isScrollable = processedInstallments.length > 12;
 
   return (
     <div className="space-y-4 pt-1">
       {/* Cabeçalho da Seção com Seletor de Ordenação */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="space-y-0.5">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <h3 className="font-heading text-lg font-bold text-white">
               Cronograma de Parcelas
             </h3>
             <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-md bg-zinc-800/80 border border-zinc-700/60 text-zinc-300 whitespace-nowrap w-fit">
               {processedInstallments.length} {processedInstallments.length === 1 ? "parcela" : "parcelas"}
             </span>
+            {isScrollable && (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800/80 text-zinc-400 border border-zinc-700/60 whitespace-nowrap w-fit">
+                Role para ver todas
+              </span>
+            )}
           </div>
           <p className="text-xs text-zinc-400 font-mono">
             Acompanhamento individual de vencimentos, saldos e histórico de promessas.
@@ -143,7 +121,6 @@ export function InstallmentsList({
             onValueChange={(val) => {
               if (val) {
                 setSortBy(val as InstallmentSortOption);
-                setVisibleCount(PAGE_SIZE);
               }
             }}
           >
@@ -176,38 +153,42 @@ export function InstallmentsList({
       </div>
 
       {/* Lista de Cards de Parcelas */}
-      {visibleInstallments.length > 0 ? (
-        <div className="space-y-3">
-          {visibleInstallments.map((installment) => (
-            <InstallmentCard
-              key={installment.id}
-              installment={installment}
-              totalInstallments={installments.length}
-              onPayInstallment={onPayInstallment}
-              onAddExcuse={onAddExcuse}
-              onViewReceipt={onViewReceipt}
-              onAttachReceipt={onAttachReceipt}
-            />
-          ))}
-
-          {/* Elemento Sentinela para o Infinite Scroll */}
-          <div ref={sentinelRef} className="h-4 w-full" />
-
-          {/* Fallback de Botão para Carregar Mais Parcelas */}
-          {hasMore && (
-            <div className="pt-2 text-center">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleLoadMore}
-                className="h-8 px-4 text-xs font-mono text-zinc-400 hover:text-white border-zinc-800 cursor-pointer"
-              >
-                Carregar mais parcelas ({visibleCount} de {processedInstallments.length})
-              </Button>
-            </div>
-          )}
-        </div>
+      {processedInstallments.length > 0 ? (
+        isScrollable ? (
+          <div className="relative">
+            <ScrollArea className="max-h-[520px] sm:max-h-[620px] pr-2.5 sm:pr-3.5">
+              <div className="space-y-3 pb-2">
+                {processedInstallments.map((installment) => (
+                  <InstallmentCard
+                    key={installment.id}
+                    installment={installment}
+                    totalInstallments={installments.length}
+                    onPayInstallment={onPayInstallment}
+                    onAddExcuse={onAddExcuse}
+                    onViewReceipt={onViewReceipt}
+                    onAttachReceipt={onAttachReceipt}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
+            {/* Gradiente sutil na base para indicar continuidade */}
+            <div className="pointer-events-none absolute bottom-0 inset-x-0 h-6 bg-gradient-to-t from-background via-background/60 to-transparent rounded-b-xl" />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {processedInstallments.map((installment) => (
+              <InstallmentCard
+                key={installment.id}
+                installment={installment}
+                totalInstallments={installments.length}
+                onPayInstallment={onPayInstallment}
+                onAddExcuse={onAddExcuse}
+                onViewReceipt={onViewReceipt}
+                onAttachReceipt={onAttachReceipt}
+              />
+            ))}
+          </div>
+        )
       ) : (
         /* Empty State caso filtre por 'only_pending' e tudo esteja quitado */
         <div className="py-12 text-center space-y-2 font-mono">

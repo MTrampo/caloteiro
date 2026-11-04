@@ -662,12 +662,12 @@ export function DebtInvoicePortalFeature({
                       </div>
 
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="font-heading font-bold text-sm text-white">
                             Parcela {inst.installmentNumber} de {invoice.totalInstallmentsCount}
                           </span>
                           <span
-                            className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${inst.statusBadgeClass}`}
+                            className={`text-[10px] font-mono px-2 py-0.5 rounded-full border shrink-0 whitespace-nowrap ${inst.statusBadgeClass}`}
                           >
                             {inst.statusLabel}
                           </span>

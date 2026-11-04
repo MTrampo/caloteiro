@@ -141,22 +141,20 @@ export function DebtDetailsFeature({
 
       {/* Cabeçalho da Dívida (Solto, sem card, sem ícones no título h2) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
-        <div className="space-y-1">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <Link
-                href="/painel/dividas"
-                className="text-zinc-400 hover:text-white transition-colors p-1.5 -ml-1 rounded-xl hover:bg-zinc-800 shrink-0"
-                title="Voltar para a lista de dívidas"
-              >
-                <FaArrowLeft className="size-4" />
-              </Link>
-              <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white truncate">
-                {debt.title}
-              </h2>
-            </div>
+        <div className="space-y-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <Link
+              href="/painel/dividas"
+              className="text-zinc-400 hover:text-white transition-colors p-1.5 -ml-1 rounded-xl hover:bg-zinc-800 shrink-0"
+              title="Voltar para a lista de dívidas"
+            >
+              <FaArrowLeft className="size-4" />
+            </Link>
+            <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white truncate max-w-[calc(100vw-150px)] sm:max-w-none">
+              {debt.title}
+            </h2>
             <span
-              className={`text-[10px] font-mono px-2 py-0.5 rounded-full border w-fit ${debt.statusBadgeClass}`}
+              className={`text-[10px] font-mono px-2 py-0.5 rounded-full border shrink-0 whitespace-nowrap ${debt.statusBadgeClass}`}
             >
               {debt.statusLabel}
             </span>

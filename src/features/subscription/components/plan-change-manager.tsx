@@ -53,20 +53,21 @@ export function PlanChangeManager({
               <div className="space-y-3">
                 {/* Header do Card */}
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-1.5 sm:gap-2">
-                  <div className="space-y-0.5">
-                    <h4 className="font-heading text-base font-bold text-white">
-                      {plan.name}
-                    </h4>
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="font-heading text-base font-bold text-white">
+                        {plan.name}
+                      </h4>
+                      {isCurrent && (
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0 whitespace-nowrap">
+                          Plano Atual
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs font-mono text-zinc-400 leading-relaxed">
                       {plan.description || "Recursos de cobrança"}
                     </p>
                   </div>
-
-                  {isCurrent && (
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0 self-start sm:self-auto whitespace-nowrap">
-                      Plano Atual
-                    </span>
-                  )}
                 </div>
 
                 {/* Preço */}

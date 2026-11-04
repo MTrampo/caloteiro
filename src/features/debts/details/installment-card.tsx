@@ -57,12 +57,12 @@ export function InstallmentCard({
           </div>
 
           <div className="min-w-0 flex-1">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <span className="font-heading font-bold text-sm text-white">
                 Parcela {installment.installment_number} de {totalInstallments}
               </span>
               <span
-                className={`text-[10px] font-mono px-2 py-0.5 rounded-full border whitespace-nowrap w-fit ${installment.statusBadgeClass}`}
+                className={`text-[10px] font-mono px-2 py-0.5 rounded-full border shrink-0 whitespace-nowrap ${installment.statusBadgeClass}`}
               >
                 {installment.statusLabel}
               </span>

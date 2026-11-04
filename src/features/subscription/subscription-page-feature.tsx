@@ -99,30 +99,31 @@ export function SubscriptionPageFeature({
               <FaCreditCard className="size-3.5" />
             </div>
             <div className="space-y-0.5 min-w-0">
-              <h3 className="font-heading text-base font-bold text-white">
-                Plano Atual
-              </h3>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-heading text-base font-bold text-white">
+                  Plano Atual
+                </h3>
+                <span
+                  className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border shrink-0 whitespace-nowrap ${
+                    isAuthorized
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                      : isCancelled
+                      ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                      : "bg-zinc-800 border-zinc-700 text-zinc-300"
+                  }`}
+                >
+                  {isAuthorized
+                    ? "Assinatura Ativa"
+                    : isCancelled
+                    ? "Cancelada (Em Aviso Prévio)"
+                    : "Plano Gratuito / Sem Mensalidade"}
+                </span>
+              </div>
               <p className="text-xs text-zinc-400 font-mono leading-relaxed">
                 Detalhes da modalidade e recorrência ativa
               </p>
             </div>
           </div>
-
-          <span
-            className={`text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg border self-start sm:self-auto ${
-              isAuthorized
-                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                : isCancelled
-                ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                : "bg-zinc-800 border-zinc-700 text-zinc-300"
-            }`}
-          >
-            {isAuthorized
-              ? "Assinatura Ativa"
-              : isCancelled
-              ? "Cancelada (Em Aviso Prévio)"
-              : "Plano Gratuito / Sem Mensalidade"}
-          </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">

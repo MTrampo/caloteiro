@@ -25,6 +25,7 @@ import {
   FaSpinner,
 } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface StepReviewAndConfirmProps {
   debtor: DebtorItemFormatted;
@@ -154,50 +155,95 @@ export function StepReviewAndConfirm({
         </div>
       </div>
 
-      {/* 2. Projeção Individual das Parcelas (Cards Responsivos, Sem Tabelas) */}
+      {/* 2. Projeção Individual das Parcelas (Cards Responsivos com ScrollArea a partir de 13x) */}
       <div className="space-y-3 pt-1">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-heading text-sm sm:text-base font-bold text-white">
               Cronograma de Parcelas Calculado ({projectedInstallments.length}x)
             </h3>
-            <p className="text-xs text-zinc-400 font-mono">
-              Todas as parcelas geradas com exatidão de centavos no dia de vencimento.
-            </p>
+            {projectedInstallments.length > 12 && (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800/80 text-zinc-400 border border-zinc-700/60 shrink-0 whitespace-nowrap">
+                Role para ver todas
+              </span>
+            )}
           </div>
+          <p className="text-xs text-zinc-400 font-mono">
+            Todas as parcelas geradas com exatidão de centavos no dia de vencimento.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-          {projectedInstallments.map((inst) => (
-            <div
-              key={inst.number}
-              className="rounded-xl border border-border bg-card/80 p-3 flex items-center justify-between text-xs font-mono"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="size-7 rounded-lg bg-zinc-800 text-zinc-300 flex items-center justify-center font-bold text-[11px] border border-zinc-700 shrink-0">
-                  {inst.number}ª
-                </div>
-                <div>
-                  <span className="text-white font-bold block">
-                    {inst.formattedNominalAmount}
-                  </span>
-                  <span className="text-[10px] text-zinc-400 block">
-                    Vence: {inst.formattedDueDate}
-                  </span>
-                </div>
+        {projectedInstallments.length > 12 ? (
+          <div className="relative">
+            <ScrollArea className="max-h-[340px] sm:max-h-[420px] pr-2.5 sm:pr-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pb-2">
+                {projectedInstallments.map((inst) => (
+                  <div
+                    key={inst.number}
+                    className="rounded-xl border border-border bg-card/80 p-3 flex items-center justify-between text-xs font-mono"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="size-7 rounded-lg bg-zinc-800 text-zinc-300 flex items-center justify-center font-bold text-[11px] border border-zinc-700 shrink-0">
+                        {inst.number}ª
+                      </div>
+                      <div>
+                        <span className="text-white font-bold block">
+                          {inst.formattedNominalAmount}
+                        </span>
+                        <span className="text-[10px] text-zinc-400 block">
+                          Vence: {inst.formattedDueDate}
+                        </span>
+                      </div>
+                    </div>
+
+                    {inst.isFirstAdjusted && (
+                      <span
+                        title="A primeira parcela absorve os centavos do arredondamento para fechar a soma exata"
+                        className="text-[9px] px-1.5 py-0.5 rounded-sm bg-zinc-800 text-zinc-400 border border-zinc-700 shrink-0"
+                      >
+                        Centavo ajustado
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
+            </ScrollArea>
+            {/* Gradiente sutil na base para indicar continuidade */}
+            <div className="pointer-events-none absolute bottom-0 inset-x-0 h-6 bg-gradient-to-t from-background via-background/60 to-transparent rounded-b-xl" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+            {projectedInstallments.map((inst) => (
+              <div
+                key={inst.number}
+                className="rounded-xl border border-border bg-card/80 p-3 flex items-center justify-between text-xs font-mono"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="size-7 rounded-lg bg-zinc-800 text-zinc-300 flex items-center justify-center font-bold text-[11px] border border-zinc-700 shrink-0">
+                    {inst.number}ª
+                  </div>
+                  <div>
+                    <span className="text-white font-bold block">
+                      {inst.formattedNominalAmount}
+                    </span>
+                    <span className="text-[10px] text-zinc-400 block">
+                      Vence: {inst.formattedDueDate}
+                    </span>
+                  </div>
+                </div>
 
-              {inst.isFirstAdjusted && (
-                <span
-                  title="A primeira parcela absorve os centavos do arredondamento para fechar a soma exata"
-                  className="text-[9px] px-1.5 py-0.5 rounded-sm bg-zinc-800 text-zinc-400 border border-zinc-700 shrink-0"
-                >
-                  Centavo ajustado
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
+                {inst.isFirstAdjusted && (
+                  <span
+                    title="A primeira parcela absorve os centavos do arredondamento para fechar a soma exata"
+                    className="text-[9px] px-1.5 py-0.5 rounded-sm bg-zinc-800 text-zinc-400 border border-zinc-700 shrink-0"
+                  >
+                    Centavo ajustado
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 2.5 Cláusulas e Gatilho de Quebra Configurados (se houver) */}
