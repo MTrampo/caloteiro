@@ -41,15 +41,15 @@ export function getPlanBenefits(
   // 1. Capacidade da Gruta
   if (config?.max_debtors) {
     benefits.push(
-      `Capacidade da Gruta: até ${config.max_debtors} presas marcadas simultâneas (parcelamento até 36x)`
+      `Capacidade da Gruta: até ${config.max_debtors} presas simultâneas (parcelamento até 36x)`
     );
   } else if (isTCC || config?.max_debtors === null) {
     benefits.push(
-      "Capacidade da Gruta: presas marcadas e dívidas ativas ILIMITADAS (parcelamento até 120x)"
+      "Capacidade da Gruta: presas e dívidas ativas ILIMITADAS (parcelamento até 120x)"
     );
   } else {
     benefits.push(
-      "Capacidade da Gruta: até 2 presas marcadas simultâneas (parcelamento até 12x)"
+      "Capacidade da Gruta: até 2 presas simultâneas (parcelamento até 12x)"
     );
   }
 
@@ -74,7 +74,7 @@ export function getPlanBenefits(
       "Termômetro da Gruta: velocímetro geral de risco, divisão biológica e veredito"
     );
     benefits.push(
-      "Score de Risco da Mordida Exploratória: pontuação comportamental (0 a 100 pts) e arma de WhatsApp automática"
+      "Faro do Tubarão: pontuação comportamental (0 a 100 pts) e investida automática no WhatsApp"
     );
     benefits.push(
       "Raio-X Comportamental da Presa: extrato detalhado de cicatrização e sangramento de reputação"
@@ -84,10 +84,10 @@ export function getPlanBenefits(
     );
   }
 
-  // 4. Link da Dívida para a Presa (Portal Externo)
+  // 4. Link da Dívida para a Presa (Fatura Externa)
   if (config?.can_debtor_portal || isTB || isTCC) {
     benefits.push(
-      "Link da Dívida para a Presa: portal externo protegido por PIN com cópia do Pix em 1 clique"
+      "Link da Dívida para a Presa: fatura externa protegida por PIN com cópia do Pix em 1 clique"
     );
   }
 
@@ -101,15 +101,15 @@ export function getPlanBenefits(
   // 6. Scripts de WhatsApp e Cláusulas
   if (config?.custom_templates || isTB || isTCC) {
     benefits.push(
-      "Modelos 100% Personalizados: edição livre das mensagens de WhatsApp e gatilho de quebra de acordo"
+      "Investidas 100% Personalizadas: edição livre das mensagens de WhatsApp e gatilho de quebra de acordo"
     );
   } else {
     benefits.push(
-      "Mensagens de WhatsApp: 3 níveis de cobrança prontos (do Lembrete Amigo ao Modo Tio Patinhas)"
+      "Investidas no WhatsApp: 3 níveis de cobrança prontos (do Lembrete Amigo ao Modo Tio Patinhas)"
     );
   }
 
-  // 7. Arquivo de Provas (Comprovantes Pix)
+  // 7. Arquivo de Provas (Comprovantes)
   if (config?.can_attach_receipts || isTB || isTCC) {
     benefits.push(
       "Arquivo de Provas: cofre permanente de anexos de comprovantes e recibos de pagamento"

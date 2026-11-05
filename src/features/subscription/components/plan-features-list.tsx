@@ -42,13 +42,13 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
         <span className={isPro ? "font-bold text-emerald-400" : ""}>{interestLabel}</span>
       </div>
 
-      {/* 4. Templates de WhatsApp */}
+      {/* 4. Investidas no WhatsApp */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck className="size-3 text-emerald-400 shrink-0" />
         <span>
           {config?.custom_templates
-            ? "Templates de WhatsApp 100% editáveis"
-            : "Templates padrão de cobrança"}
+            ? "Investidas de WhatsApp 100% editáveis"
+            : "Investidas padrão de cobrança"}
         </span>
       </div>
 
@@ -124,7 +124,7 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
         </span>
       </div>
 
-      {/* 9. Score de Risco & Raio-X da Presa - Exclusivo Tubarão Cabeça Chata */}
+      {/* 9. Faro do Tubarão & Raio-X da Presa - Exclusivo Tubarão Cabeça Chata */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck
           className={`size-3 shrink-0 ${
@@ -138,7 +138,7 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
               : "text-zinc-500 line-through"
           }
         >
-          Raio-X Comportamental &amp; Score da Presa
+          Raio-X Comportamental &amp; Faro do Tubarão
         </span>
       </div>
 
@@ -160,7 +160,7 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
         </span>
       </div>
 
-      {/* 10. Arquivo de Provas (Anexo de Comprovantes) */}
+      {/* 11. Arquivo de Provas (Anexo de Comprovantes) */}
       <div className="flex items-center gap-2 text-zinc-300">
         <FaCheck
           className={`size-3 shrink-0 ${
@@ -174,7 +174,7 @@ export function PlanFeaturesList({ config }: PlanFeaturesListProps) {
               : "text-zinc-500 line-through"
           }
         >
-          Arquivo de Provas (Anexo de Comprovantes Pix)
+          Arquivo de Provas (Anexo de Comprovantes)
         </span>
       </div>
     </div>

@@ -22,6 +22,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import {
+  FaCircleQuestion,
   FaCreditCard,
   FaRightFromBracket,
   FaUser,
@@ -189,6 +190,13 @@ export function NavUser({
               >
                 <FaCreditCard className="size-3.5 text-zinc-400" />
                 <span>Assinatura</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                render={<Link href="/documentos/ajuda" />}
+                className="flex items-center gap-2 cursor-pointer text-zinc-300 hover:text-white"
+              >
+                <FaCircleQuestion className="size-3.5 text-zinc-400" />
+                <span>Ajuda &amp; Dicionário</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             {!isStandalone && canInstall && (

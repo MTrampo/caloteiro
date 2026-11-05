@@ -11,7 +11,7 @@ interface DebtorProfilePageProps {
 
 export const metadata: Metadata = {
   title: "Raio-X da Presa — Caloteiro",
-  description: "Velocímetro biológico, score de risco e histórico comportamental da presa na gruta.",
+  description: "Velocímetro biológico, Faro do Tubarão e histórico comportamental da presa na gruta.",
 };
 
 export default async function DebtorProfilePage({ params }: DebtorProfilePageProps) {

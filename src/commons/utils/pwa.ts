@@ -12,6 +12,14 @@ export function registerPwaServiceWorker() {
     navigator.serviceWorker
       .register('/sw.js', { scope: '/' })
       .then((registration) => {
+        // Força verificação de nova versão ao abrir e ao retornar o app para primeiro plano
+        registration.update().catch(() => {});
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            registration.update().catch(() => {});
+          }
+        });
+
         // Escuta novas versões sendo instaladas
         registration.addEventListener('updatefound', () => {
           const installingWorker = registration.installing;

@@ -12,6 +12,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
+      url: `${APP_URL}/documentos/ajuda`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
       url: `${APP_URL}/documentos/planos`,
       lastModified: now,
       changeFrequency: "weekly",

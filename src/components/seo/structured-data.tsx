@@ -9,12 +9,13 @@ export function StructuredData() {
         "@type": "SoftwareApplication",
         "@id": `${APP_URL}/#software`,
         "name": "Caloteiro",
-        "alternateName": "Caloteiro — Central de Cobranças",
+        "alternateName":
+          "Caloteiro — Sistema de Gestão de Dívidas, Parcelas e Cobranças",
         "applicationCategory": "FinanceApplication",
         "operatingSystem": "Web, Android, iOS",
         "url": APP_URL,
         "description":
-          "Um aplicativo descontraído para centralizar todos os devedores em 1 só lugar, oferecendo visão panorâmica de recebíveis na pista, valores recuperados e calotes históricos para pessoas físicas e autônomos.",
+          "Sistema de gestão de dívidas, parcelas e controle financeiro de recebíveis. Centralize devedores em um só lugar, calcule juros e parcelas, guarde comprovantes, registre histórico de promessas e envie cobranças em 1 clique pelo WhatsApp.",
         "creator": {
           "@type": "Organization",
           "name": "Meu Trampo",
@@ -36,21 +37,24 @@ export function StructuredData() {
             "name": "Tubarão Lixa (Grátis)",
             "price": "0.00",
             "priceCurrency": "BRL",
-            "description": "Até 2 presas ativas na gruta, parcelamento em 12x e 3 níveis de mensagens prontas no WhatsApp sem exigir cartão."
+            "description":
+              "Até 2 devedores ativos (presas), parcelamento em até 12x, cálculo sem juros ou % total e investidas em 3 níveis no WhatsApp sem exigir cartão de crédito."
           },
           {
             "@type": "Offer",
             "name": "Tubarão Branco",
             "price": "29.90",
             "priceCurrency": "BRL",
-            "description": "Até 10 presas ativas, taxa fixa em R$, mensagens 100% editáveis, link com Pix 1-clique e cofre de comprovantes."
+            "description":
+              "Até 10 devedores ativos (presas), parcelamento em até 36x, taxa fixa em R$, investidas 100% editáveis, link da dívida (fatura externa) com Pix 1-clique e cofre de comprovantes."
           },
           {
             "@type": "Offer",
             "name": "Tubarão Cabeça Chato",
             "price": "49.90",
             "priceCurrency": "BRL",
-            "description": "Presas e dívidas ilimitadas, juros ao mês (% a.m.), Termômetro da Gruta, Score de Risco e Mural de Caôs."
+            "description":
+              "Devedores e dívidas ilimitadas, parcelamento em até 120x, juros compostos ao mês (% a.m.), Termômetro da Gruta, Faro do Tubarão (0 a 100 pts) e Mural de Caôs (histórico de promessas)."
           }
         ]
       },
@@ -63,31 +67,23 @@ export function StructuredData() {
             "name": "Qual é o principal papel do Caloteiro?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "O principal papel do Caloteiro é centralizar todos os seus devedores em um único lugar (a Gruta), proporcionando uma visão ampla e sem ilusões de recebíveis: quanto dinheiro ainda tem chance de voltar, quanto já foi recuperado no Pix e quanto está virando doação involuntária ou lenda urbana."
+              "text": "O principal papel do Caloteiro é centralizar todos os seus devedores em um único sistema de gestão financeira (a Gruta), proporcionando visão clara de recebíveis em aberto, valores já recuperados, cálculo de parcelas e juros, arquivo de comprovantes e cobrança em 1 clique no WhatsApp."
             }
           },
           {
             "@type": "Question",
-            "name": "O Caloteiro cobra ou envia mensagens para o devedor sozinho pelas minhas costas?",
+            "name": "Por que o Caloteiro não realiza cobrança automática por robô, SMS ou e-mail?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Não. O envio é 100% manual e sob o seu comando. O Caloteiro não faz disparos automáticos pelas suas costas nem incomoda seus contatos sem o seu consentimento. O sistema calcula o valor atualizado, juros, dias de atraso e monta a mensagem com o Pix. Você só precisa clicar para abrir o seu próprio WhatsApp e enviar quando achar melhor."
+              "text": "Porque o Caloteiro não é um sistema de telemarketing — e pesquisas apontam que cerca de 92% das cobranças automatizadas (robocalls, SMS e bots de números desconhecidos) são rejeitadas ou bloqueadas imediatamente pelo devedor. No Caloteiro, a plataforma calcula juros e saldo atualizado, monta a Investida afiada com a sua chave Pix e o Link da Dívida, e com 1 clique você dispara pelo seu próprio WhatsApp, alcançando até 96% de leitura real sem bloqueios de spam."
             }
           },
           {
             "@type": "Question",
-            "name": "O Caloteiro retém o dinheiro ou cobra porcentagem sobre o Pix recebido?",
+            "name": "O Caloteiro retém o dinheiro ou cobra porcentagem sobre o pagamento recebido?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Zero comissão. O dinheiro não passa pela conta do Caloteiro. A chave Pix cadastrada é a sua própria conta bancária pessoal (Nubank, Inter, Itaú, etc.). O devedor transfere direto para você e o valor entra 100% limpo no seu bolso."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Para quem o Caloteiro é indicado?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "O Caloteiro é ideal para: 1) Pessoas Físicas que emprestam dinheiro para amigos, parentes ou dividem despesas; e 2) Autônomos, freelancers e prestadores de serviços que trabalham com empréstimos, vendas no fiado ou parcelamento próprio de serviços e precisam cobrar clientes pontualmente sem constrangimento."
+              "text": "Zero comissão. O dinheiro não passa pela conta do Caloteiro. A chave Pix cadastrada é a sua própria conta bancária (Nubank, Inter, Itaú, etc.). O devedor paga direto para você e o valor entra 100% limpo no seu bolso."
             }
           },
           {
@@ -95,7 +91,7 @@ export function StructuredData() {
             "name": "O nome do devedor fica público na internet ou vai para órgãos de proteção?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Não. O Caloteiro é uma ferramenta privada de inteligência e gestão financeira para quem emprestou o dinheiro. Não há lista pública ou exposição. Apenas você tem acesso à sua gruta, e o devedor só vê a fatura dele quando você envia o link exclusivo protegido por PIN."
+              "text": "Não. O Caloteiro é uma ferramenta privada de inteligência e gestão financeira para o credor. Não há lista pública ou exposição. Apenas você tem acesso à sua gruta, e o devedor só vê a fatura externa dele quando você envia o link exclusivo protegido por PIN."
             }
           },
           {

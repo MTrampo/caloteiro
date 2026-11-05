@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -9,11 +10,17 @@ import {
   CollapsibleTrigger,
   CollapsibleContent,
 } from "@/components/ui/collapsible";
-import { FaChevronDown } from "react-icons/fa6";
+import { FaChevronDown, FaArrowRight } from "react-icons/fa6";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-const FAQ_ITEMS = [
+interface LandingFaqItem {
+  id: string;
+  question: string;
+  answer: React.ReactNode;
+}
+
+const FAQ_ITEMS: LandingFaqItem[] = [
   {
     id: "faq-main-role",
     question: "Qual é o principal papel do Caloteiro no meu dia a dia?",
@@ -22,15 +29,25 @@ const FAQ_ITEMS = [
   },
   {
     id: "faq-auto-charge",
-    question: "O Caloteiro cobra o devedor automaticamente no WhatsApp sem eu autorizar?",
-    answer:
-      "Não! O Caloteiro não faz disparos automáticos nem ligações robóticas pelas suas costas. Você é o Tubarão que comanda a caça: a plataforma calcula juros e saldo atualizado, monta a mensagem afiada com a sua chave Pix e, com 1 clique, você abre o seu próprio WhatsApp para disparar quando achar melhor.",
-  },
-  {
-    id: "faq-target-audience",
-    question: "Para quem o Caloteiro é indicado? Serve para pessoas físicas ou autônomos?",
-    answer:
-      "O Caloteiro atende perfeitamente a dois perfis que sofrem com promessas furadas: 1) Pessoas Físicas que emprestam dinheiro do próprio bolso para parentes, amigos, conhecidos ou dividem contas e rolês; e 2) Autônomos, freelancers e prestadores de serviços que trabalham com pequenos empréstimos, vendem fiado ou parcelam serviços por conta própria e precisam cobrar clientes sem climão nem prejuízo.",
+    question: "Por que o Caloteiro não faz cobrança automática por robô, SMS ou e-mail?",
+    answer: (
+      <div className="space-y-2.5">
+        <p>
+          Porque o Caloteiro não é um sistema de telemarketing — e pesquisas no Brasil apontam que cerca de{" "}
+          <strong className="text-white">92% das cobranças automatizadas são rejeitadas ou bloqueadas</strong>. Quando um devedor recebe ligação, SMS, e-mail ou mensagem automática de um número desconhecido de robô, ele bloqueia e denuncia como spam em 3 segundos. Já quando você envia a{" "}
+          <strong className="text-white">Investida 1-Clique</strong> pelo seu próprio WhatsApp (com o cálculo oficial e o Link da Dívida gerados pelo sistema), a Presa não tem filtro de spam para se esconder e a leitura chega a 96%.
+        </p>
+        <div>
+          <Link
+            href="/documentos/perguntas-frequentes#por-que-sem-robo"
+            className="inline-flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 font-bold underline underline-offset-4"
+          >
+            <span>Ver estudo completo e gráfico de rejeição (92%)</span>
+            <FaArrowRight className="size-3 shrink-0" />
+          </Link>
+        </div>
+      </div>
+    ),
   },
   {
     id: "faq-commission-pix",
@@ -60,13 +77,13 @@ const FAQ_ITEMS = [
     id: "faq-no-card-required",
     question: "Preciso cadastrar cartão de crédito para começar no plano grátis?",
     answer:
-      "Não! No plano Tubarão Lixa você entra na gruta sem informar nenhum dado de pagamento ou cartão de crédito. Você já começa a rastrear até 2 presas marcadas na hora, gratuitamente e para sempre.",
+      "Não! No plano Tubarão Lixa você entra na gruta sem informar nenhum dado de pagamento ou cartão de crédito. Você já começa a rastrear até 2 presas na hora, gratuitamente e para sempre.",
   },
   {
     id: "faq-proofs-and-excuses",
     question: "Posso guardar comprovantes de pagamento e histórico de desculpas?",
     answer:
-      "Sim! A partir do plano Tubarão Branco você tem o Cofre de Comprovantes para anexar recibos de Pix em cada parcela. E no Cabeça Chata você conta com o Mural de Caôs para registrar todas as promessas esfarrapadas com data e hora.",
+      "Sim! A partir do plano Tubarão Branco você tem o Cofre de Comprovantes para anexar recibos e comprovantes de pagamento em cada parcela. E no Cabeça Chata você conta com o Mural de Caôs para registrar todas as promessas esfarrapadas com data e hora.",
   },
   {
     id: "faq-2",
@@ -84,7 +101,7 @@ const FAQ_ITEMS = [
     id: "faq-5",
     question: "O que acontece com os meus dados se eu voltar para o plano grátis?",
     answer:
-      "Nenhuma dívida ou presa marcada é apagada. Todo o seu histórico continua intacto na sua gruta; o sistema apenas aplica o limite de novos cadastros do plano gratuito até que você queira expandir novamente.",
+      "Nenhuma dívida ou presa é apagada. Todo o seu histórico continua intacto na sua gruta; o sistema apenas aplica o limite de novos cadastros do plano gratuito até que você queira expandir novamente.",
   },
 ];
 

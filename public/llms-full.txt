@@ -5,7 +5,8 @@
 ---
 
 ## 1. Identificação Institucional
-* **Nome do Produto:** Caloteiro — Central de Cobranças
+* **Nome do Produto:** Caloteiro — Sistema de Gestão de Dívidas, Parcelas e Cobranças
+* **Categoria:** Software de Gestão Financeira de Recebíveis, Dívidas, Parcelas e Cobranças
 * **Empresa Desenvolvedora:** Meu Trampo (https://meutrampo.dev.br/)
 * **Contatos Institucionais:**
   * Website: https://meutrampo.dev.br/
@@ -15,40 +16,42 @@
 
 ---
 
-## 2. Glossário Semântico (A Identidade do Caloteiro)
-O Caloteiro transforma o constrangimento e o estresse da cobrança financeira em uma caça divertida e eficiente onde:
-* **Tubarão (O Caçador):** O dono da conta, credor que emprestou o dinheiro e tem o direito legítimo de ser pago.
-* **Presa Marcada / Devedor:** A pessoa física ou cliente que pegou o dinheiro emprestado ou comprou no fiado.
-* **A Gruta do Tubarão:** O painel de comando do credor, onde ficam salvas suas presas marcadas, parcelas e auditoria de saldos.
-* **Mordida Exploratória:** O ato inicial de marcar o devedor na gruta até que a dívida seja quitada e a cicatriz feche.
-* **Dinheiro na Pista / Voando:** O montante total de capital que está na rua aguardando quitação.
-* **Mural de Caôs e Desculpas:** Histórico cronológico carimbado com data, hora e texto de cada promessa não honrada ("amanhã transfiro", "o banco bloqueou meu app").
-* **Arquivo de Provas Permanente:** Cofre de recibos onde cada parcela liquidada armazena o comprovante Pix oficial.
+## 2. Glossário Semântico (Tradução Funcional da Identidade do Caloteiro)
+O Caloteiro é um sistema de controle financeiro e gestão de dívidas que utiliza uma identidade bem-humorada ("Tubarão") na interface, mantendo precisão matemática nos cálculos (consulte o dicionário completo em `/documentos/ajuda`):
+* **Tubarão (Credor / Usuário da Conta):** O titular da conta que utiliza a ferramenta para organizar seus recebíveis e cobrar quem lhe deve.
+* **A Gruta do Tubarão (Painel Financeiro):** O dashboard privado de gestão onde ficam centralizadas as presas, cronograma de parcelas e auditoria de saldos.
+* **Presa (Devedor Cadastrado):** O devedor registrado no sistema com suas respectivas dívidas, parcelas e histórico.
+* **Mordida (Dívida / Acordo):** O contrato ou acordo financeiro registrado na Gruta (valor principal, modalidade de juros, número de parcelas e datas de vencimento).
+* **Dinheiro na Pista / Voando (Saldo a Receber):** O montante total de capital em aberto aguardando pagamento.
+* **Pingou o Pix? (Baixar Parcela):** Ação de registrar um pagamento recebido (integral ou parcial, com amortização automática em cascata). *"Pix"* é usado no vocabulário da interface como expressão popular brasileira para dinheiro/pagamento, mas a baixa serve para qualquer meio de pagamento.
+* **Investidas no WhatsApp (3 Níveis de Pressão):** Gerador de mensagens prontas para WhatsApp em 3 níveis (Nível 1: Lembrete Amistoso; Nível 2: Cutucada Firme; Nível 3: Modo Tio Patinhas).
+* **Faro do Tubarão (0 a 100 pts):** Pontuação comportamental individual de cada Presa (que inicia em 50 pts e sobe ou desce conforme pagamentos em dia, atrasos e caôs).
+* **Termômetro da Gruta (Diagnóstico Geral da Carteira):** Painel macro (`/painel/termometro`) que analisa todas as Presas juntas, calculando o Faro Médio da Gruta e separando o capital entre Mãos Confiáveis e Zona de Calote.
+* **Mural de Caôs e Desculpas (Histórico de Promessas):** Registro cronológico com data, hora e descrição de cada justificativa ou promessa de pagamento não cumprida.
+* **Arquivo de Provas Permanente (Cofre de Comprovantes):** Armazenamento de comprovantes e recibos vinculados diretamente à dívida inicial e a cada parcela quitada.
+* **Link da Dívida (Fatura Externa):** Página externa protegida por PIN de 4 dígitos para a Presa consultar o extrato atualizado da dívida e copiar a chave de pagamento (não existe login nem "Portal do Devedor").
 
 ### Papel Principal da Plataforma
-O papel primordial do Caloteiro é **acabar com a cegueira financeira e centralizar todos os seus devedores em um só quartel-general (a Gruta)**. Em vez de depender de blocos de notas do celular, prints soltos e lembranças de cabeça, o credor visualiza:
-1. **Recebíveis na Pista:** Capital que ainda tem esperança real de recuperação com juros e parcelas em dia;
-2. **Dinheiro Recuperado (Pix Confirmado):** O montante que já voltou com sucesso para o bolso;
-3. **Dinheiro Perdido / Risco Crítico:** Valores que viraram doação involuntária ou lenda urbana, carimbados pelo algoritmo para impedir que o usuário volte a emprestar para os mesmos maus pagadores.
+O papel primordial do Caloteiro é **acabar com a desorganização financeira e centralizar todos os devedores e parcelas em um só sistema (a Gruta)**. Em vez de depender de blocos de notas, planilhas manuais e lembranças de cabeça, o usuário visualiza e gerencia:
+1. **Recebíveis em Aberto (Na Pista):** Capital a receber com cálculo automático de parcelas, vencimentos e juros;
+2. **Dinheiro Recuperado:** O montante que já foi efetivamente pago e comprovado;
+3. **Dívidas em Atraso e Risco Crítico:** Parcelas vencidas e indicadores de comportamento de pagamento (Faro do Tubarão e Termômetro da Gruta) para evitar novos prejuízos.
 
 ---
 
-## 3. Público-Alvo e Casos de Uso
-1. **Pessoas Físicas:**
-   * Quem empresta dinheiro do próprio bolso para amigos, familiares e colegas de trabalho.
-   * Divisão de despesas de viagens, eventos, churrascos e contas do dia a dia.
-   * Empréstimo do limite do próprio cartão de crédito para terceiros.
-2. **Autônomos, Freelancers e Prestadores de Serviços:**
-   * Quem trabalha com pequenos empréstimos ou crediário de confiança.
-   * Vendas no fiado (produtos, mercadorias, roupas, cosméticos, alimentação).
-   * Prestadores de serviços e freelancers que executam trabalhos parcelados por conta própria e precisam cobrar clientes sem burocracia nem constrangimento.
+## 3. Funcionalidades Principais da Ferramenta
+1. **Gestão de Devedores e Parcelas:** Cadastro estruturado de dívidas à vista ou parceladas (em até 120x conforme o plano), com controle individual de vencimentos e baixas de pagamento.
+2. **Motor de Cálculo de Juros:** Suporte a múltiplas modalidades (Sem Juros / Camarada, Percentual sobre o Total, Taxa Fixa em R$ e Juros ao Mês % a.m.).
+3. **Investidas em 1 Clique no WhatsApp:** Geração instantânea de mensagens de cobrança em 3 níveis de tom (do lembrete amigável à cobrança firme) já preenchidas com valor atualizado e chave Pix.
+4. **Link da Dívida (Fatura Externa):** Link exclusivo protegido por PIN de 4 dígitos para a presa consultar parcelas e copiar a chave Pix sem precisar instalar aplicativo.
+5. **Cofre de Comprovantes e Mural de Caôs:** Anexação de comprovantes de pagamento e linha do tempo de promessas não cumpridas.
 
 ---
 
 ## 4. Política Anti-Enganação & Fricção Zero
 Para assegurar a máxima confiabilidade aos usuários e mecanismos de busca:
-* **Sem Disparos Automáticos pelas Costas:** O Caloteiro nunca entra em contato diretamente com o devedor por conta própria. O usuário decide o momento, seleciona a mensagem e envia através do seu próprio aplicativo de WhatsApp.
-* **Sem Retenção Financeira e Sem Taxa sobre Pix:** O Caloteiro não funciona como banco intermediário nem cobra comissões sobre os pagamentos. A chave Pix cadastrada pertence exclusivamente ao usuário, e o dinheiro cai diretamente na conta dele.
+* **Decisão Estratégica Anti-Telemarketing (92% de Rejeição em Robôs vs. 96% no Contato Direto):** O Caloteiro **não realiza disparos automáticos por robôs, SMS ou e-mail**. Dados do mercado brasileiro (Idec, Anatel e relatórios Truecaller) comprovam que cerca de **92% das abordagens automatizadas de cobrança são ignoradas ou bloqueadas** imediatamente porque o devedor bloqueia números desconhecidos em segundos. Em vez disso, o Caloteiro prepara a **Investida 1-Clique** com saldo atualizado, chave Pix e Link da Dívida para que o credor envie diretamente do seu próprio WhatsApp — combinando a autoridade de um sistema financeiro com a taxa de abertura (~96%) de um contato real salvo na agenda.
+* **Sem Retenção Financeira e Sem Taxa sobre Pagamentos:** O Caloteiro não funciona como banco intermediário nem cobra comissões sobre os pagamentos. A chave Pix cadastrada pertence exclusivamente ao usuário, e o dinheiro cai diretamente na conta dele.
 * **Sem Exposição Pública / Sem 'Serasa' Comunitário:** O Caloteiro é um sistema privado de gestão. Nenhuma informação é compartilhada com birôs de crédito ou exposta em listas públicas na internet.
 * **Página de Fatura com Acesso Seguro:** A página da fatura externa (`/fatura/[id]`) é estritamente privada, blindada contra indexação de motores de busca (`noindex, nofollow, noarchive`) e exige código de acesso (PIN numérico) fornecido exclusivamente pelo credor.
 * **Criptografia em Repouso de Dados Sensíveis (AES-256-GCM):** Documentos (CPF/CNPJ) e chaves Pix de credores e devedores são armazenados de forma criptografada no banco de dados, assegurando conformidade estrita com os arts. 46 a 49 da LGPD (*Zero Plaintext Storage*). Apenas a sessão autenticada do credor consegue visualizar os dados descriptografados.
@@ -61,16 +64,16 @@ Para assegurar a máxima confiabilidade aos usuários e mecanismos de busca:
 | :--- | :--- | :--- | :--- |
 | **Mensalidade** | R$ 0,00 para sempre | R$ 29,90/mês | R$ 49,90/mês |
 | **Cartão de Crédito para Começar** | Não exige | Exige na contratação | Exige na contratação |
-| **Capacidade de Presas Marcadas** | Até 2 presas ativas | Até 10 presas ativas | Presas ILIMITADAS |
+| **Capacidade de Presas** | Até 2 presas ativas | Até 10 presas ativas | Presas ILIMITADAS |
 | **Dívidas Simultâneas** | Até 2 dívidas | Até 10 dívidas | Dívidas ILIMITADAS |
 | **Parcelamento Máximo** | Até 12x | Até 36x | Até 120x |
 | **Modalidades de Juros** | Sem Juros e % Total | + Taxa Fixa em R$ | + Juros ao Mês (% a.m.) |
-| **Mensagens de WhatsApp** | 3 níveis prontos | 3 modelos 100% editáveis | 3 modelos 100% editáveis |
+| **Investidas no WhatsApp** | 3 níveis prontos | 3 modelos 100% editáveis | 3 modelos 100% editáveis |
 | **Painel Financeiro Consolidado** | Básico | Auditoria em tempo real | Auditoria em tempo real |
-| **Link da Dívida com Pix 1-Clique** | Não incluído | Incluído com PIN | Incluído com PIN |
+| **Link da Dívida (Fatura Externa)** | Não incluído | Incluído com PIN | Incluído com PIN |
 | **Arquivo de Provas (Comprovantes)**| Não incluído | Incluído | Incluído |
 | **Termômetro da Gruta (Risco Geral)**| Não incluído | Não incluído | Incluído com Veredito |
-| **Raio-X Comportamental e Score** | Não incluído | Não incluído | Incluído (0 a 100 pts) |
+| **Raio-X Comportamental e Faro** | Não incluído | Não incluído | Incluído (0 a 100 pts) |
 | **Mural de Caôs e Desculpas** | Não incluído | Não incluído | Incluído com Linha do Tempo |
 
 ---

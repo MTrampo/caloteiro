@@ -91,14 +91,14 @@ export function RiskThermometerFeature({ data }: RiskThermometerFeatureProps) {
             Termômetro da Gruta
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 font-mono">
-            Raio-X geral da sua base de presas marcadas: descubra o nível de risco que você corre e separe os pagadores da zona de calote.
+            Raio-X geral da sua base de presas: descubra o nível de risco que você corre e separe os pagadores da zona de calote.
           </p>
         </div>
 
         {/* Ações no Topo (Desktop: Cabeçalho; Mobile: Unificadas no FAB flutuante) */}
         <div className="hidden sm:flex items-center gap-2 shrink-0">
           <RiskScoreRulesDialog
-            triggerLabel="Como funciona o Score?"
+            triggerLabel="Como funciona o Faro?"
             open={isRulesOpen}
             onOpenChange={setIsRulesOpen}
             triggerClassName="h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white justify-center cursor-pointer"
@@ -187,7 +187,7 @@ export function RiskThermometerFeature({ data }: RiskThermometerFeatureProps) {
         <div className="lg:col-span-5 rounded-2xl border border-border bg-card p-4 sm:p-6 flex flex-col justify-between gap-4">
           <div className="border-b border-border/60 pb-3">
             <h3 className="font-heading text-base sm:text-lg font-bold text-white">
-              Score Médio da Gruta
+              Faro Médio da Gruta
             </h3>
             <p className="text-xs font-mono text-zinc-400">
               Nota média de confiabilidade de todas as suas presas cadastradas.
@@ -459,7 +459,7 @@ export function RiskThermometerFeature({ data }: RiskThermometerFeatureProps) {
                     title={riskScore.weaponLabel}
                   >
                     <FaWhatsapp className="size-3 mr-1" />
-                    <span>Arma Nv.{riskScore.weaponLevel}</span>
+                    <span>Investida Nv.{riskScore.weaponLevel}</span>
                   </Button>
                 </div>
               </div>
@@ -491,7 +491,7 @@ export function RiskThermometerFeature({ data }: RiskThermometerFeatureProps) {
             href: "/painel/devedores",
           },
           {
-            label: "Como funciona o Score?",
+            label: "Como funciona o Faro?",
             icon: <FaCircleQuestion className="size-4 text-amber-400" />,
             onClick: () => setIsRulesOpen(true),
           },

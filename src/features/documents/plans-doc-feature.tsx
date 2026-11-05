@@ -37,10 +37,10 @@ const PLANS_DATA: PlanItem[] = [
     price: "R$ 0,00",
     period: "grátis para sempre",
     description:
-      "Ideal para quem emprestou uma grana avulsa para parente, amigo ou cunhado e quer tirar essa cobrança do bloco de notas sem gastar nada.",
+      "Ideal para quem tem valores avulsos a receber de parente, amigo ou cunhado e quer tirar essa cobrança do bloco de notas sem gastar nada.",
     borderClass: "border-border",
     badgeClass: "bg-zinc-800 text-zinc-300 border-zinc-700",
-    maxDebtors: "Até 2 presas marcadas",
+    maxDebtors: "Até 2 presas",
     maxDebts: "Até 2 dívidas ativas",
     maxInstallments: "Até 12x",
     interestModes: "2 modalidades (Sem Juros e % Total)",
@@ -51,10 +51,10 @@ const PLANS_DATA: PlanItem[] = [
     price: "R$ 29,90",
     period: "por mês",
     description:
-      "Para quem empresta com frequência, vende produtos fiado ou presta serviços parcelados e precisa de acompanhamento profissional.",
+      "Para quem tem valores a receber com frequência, vende parcelado ou fecha acordos recorrentes e precisa de acompanhamento profissional.",
     borderClass: "border-zinc-700 bg-card/80",
     badgeClass: "bg-zinc-800 text-zinc-100 border-zinc-600",
-    maxDebtors: "Até 10 presas marcadas",
+    maxDebtors: "Até 10 presas",
     maxDebts: "Até 10 dívidas ativas",
     maxInstallments: "Até 36x",
     interestModes: "3 modalidades (+ Taxa Fixa em R$)",
@@ -65,7 +65,7 @@ const PLANS_DATA: PlanItem[] = [
     price: "R$ 49,90",
     period: "por mês",
     description:
-      "O topo da cadeia alimentar. Presas e dívidas ilimitadas na gruta, com Termômetro da Gruta, Score da Mordida Exploratória e Raio-X comportamental.",
+      "O topo da cadeia alimentar. Presas e dívidas ilimitadas na gruta, com Termômetro da Gruta, Faro do Tubarão e Raio-X comportamental.",
     borderClass: "border-emerald-500/50 ring-1 ring-emerald-500/30 bg-card",
     badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     isPro: true,
@@ -94,7 +94,7 @@ const COMPARISON_CATEGORIES: ComparisonCategory[] = [
     categoryIcon: FaLayerGroup,
     rows: [
       {
-        label: "Capacidade da Gruta (Presas Marcadas)",
+        label: "Capacidade da Gruta (Presas)",
         description: "Quantidade de devedores monitorados simultaneamente",
         lixa: "Até 2 presas",
         branco: "Até 10 presas",
@@ -116,7 +116,7 @@ const COMPARISON_CATEGORIES: ComparisonCategory[] = [
       },
       {
         label: "Amortização Automática em Cascata",
-        description: "Abate inteligente de valores parciais ou sobras no Pix",
+        description: "Abate inteligente de valores parciais ou sobras no pagamento",
         lixa: true,
         branco: true,
         chato: true,
@@ -136,7 +136,7 @@ const COMPARISON_CATEGORIES: ComparisonCategory[] = [
       },
       {
         label: "Modalidade Percentual no Total (% Total)",
-        description: "Aplica porcentagem de retorno sobre o montante emprestado",
+        description: "Aplica porcentagem de retorno sobre o montante original",
         lixa: true,
         branco: true,
         chato: true,
@@ -158,12 +158,12 @@ const COMPARISON_CATEGORIES: ComparisonCategory[] = [
     ],
   },
   {
-    categoryTitle: "3. Cobrança & Armas de WhatsApp",
+    categoryTitle: "3. Cobrança & Investidas no WhatsApp",
     categoryIcon: FaWhatsapp,
     rows: [
       {
-        label: "3 Níveis de Mensagens no WhatsApp",
-        description: "Disparos automáticos: Lembrete (Nível 1), Cobrança Direta (Nível 2) e Tio Patinhas (Nível 3)",
+        label: "Investidas em 3 Níveis no WhatsApp",
+        description: "Mensagens prontas: Lembrete (Nível 1), Cutucada (Nível 2) e Tio Patinhas (Nível 3)",
         lixa: "Modelos Prontos",
         branco: "100% Editáveis",
         chato: "100% Editáveis",
@@ -189,7 +189,7 @@ const COMPARISON_CATEGORIES: ComparisonCategory[] = [
     categoryIcon: FaShieldHalved,
     rows: [
       {
-        label: "Link da Dívida para a Presa (Portal Externo)",
+        label: "Link da Dívida para a Presa (Fatura Externa)",
         description: "Acesso protegido por código para a presa ver a fatura e copiar o Pix",
         lixa: false,
         branco: true,
@@ -210,8 +210,8 @@ const COMPARISON_CATEGORIES: ComparisonCategory[] = [
         chato: true,
       },
       {
-        label: "Cofre de Comprovantes Pix",
-        description: "Anexo permanente de prints e recibos de pagamento nas parcelas",
+        label: "Cofre de Comprovantes",
+        description: "Anexo permanente de comprovantes e recibos de pagamento nas parcelas",
         lixa: false,
         branco: true,
         chato: true,
@@ -230,8 +230,8 @@ const COMPARISON_CATEGORIES: ComparisonCategory[] = [
         chato: true,
       },
       {
-        label: "Score de Risco da Mordida Exploratória (0 a 100 pts)",
-        description: "Algoritmo comportamental de cara de pau calculando pontualidade, histórico e caôs",
+        label: "Faro do Tubarão (0 a 100 pts)",
+        description: "Pontuação individual de risco da presa calculando pontualidade, histórico e caôs",
         lixa: false,
         branco: false,
         chato: true,
@@ -265,22 +265,17 @@ const FAQS_DATA: DocFaqItem[] = [
   {
     question: "Qual é o principal papel do Caloteiro?",
     answer:
-      "O papel principal do Caloteiro é centralizar todos os seus devedores em um só quartel-general. Chega de anotações no bloco de notas, guardanapos e cobrança de cabeça. Na Gruta, você tem uma visão ampla de recebíveis (o que tem chance real de voltar), do total já recuperado no Pix e do dinheiro que está virando doação involuntária ou lenda urbana, para você nunca mais ser pego de surpresa.",
+      "O papel principal do Caloteiro é centralizar todos os seus devedores em um só quartel-general. Chega de anotações no bloco de notas, guardanapos e cobrança de cabeça. Na Gruta, você tem uma visão ampla de recebíveis (o que tem chance real de voltar), do total já recuperado e do dinheiro que está virando doação involuntária ou lenda urbana, para você nunca mais ser pego de surpresa.",
   },
   {
-    question: "O Caloteiro cobra ou envia mensagens para o devedor automaticamente?",
+    question: "Por que o Caloteiro não faz cobrança automática por robô, SMS ou e-mail?",
     answer:
-      "Não. Todo o processo de cobrança é manual e sob total controle do Tubarão. O sistema calcula valores, juros, multas e monta a mensagem personalizada com a sua chave Pix. Você clica para abrir o WhatsApp e decide o momento exato de enviar o recado, sem disparos automáticos ou constrangimentos robóticos.",
+      "Porque o Caloteiro não é uma central de telemarketing — e levantamentos mostram que 92% das abordagens automatizadas de cobrança são rejeitadas ou bloqueadas no Brasil. Quando um robô desconhecido manda SMS ou WhatsApp, o devedor bloqueia em segundos. No Caloteiro, o sistema faz todo o cálculo pesado e monta a Investida pronta para você disparar com 1 clique pelo seu próprio WhatsApp, garantindo leitura real sem cair em filtros de spam.",
   },
   {
-    question: "Para quem a plataforma é indicada?",
+    question: "Existe retenção ou cobrança de comissão sobre o pagamento recebido?",
     answer:
-      "O Caloteiro foi desenhado para dois públicos centrais: 1) Pessoas Físicas que emprestam dinheiro do próprio bolso para parentes, amigos, conhecidos ou dividem contas e compras; e 2) Autônomos, freelancers e prestadores de serviços que trabalham com pequenos empréstimos, vendem fiado ou parcelam serviços por conta própria e precisam cobrar clientes sem climão nem prejuízo.",
-  },
-  {
-    question: "Existe retenção ou cobrança de comissão sobre o Pix recebido?",
-    answer:
-      "Absolutamente zero. O Caloteiro não é intermediador de pagamentos do Pix das suas dívidas. A chave Pix cadastrada é a sua conta bancária de preferência. Quando o devedor paga, o dinheiro cai 100% limpo na sua conta sem nenhum desconto ou taxa do Caloteiro.",
+      "Absolutamente zero. O Caloteiro não é intermediador financeiro das suas dívidas. A chave Pix cadastrada é a sua conta bancária de preferência. Quando o devedor paga (seja via Pix, transferência, boleto ou dinheiro), o valor cai 100% limpo na sua mão sem nenhum desconto ou taxa do Caloteiro.",
   },
   {
     question: "Como funciona a cobrança na troca de plano?",
@@ -295,7 +290,7 @@ const FAQS_DATA: DocFaqItem[] = [
   {
     question: "O que acontece com as presas e dívidas se eu fizer downgrade?",
     answer:
-      "Nenhum dado é apagado, excluído ou perdido. Suas dívidas e presas marcadas continuam intactas no seu histórico. Porém, você não poderá marcar novos devedores nem abrir novas cobranças até que o total ativo esteja dentro da capacidade do plano atual.",
+      "Nenhum dado é apagado, excluído ou perdido. Suas dívidas e presas continuam intactas no seu histórico. Porém, você não poderá cadastrar novas presas nem abrir novas dívidas até que o total ativo esteja dentro da capacidade do plano atual.",
   },
   {
     question: "Posso cancelar minha assinatura a qualquer momento?",
@@ -305,7 +300,7 @@ const FAQS_DATA: DocFaqItem[] = [
   {
     question: "O devedor precisa criar conta ou pagar para ver a fatura dele?",
     answer:
-      "Não. O portal da fatura externa é público, leve e sem necessidade de cadastro ou aplicativo. A fatura é estritamente bloqueada contra motores de busca (Google, Bing) e protegida por um PIN de 4 dígitos informado por você.",
+      "Não. O link da fatura externa é público, leve e sem necessidade de cadastro ou aplicativo. A fatura é estritamente bloqueada contra motores de busca (Google, Bing) e protegida por um PIN de 4 dígitos informado por você.",
   },
 ];
 

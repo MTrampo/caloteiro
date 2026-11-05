@@ -115,10 +115,10 @@ export function LandingFeature({ isLoggedIn = false }: LandingFeatureProps) {
                 </li>
                 <li>
                   <a
-                    href="#armas-whatsapp"
+                    href="#investidas-whatsapp"
                     className="hover:text-white transition-colors"
                   >
-                    Armas de WhatsApp
+                    Investidas no WhatsApp
                   </a>
                 </li>
                 <li>
@@ -176,6 +176,14 @@ export function LandingFeature({ isLoggedIn = false }: LandingFeatureProps) {
                     className="hover:text-white transition-colors"
                   >
                     Entrar na Conta
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/documentos/ajuda"
+                    className="hover:text-white transition-colors"
+                  >
+                    Ajuda &amp; Dicionário
                   </Link>
                 </li>
                 <li>

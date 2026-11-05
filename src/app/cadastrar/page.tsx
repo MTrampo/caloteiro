@@ -4,9 +4,9 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Cadastrar | Caloteiro",
+  title: "Criar Conta Grátis — Gestão de Dívidas e Recebíveis",
   description:
-    "Crie sua conta no Caloteiro e nunca mais perca o controle do dinheiro que emprestou.",
+    "Crie sua conta grátis no Caloteiro sem precisar de cartão de crédito. Organize devedores, parcelas, juros, comprovantes e mensagens de cobrança no WhatsApp.",
   alternates: {
     canonical: "/cadastrar",
   },

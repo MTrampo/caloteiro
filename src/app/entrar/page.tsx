@@ -4,9 +4,9 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Entrar | Caloteiro",
+  title: "Entrar no Painel Financeiro",
   description:
-    "Acesse o cofre do Caloteiro para gerenciar seus devedores, prazos e recuperar seu dinheiro.",
+    "Acesse sua conta no Caloteiro para gerenciar devedores, acompanhar parcelas vencidas, registrar comprovantes e enviar cobranças pelo WhatsApp.",
   alternates: {
     canonical: "/entrar",
   },

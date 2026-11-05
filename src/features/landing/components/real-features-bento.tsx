@@ -332,7 +332,7 @@ export function RealFeaturesBento() {
                   <FaEye className="size-3.5" />
                 </div>
                 <h3 className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white leading-snug">
-                  Cofre de Comprovantes Pix por Parcela
+                  Cofre de Comprovantes por Parcela
                 </h3>
               </div>
 
@@ -343,7 +343,7 @@ export function RealFeaturesBento() {
 
             <p className="text-xs font-mono text-zinc-400 leading-relaxed">
               Acabe com o papo de &ldquo;tenho certeza que já paguei essa
-              parcela mês passado&rdquo;. Anexe o print do comprovante Pix no
+              parcela mês passado&rdquo;. Anexe o comprovante de pagamento no
               ato da baixa ou adicione depois diretamente no card da parcela
               liquidada.
             </p>
@@ -416,7 +416,7 @@ export function RealFeaturesBento() {
                 </h3>
               </div>
               <p className="text-xs font-mono text-zinc-400">
-                Simule um empréstimo de{" "}
+                Simule uma dívida ou acordo de{" "}
                 <strong className="text-white">R$ 1.000,00 em 5x</strong> e
                 escolha como o seu dinheiro vai voltar:
               </p>

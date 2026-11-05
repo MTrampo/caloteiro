@@ -19,12 +19,12 @@ const DEBTOR_PORTAL_HIGHLIGHTS = [
   {
     title: "1. Acaba o clima de “favorzinho entre amigos”",
     description:
-      "A presa acessa um portal protegido por código de segurança com extrato de parcelas, datas de vencimento e saldo devedor atualizado ao centavo.",
+      "A presa acessa um link protegido por código de segurança com extrato de parcelas, datas de vencimento e saldo devedor atualizado ao centavo.",
   },
   {
     title: "2. Zero desculpa de “me manda sua chave Pix de novo”",
     description:
-      "Sua chave Pix e o nome do titular já ficam prontos para cópia em 1 toque direto na tela da fatura.",
+      "Sua chave de pagamento e o nome do titular já ficam prontos para cópia em 1 toque direto na tela da fatura.",
   },
   {
     title: "3. Termo de acordo visível para a presa",
@@ -89,7 +89,7 @@ export function DebtorPortalShowcase() {
   return (
     <section
       ref={sectionRef}
-      id="portal-devedor"
+      id="link-divida"
       className="relative w-full py-12 sm:py-24 border-b border-emerald-500/20 bg-linear-to-br from-emerald-950/60 via-zinc-900/95 to-emerald-950/35 overflow-hidden scroll-mt-16 sm:scroll-mt-20"
     >
       {/* Iluminação Ambiental Verde Esmeralda de Contraste */}
@@ -155,11 +155,11 @@ export function DebtorPortalShowcase() {
         {/* Coluna Direita: Mockup Fiel da Tela que o Devedor Enxerga no Celular */}
         <div ref={phoneCardRef} className="lg:col-span-6">
           <div className="max-w-md mx-auto rounded-3xl border border-emerald-500/35 bg-zinc-950/95 p-4 sm:p-6 shadow-[0_24px_60px_rgba(0,0,0,0.75)] space-y-4 sm:space-y-5">
-            {/* Barra de Topo do Portal Público do Devedor (Empilhado no Mobile para evitar colisão em 320px) */}
+            {/* Barra de Topo da Fatura Externa da Presa (Empilhado no Mobile para evitar colisão em 320px) */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3.5 border-b border-zinc-800">
               <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 font-bold">
                 <FaShieldHalved className="size-3.5 shrink-0" />
-                <span>Portal de Quitação • Visão do Devedor</span>
+                <span>Fatura Externa • Visão da Presa</span>
               </div>
 
               <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-md bg-zinc-900 text-zinc-400 border border-zinc-800 self-start sm:self-auto shrink-0">
