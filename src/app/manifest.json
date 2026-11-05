@@ -1,7 +1,7 @@
 {
-  "name": "Caloteiro — Central de Cobranças",
+  "name": "Caloteiro — Gestão de Dívidas e Parcelas",
   "short_name": "Caloteiro",
-  "description": "A Gruta oficial do Tubarão: controle cada centavo na pista, anote caôs e comemore cada Pix confirmado.",
+  "description": "A Gruta oficial do Tubarão: controle dívidas e parcelas na pista, anote caôs, guarde comprovantes e envie investidas em 1 clique.",
   "start_url": "/painel",
   "scope": "/",
   "display": "standalone",

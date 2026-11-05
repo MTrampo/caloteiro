@@ -7,7 +7,7 @@ import { RiskThermometerFeature } from "@/features/risk-thermometer";
 
 export const metadata: Metadata = {
   title: "Termômetro da Gruta — Caloteiro",
-  description: "Acompanhamento geral do Score de Risco de todos os devedores e diagnóstico da carteira do Tubarão.",
+  description: "Acompanhamento geral do Faro do Tubarão de todas as presas e diagnóstico da carteira.",
 };
 
 export default async function TermometroPage() {

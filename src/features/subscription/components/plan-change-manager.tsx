@@ -113,8 +113,8 @@ export function PlanChangeManager({
                     <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
                     <span>
                       {plan.config_plan?.custom_templates
-                        ? "Templates afiados de WhatsApp liberados"
-                        : "Templates padrão de WhatsApp"}
+                        ? "Investidas afiadas de WhatsApp editáveis"
+                        : "Investidas padrão de WhatsApp"}
                     </span>
                   </div>
 
@@ -157,7 +157,7 @@ export function PlanChangeManager({
                       <div className="flex items-start gap-2">
                         <FaCheck className="size-3 text-emerald-400 shrink-0 mt-0.5" />
                         <span className="text-white font-bold">
-                          Raio-X Comportamental &amp; Score da Presa
+                          Raio-X Comportamental &amp; Faro do Tubarão
                         </span>
                       </div>
                       <div className="flex items-start gap-2">

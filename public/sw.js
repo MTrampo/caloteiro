@@ -1,6 +1,6 @@
 // Service Worker do Caloteiro (Next.js 16 + PWA com Modo de Conferência Offline e Cache de Comprovantes)
-const CACHE_NAME = 'caloteiro-cache-v3';
-const PAGES_CACHE = 'caloteiro-pages-v3';
+const CACHE_NAME = 'caloteiro-cache-v4';
+const PAGES_CACHE = 'caloteiro-pages-v4';
 const RECEIPTS_CACHE = 'caloteiro-receipts-v3';
 const OFFLINE_URL = '/offline.html';
 
@@ -191,6 +191,7 @@ self.addEventListener('fetch', (event) => {
       url.pathname.startsWith('/apple-touch-icon') ||
       url.pathname.startsWith('/favicon') ||
       url.pathname === '/manifest.webmanifest' ||
+      url.pathname === '/manifest.json' ||
       url.pathname === '/offline.html' ||
       url.pathname.endsWith('.woff2')
     );

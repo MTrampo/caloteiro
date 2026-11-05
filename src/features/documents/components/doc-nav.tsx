@@ -7,6 +7,10 @@ import { cn } from "@/commons/lib/utils";
 
 const DOC_LINKS = [
   {
+    href: "/documentos/ajuda",
+    label: "Ajuda & Dicionário",
+  },
+  {
     href: "/documentos/planos",
     label: "Planos & Regras",
   },

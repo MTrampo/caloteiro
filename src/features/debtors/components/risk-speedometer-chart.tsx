@@ -24,7 +24,7 @@ const GAUGE_SEGMENTS = [
 
 const chartConfig = {
   score: {
-    label: "Score de Risco",
+    label: "Faro do Tubarão",
   },
 } satisfies ChartConfig;
 

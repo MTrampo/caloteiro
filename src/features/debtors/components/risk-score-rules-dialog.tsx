@@ -52,7 +52,7 @@ const BLEEDING_WEIGHTS = [
 ];
 
 export function RiskScoreRulesDialog({
-  triggerLabel = "Como funciona o Score?",
+  triggerLabel = "Como funciona o Faro?",
   triggerClassName,
   open: controlledOpen,
   onOpenChange: setControlledOpen,
@@ -85,7 +85,7 @@ export function RiskScoreRulesDialog({
         <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full max-w-2xl bg-zinc-900 border-zinc-800 p-4 sm:p-6 space-y-5 max-h-[calc(100dvh-2.5rem)] overflow-y-auto">
           <DialogHeader className="text-left space-y-1.5">
             <DialogTitle className="font-heading text-lg sm:text-xl font-bold text-white">
-              Algoritmo da Mordida Exploratória (0 a 100 pts)
+              Faro do Tubarão (0 a 100 pts)
             </DialogTitle>
             <DialogDescription className="text-xs font-mono text-zinc-400">
               Entenda exatamente os pesos matemáticos que definem se a sua presa é um pagador exemplar ou um Caloteiro Profissional.
@@ -146,7 +146,7 @@ export function RiskScoreRulesDialog({
             <div className="rounded-xl border border-emerald-500/25 bg-emerald-950/15 p-3.5 space-y-2.5">
               <div className="flex items-center gap-2 text-xs font-mono font-bold text-emerald-400">
                 <FaArrowTrendUp className="size-3.5 shrink-0" />
-                <span>Cicatrização (Sobe o Score)</span>
+                <span>Cicatrização (Sobe o Faro)</span>
               </div>
               <div className="space-y-2">
                 {HEALING_WEIGHTS.map((item, idx) => (
@@ -167,7 +167,7 @@ export function RiskScoreRulesDialog({
             <div className="rounded-xl border border-rose-500/25 bg-rose-950/15 p-3.5 space-y-2.5">
               <div className="flex items-center gap-2 text-xs font-mono font-bold text-rose-400">
                 <FaArrowTrendDown className="size-3.5 shrink-0" />
-                <span>Sangramento (Derruba o Score)</span>
+                <span>Sangramento (Derruba o Faro)</span>
               </div>
               <div className="space-y-2">
                 {BLEEDING_WEIGHTS.map((item, idx) => (

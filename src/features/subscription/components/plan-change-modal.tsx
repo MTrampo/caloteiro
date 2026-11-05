@@ -154,7 +154,7 @@ export function PlanChangeModal({
                   Capacidade da sua gruta:{" "}
                   <strong className="text-white">
                     {targetMaxDebtors
-                      ? `Até ${targetMaxDebtors} presas marcadas simultaneamente (até 36x)`
+                      ? `Até ${targetMaxDebtors} presas simultaneamente (até 36x)`
                       : "Presas e dívidas ILIMITADAS na gruta (até 120x)"}
                   </strong>{" "}
                   {currentMaxDebtors ? `(você tinha ${currentMaxDebtors})` : ""}
@@ -167,7 +167,7 @@ export function PlanChangeModal({
                     <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
                     <span>
                       <strong className="text-white">
-                        Velocímetro de Score de Risco &amp; Raio-X da Presa:
+                        Faro do Tubarão &amp; Raio-X da Presa:
                       </strong>{" "}
                       página exclusiva de inteligência comportamental (0 a 100 pts)
                     </span>
@@ -185,9 +185,9 @@ export function PlanChangeModal({
                     <FaCheck className="size-3.5 text-emerald-400 shrink-0 mt-0.5" />
                     <span>
                       <strong className="text-white">
-                        Juros ao Mês (% a.m.) &amp; Armas Automáticas:
+                        Juros ao Mês (% a.m.) &amp; Investidas Automáticas:
                       </strong>{" "}
-                      seleção automática do nível de cobrança no WhatsApp pelo Score
+                      seleção automática do nível de cobrança no WhatsApp pelo Faro
                     </span>
                   </li>
                 </>
@@ -248,7 +248,7 @@ export function PlanChangeModal({
                 <span>
                   Capacidade da sua gruta reduzida para{" "}
                   <strong className="text-white">
-                    {targetMaxDebtors ?? 2} presas marcadas simultâneas
+                    {targetMaxDebtors ?? 2} presas simultâneas
                   </strong>{" "}
                   (limite de até {isFreePlan ? "12x" : "36x"} parcelas).
                 </span>
@@ -260,7 +260,7 @@ export function PlanChangeModal({
                     <FaTriangleExclamation className="size-3.5 text-amber-400 shrink-0 mt-0.5" />
                     <span>
                       <strong className="text-white">
-                        Bloqueio do Termômetro da Gruta, Raio-X e Mural de Caôs:
+                        Bloqueio do Termômetro da Gruta, Faro do Tubarão e Mural de Caôs:
                       </strong>{" "}
                       você perde o Velocímetro Biológico, o Raio-X da Presa e o histórico de caôs e promessas furadas.
                     </span>
@@ -268,7 +268,7 @@ export function PlanChangeModal({
                   <li className="flex items-start gap-2">
                     <FaTriangleExclamation className="size-3.5 text-amber-400 shrink-0 mt-0.5" />
                     <span>
-                      Perda da modalidade de <strong className="text-white">Juros ao Mês (% a.m.)</strong> e da seleção automática de armas no WhatsApp.
+                      Perda da modalidade de <strong className="text-white">Juros ao Mês (% a.m.)</strong> e da seleção automática de investidas no WhatsApp.
                     </span>
                   </li>
                 </>

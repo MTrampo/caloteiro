@@ -305,7 +305,7 @@ export function GrottoCommandSimulation() {
               amount: openAmount,
               description: isSettledDemo
                 ? "Falta receber de 2 dívidas ativas na gruta"
-                : "Dinheiro voando na mão de 2 presas marcadas",
+                : "Dinheiro voando na mão de 2 presas na gruta",
               footnote: isSettledDemo
                 ? "R$ 600,00 abatidos agora mesmo"
                 : "2 acordos ativos na gruta",
@@ -508,7 +508,7 @@ export function GrottoCommandSimulation() {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pt-1 text-[11px] font-mono text-zinc-400">
                       <span className="leading-snug">{debtor.statusText}</span>
                       <a
-                        href="#armas-whatsapp"
+                        href="#investidas-whatsapp"
                         className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 font-bold transition-colors cursor-pointer text-center"
                       >
                         <FaWhatsapp className="size-3.5" />
@@ -577,7 +577,7 @@ export function GrottoCommandSimulation() {
                   <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400">
                     <span>{debtor.statusText}</span>
                     <a
-                      href="#armas-whatsapp"
+                      href="#investidas-whatsapp"
                       className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-bold"
                     >
                       <FaWhatsapp className="size-3" />

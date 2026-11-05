@@ -23,15 +23,18 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: "Caloteiro — O Fim da Vergonha de Cobrar Dinheiro Emprestado",
+    default:
+      "Caloteiro — Sistema de Gestão de Dívidas, Parcelas e Cobranças",
     template: "%s | Caloteiro",
   },
   description:
-    "Eles fingem que esqueceram, o Tubarão lembra até o último centavo. Centralize todos os seus devedores em 1 só lugar com visão panorâmica de recebíveis, dinheiro recuperado e calotes históricos. Aplicativo descontraído para pessoas físicas e autônomos cobrarem no WhatsApp sem climão.",
+    "Eles fingem que esqueceram, o Tubarão lembra até o último centavo. Centralize quem te deve em um só lugar: controle dívidas e parcelas, calcule juros, guarde comprovantes, anote promessas e cobre em 1 clique pelo WhatsApp.",
   applicationName: "Caloteiro",
   authors: [{ name: "Meu Trampo", url: "https://meutrampo.dev.br/" }],
   generator: "Next.js",
   keywords: [
+    "sistema de gestão de dívidas",
+    "controle financeiro de dívidas e parcelas",
     "aplicativo de gestão de cobranças",
     "app de cobrança",
     "aplicativo para caloteiro",
@@ -46,12 +49,12 @@ export const metadata: Metadata = {
     "mensagem de whatsapp vale como prova de divida",
     "aplicativo de controle de fiado",
     "caderno de fiado digital",
-    "calculadora de juros de empréstimo entre amigos",
+    "calculadora de juros de empréstimo",
     "como fazer caloteiro pagar",
     "juizado especial civel cobranca sem advogado",
     "lembrete de dívida e pix",
     "mural de desculpas",
-    "gestão de devedores autônomos e freelancers",
+    "controle de empréstimos e parcelas",
   ],
   creator: "Meu Trampo",
   publisher: "Meu Trampo",
@@ -65,9 +68,10 @@ export const metadata: Metadata = {
     title: "Caloteiro",
   },
   openGraph: {
-    title: "Caloteiro — O Fim da Vergonha de Cobrar Dinheiro Emprestado",
+    title:
+      "Caloteiro — Sistema de Gestão de Dívidas, Parcelas e Cobranças",
     description:
-      "Eles fingem que esqueceram, o Tubarão lembra até o último centavo. Gestão afiada de dívidas, faturas Pix elegantes e cobrança no WhatsApp com humor ácido para autônomos e pessoas físicas.",
+      "Eles fingem que esqueceram, o Tubarão lembra até o último centavo. Controle devedores, calcule parcelas e juros, guarde comprovantes e cobre em 1 clique pelo WhatsApp.",
     url: APP_URL,
     siteName: "Caloteiro",
     locale: "pt_BR",
@@ -75,9 +79,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Caloteiro — O Fim da Vergonha de Cobrar Dinheiro Emprestado",
+    title:
+      "Caloteiro — Sistema de Gestão de Dívidas, Parcelas e Cobranças",
     description:
-      "Eles fingem que esqueceram, o Tubarão lembra até o último centavo. Gestão afiada de dívidas e cobrança no WhatsApp sem climão.",
+      "Eles fingem que esqueceram, o Tubarão lembra até o último centavo. Controle devedores, parcelas, juros, comprovantes e cobrança no WhatsApp.",
     creator: "@meutrampo.dev",
   },
   icons: {

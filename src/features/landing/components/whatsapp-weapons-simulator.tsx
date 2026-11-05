@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { FaWhatsapp, FaCopy, FaCheck, FaUser } from "react-icons/fa6";
+import { FaWhatsapp, FaCopy, FaCheck, FaUser, FaArrowRight } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 import { trackSimulator } from "@/commons/utils/analytics";
 
@@ -197,7 +198,7 @@ export function WhatsappWeaponsSimulator() {
   return (
     <section
       ref={sectionRef}
-      id="armas-whatsapp"
+      id="investidas-whatsapp"
       className="w-full py-12 sm:py-24 border-b border-border/60 bg-background scroll-mt-16 sm:scroll-mt-20"
     >
       <div className="w-full mx-auto px-4 sm:px-6 max-w-5xl md:max-w-7xl space-y-6 sm:space-y-8">
@@ -208,10 +209,10 @@ export function WhatsappWeaponsSimulator() {
               Três níveis de pressão. Zero vergonha de cobrar.
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 font-mono leading-relaxed">
-              Você tem o controle total: o Caloteiro não envia mensagens sozinho
-              pelas suas costas. O sistema gera a mensagem personalizada com
-              valores e Chave Pix calculados, e você só clica para abrir o seu
-              WhatsApp e enviar com 1 toque.
+              O Caloteiro não é um robô de telemarketing — até porque 92% das
+              cobranças automáticas são ignoradas ou bloqueadas. O sistema gera
+              a Investida personalizada com valores e Chave Pix calculados, e
+              você dispara do seu próprio WhatsApp com 1 toque.
             </p>
           </div>
 
@@ -437,6 +438,26 @@ export function WhatsappWeaponsSimulator() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Gancho Direto para o Estudo de 92% de Rejeição do Telemarketing */}
+      <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="space-y-1 max-w-3xl">
+          <h3 className="font-heading text-sm sm:text-base font-bold text-white">
+            Por que você dispara com 1 clique em vez de um robô automático?
+          </h3>
+          <p className="text-xs font-mono text-zinc-400 leading-relaxed">
+            Pesquisas mostram que <strong className="text-rose-400">92% das cobranças de telemarketing</strong>, SMS e bots de números desconhecidos são ignoradas ou bloqueadas em segundos. Quando um robô cobra, a Presa bloqueia; quando o Tubarão manda a Investida pronta pelo próprio WhatsApp, a taxa de leitura chega a <strong className="text-emerald-400">96%</strong>.
+          </p>
+        </div>
+
+        <Link
+          href="/documentos/perguntas-frequentes#por-que-sem-robo"
+          className="w-full lg:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700 text-xs font-mono font-bold transition-colors shrink-0 cursor-pointer"
+        >
+          <span>Ver dados e gráfico comparativo</span>
+          <FaArrowRight className="size-3 text-emerald-400 shrink-0" />
+        </Link>
       </div>
       </div>
     </section>

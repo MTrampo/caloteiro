@@ -38,9 +38,9 @@ const TRUST_PILLARS = [
   {
     icon: FaReceipt,
     iconColor: "text-sky-400",
-    title: "Pix Direto na Sua Conta",
+    title: "100% Direto na Sua Conta",
     description:
-      "O Caloteiro não retém seu dinheiro nem cobra comissão por Pix recebido. O pagamento cai 100% integral na sua conta bancária.",
+      "O Caloteiro não retém seu dinheiro nem cobra comissão por pagamento recebido. O valor cai 100% integral na sua conta bancária.",
   },
   {
     icon: FaWhatsapp,
@@ -215,7 +215,7 @@ export function RoiAndTrustSection() {
                   Arquivo de Provas Permanente
                 </h3>
                 <p className="text-xs sm:text-sm font-mono text-zinc-300 leading-relaxed">
-                  Cada parcela baixada tem seu comprovante Pix anexado diretamente na dívida.
+                  Cada parcela baixada tem seu comprovante de pagamento anexado diretamente na dívida.
                   Acabou o estresse de revirar extrato de banco procurando se o devedor pagou mesmo.
                 </p>
               </div>
@@ -228,7 +228,7 @@ export function RoiAndTrustSection() {
                 </div>
                 <div className="flex items-center gap-2 text-zinc-200">
                   <FaShieldHalved className="size-3.5 text-emerald-400 shrink-0" />
-                  <span>Comprovante Pix autenticado e travado no histórico</span>
+                  <span>Comprovante de pagamento autenticado e travado no histórico</span>
                 </div>
               </div>
             </div>

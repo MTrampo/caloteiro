@@ -79,7 +79,7 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
   const sectionTabs: SectionTabItem<DebtorSectionTab>[] = [
     {
       id: "extrato",
-      label: "Extrato do Score",
+      label: "Extrato do Faro",
       count: riskScore.timeline?.length || riskScore.factors.length,
       accent: "text-zinc-300",
     },
@@ -132,14 +132,14 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
           <p className="text-xs sm:text-sm text-zinc-400 font-mono">
             {currentDebtor.formattedNickname
               ? `Conhecido na praça como "${currentDebtor.formattedNickname}" • Raio-X comportamental e histórico na gruta.`
-              : "Raio-X comportamental, pontuação de risco e histórico completo na sua gruta."}
+              : "Raio-X comportamental, Faro do Tubarão e histórico completo na sua gruta."}
           </p>
         </div>
 
         {/* Ações Rápidas no Topo (Desktop: Exibidas no cabeçalho; Mobile: Unificadas no FAB flutuante) */}
         <div className="hidden sm:flex items-center gap-2 shrink-0">
           <RiskScoreRulesDialog
-            triggerLabel="Como funciona a pontuação?"
+            triggerLabel="Como funciona o Faro?"
             open={isRulesOpen}
             onOpenChange={setIsRulesOpen}
             triggerClassName="h-9 px-3 text-xs font-mono font-bold bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white justify-center cursor-pointer"
@@ -243,14 +243,14 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
 
       {/* Grid Principal: Velocímetro Biológico (Esquerda) + Dados Cadastrais do Modal (Direita) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        {/* Card 1: Velocímetro Biológico + Arma Automática + Insígnias */}
+        {/* Card 1: Velocímetro Biológico + Investida Recomendada + Insígnias */}
         <div className="lg:col-span-7 rounded-2xl border border-border bg-card p-4 sm:p-6 flex flex-col justify-between gap-5">
           <div className="border-b border-border/60 pb-3">
             <h3 className="font-heading text-base sm:text-lg font-bold text-white">
-              Categorização Biológica da Presa
+              Faro do Tubarão &amp; Categorização Biológica
             </h3>
             <p className="text-xs font-mono text-zinc-400">
-              Termômetro calculado pelo algoritmo da Mordida Exploratória.
+              Pontuação comportamental de 0 a 100 pts calculada pelo Faro do Tubarão.
             </p>
           </div>
 
@@ -295,11 +295,11 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
             </div>
           )}
 
-          {/* Ação Automática: Arma Engatilhada no WhatsApp pelo Score */}
+          {/* Ação Automática: Investida Recomendada no WhatsApp pelo Faro */}
           <div className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-0.5 min-w-0">
               <span className="text-[10px] font-mono uppercase text-zinc-400 block">
-                Arma Engatilhada Automaticamente pelo Score
+                Investida Recomendada pelo Faro
               </span>
               <p className="text-xs font-mono font-bold text-white">
                 {riskScore.weaponLabel}
@@ -455,13 +455,13 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
         </div>
       </div>
 
-      {/* Seção Unificada por SectionTabs: Extrato do Score | Promessas da Presa | Mural de Caôs (Anti-Card Inception) */}
+      {/* Seção Unificada por SectionTabs: Extrato do Faro | Promessas da Presa | Mural de Caôs (Anti-Card Inception) */}
       <div className="space-y-4 pt-1">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div className="space-y-0.5">
             <h3 className="font-heading text-base sm:text-lg font-bold text-white">
               {activeSectionTab === "extrato" &&
-                "Extrato de Cicatrização e Sangramento do Score"}
+                "Extrato de Cicatrização e Sangramento do Faro"}
               {activeSectionTab === "promessas" &&
                 `Promessas desta Presa (${debts.length})`}
               {activeSectionTab === "caos" &&
@@ -469,7 +469,7 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
             </h3>
             <p className="text-xs font-mono text-zinc-400">
               {activeSectionTab === "extrato" &&
-                "Eventos reais desta presa que somaram ou descontaram pontos a partir dos 50 pts iniciais."}
+                "Eventos reais desta presa que somaram ou descontaram pontos no Faro a partir dos 50 pts iniciais."}
               {activeSectionTab === "promessas" &&
                 "Acordos ativos e quitados vinculados a este devedor."}
               {activeSectionTab === "caos" &&
@@ -561,9 +561,9 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
                           {event.scoreSnapshot !== undefined && (
                             <span
                               className="text-[10px] font-mono font-bold text-zinc-300 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-md whitespace-nowrap"
-                              title="Score acumulado após este acontecimento"
+                              title="Faro acumulado após este acontecimento"
                             >
-                              Score: {event.scoreSnapshot} pts
+                              Faro: {event.scoreSnapshot} pts
                             </span>
                           )}
                         </div>
@@ -725,7 +725,7 @@ export function DebtorProfileView({ data }: DebtorProfileViewProps) {
             onClick: () => setIsEditOpen(true),
           },
           {
-            label: "Como funciona a pontuação?",
+            label: "Como funciona o Faro?",
             icon: <FaCircleQuestion className="size-4 text-amber-400" />,
             onClick: () => setIsRulesOpen(true),
           },

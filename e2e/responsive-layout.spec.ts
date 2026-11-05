@@ -106,6 +106,20 @@ test.describe("Blindagem de Layout e Responsividade Mobile-First (Caloteiro)", (
     }
   });
 
+  test("Ajuda e Dicionário da Gruta (/documentos/ajuda) - Dicionário e guia devem caber na tela sem overflow", async ({
+    page,
+  }) => {
+    await page.goto("/documentos/ajuda");
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.locator("h2, h1").first()).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
+    await page.waitForTimeout(300);
+    await expectNoHorizontalOverflow(page);
+  });
+
   test("Portal da Fatura Pública (/fatura/demo-layout) - Tela de código de acesso sem overflow", async ({
     page,
   }) => {

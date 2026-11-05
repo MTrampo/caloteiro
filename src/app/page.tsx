@@ -3,9 +3,9 @@ import { LandingFeature } from "@/features/landing";
 import { getUserLoggedApi } from "@/server/account/service/auth.api";
 
 export const metadata: Metadata = {
-  title: "Caloteiro — A Gruta do Tubarão | Controle de Dívidas e Cobrança no Pix",
+  title: "Caloteiro — Sistema de Gestão de Dívidas, Parcelas e Cobranças",
   description:
-    "Chega de anotar dívidas em bloco de notas e ficar com vergonha de cobrar. Marque suas presas na gruta, registre cada caô e deixe o sistema cobrar o seu Pix.",
+    "Eles fingem que esqueceram, o Tubarão lembra até o último centavo. Centralize quem te deve em um só lugar: controle dívidas e parcelas, calcule juros, guarde comprovantes, anote promessas e cobre em 1 clique pelo WhatsApp.",
 };
 
 export default async function HomePage() {

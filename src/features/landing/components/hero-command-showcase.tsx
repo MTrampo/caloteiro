@@ -66,9 +66,9 @@ export function HeroCommandShowcase() {
             </h1>
 
             <p className="text-xs sm:text-base text-zinc-400 font-mono leading-relaxed max-w-xl">
-              Chega de anotar dívidas em bloco de notas e ficar com vergonha de
-              cobrar. Marque suas presas na gruta, registre cada caô e deixe o
-              sistema cobrar o seu Pix.
+              Chega de anotar dívidas em bloco de notas e perder a conta do que
+              te devem. Controle dívidas e parcelas, calcule juros, guarde
+              comprovantes e envie cobranças prontas em 1 clique pelo WhatsApp.
             </p>
           </div>
 
@@ -92,7 +92,7 @@ export function HeroCommandShowcase() {
               size="lg"
               className="border-zinc-800 bg-zinc-950/60 hover:bg-zinc-900 text-zinc-200 font-mono text-xs sm:text-sm rounded-xl h-11 sm:h-12 px-5 cursor-pointer justify-center"
             >
-              Ver Central da Gruta em Ação
+              Ver o Sistema em Ação
             </Button>
           </div>
 
@@ -100,15 +100,15 @@ export function HeroCommandShowcase() {
           <div className="hidden sm:flex flex-wrap items-center gap-x-4 gap-y-2 pt-3 border-t border-border/50 text-[11px] sm:text-xs font-mono text-zinc-400">
             <div className="flex items-center gap-1.5">
               <FaCheck className="size-3 text-emerald-400 shrink-0" />
-              <span>Controle financeiro de verdade</span>
+              <span>Gestão de parcelas e juros</span>
             </div>
             <div className="flex items-center gap-1.5">
               <FaCheck className="size-3 text-emerald-400 shrink-0" />
-              <span>Acompanhamento de meteção de louco</span>
+              <span>Histórico de promessas e comprovantes</span>
             </div>
             <div className="flex items-center gap-1.5">
               <FaCheck className="size-3 text-emerald-400 shrink-0" />
-              <span>Cobrança facilitada no WhatsApp</span>
+              <span>Investidas prontas em 1 clique no WhatsApp</span>
             </div>
           </div>
         </div>

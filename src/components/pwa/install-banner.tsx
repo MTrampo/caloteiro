@@ -48,6 +48,7 @@ export function InstallBanner() {
               alt="Caloteiro"
               width={36}
               height={36}
+              priority
               className="size-full object-contain"
             />
           </div>

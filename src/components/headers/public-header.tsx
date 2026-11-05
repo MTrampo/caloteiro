@@ -27,6 +27,7 @@ import {
   FaQrcode,
   FaBoxesStacked,
   FaScaleBalanced,
+  FaBookOpen,
 } from "react-icons/fa6";
 import { trackAccountIntent, trackLoginIntent } from "@/commons/utils/analytics";
 
@@ -39,16 +40,16 @@ const RESOURCE_LINKS = [
     iconColor: "text-amber-400",
   },
   {
-    href: "#armas-whatsapp",
-    title: "Armas de WhatsApp",
+    href: "#investidas-whatsapp",
+    title: "Investidas no WhatsApp",
     description: "Cobrança ágil em 3 níveis com mensagens prontas.",
     icon: FaWhatsapp,
     iconColor: "text-emerald-400",
   },
   {
-    href: "#portal-devedor",
-    title: "Link do Devedor",
-    description: "Fatura externa com código Pix Copia e Cola em 1 clique.",
+    href: "#link-divida",
+    title: "Link da Dívida",
+    description: "Fatura externa protegida por PIN para pagamento em 1 clique.",
     icon: FaQrcode,
     iconColor: "text-sky-400",
   },
@@ -69,9 +70,16 @@ const DIRECT_NAV_LINKS = [
 
 const LEGAL_DOC_LINKS = [
   {
+    href: "/documentos/ajuda",
+    title: "Ajuda & Dicionário da Gruta",
+    description: "Como o sistema funciona e o que significa cada termo.",
+    icon: FaBookOpen,
+    iconColor: "text-purple-400",
+  },
+  {
     href: "/documentos/planos",
     title: "Planos & Limites da Gruta",
-    description: "Espécies de tubarão, limites de devedores e matriz de recursos.",
+    description: "Espécies de tubarão, limites de presas e matriz de recursos.",
     icon: FaCrown,
     iconColor: "text-amber-400",
   },
