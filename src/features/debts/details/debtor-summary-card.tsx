@@ -38,32 +38,38 @@ export function DebtorSummaryCard({ debtor }: DebtorSummaryCardProps) {
     <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/50">
         {/* Identificação do Devedor */}
-        <div className="flex items-center gap-3">
-          <div className="size-11 rounded-2xl bg-zinc-800 text-white font-mono font-bold flex items-center justify-center text-sm border border-zinc-700 shrink-0">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="size-11 rounded-2xl bg-zinc-800 text-white font-mono font-bold flex items-center justify-center text-sm border border-zinc-700 shrink-0 mt-0.5">
             {initials}
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-              <h4 className="font-heading text-base font-bold text-white truncate min-w-0">
-                {debtor.formattedName}
-              </h4>
+          <div className="min-w-0 flex-1 space-y-1">
+            <h4
+              className="font-heading text-base font-bold text-white truncate"
+              title={debtor.formattedName}
+            >
+              {debtor.formattedName}
+            </h4>
+
+            <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 whitespace-nowrap shrink-0">
                 {debtor.relationshipLabel}
               </span>
               {debtor.riskScore && (
                 <span
-                  className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border whitespace-nowrap shrink-0 flex items-center gap-1 ${debtor.riskScore.badgeClass}`}
+                  className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border whitespace-nowrap shrink-0 inline-flex items-center gap-1 ${debtor.riskScore.badgeClass}`}
                 >
-                  <FaGaugeHigh className="size-2.5" />
+                  <FaGaugeHigh className="size-2.5 shrink-0" />
                   <span>
-                    Score {debtor.riskScore.score} • {debtor.riskScore.tierShortLabel}
+                    Faro {debtor.riskScore.score} • {debtor.riskScore.tierShortLabel}
                   </span>
                 </span>
               )}
             </div>
+
             {debtor.formattedNickname && (
-              <p className="text-xs font-mono text-zinc-400">
-                Conhecido na praça como: <span className="text-zinc-200">&ldquo;{debtor.formattedNickname}&rdquo;</span>
+              <p className="text-xs font-mono text-zinc-400 truncate">
+                Conhecido na praça como:{" "}
+                <span className="text-zinc-200">&ldquo;{debtor.formattedNickname}&rdquo;</span>
               </p>
             )}
           </div>

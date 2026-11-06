@@ -74,8 +74,8 @@ export function DebtorDetailsDialog({
                 {initials}
               </div>
 
-              <div className="space-y-1 min-w-0 flex-1">
-                <div className="flex items-center gap-2 min-w-0">
+              <div className="space-y-1 min-w-0 flex-1 pr-6">
+                <div className="flex flex-wrap items-center gap-2 min-w-0">
                   <DialogTitle className="font-heading text-lg font-bold text-white truncate min-w-0">
                     {debtor.formattedName}
                   </DialogTitle>

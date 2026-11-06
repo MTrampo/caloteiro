@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getSecondsUntilMidnightSaoPaulo, getCalendarDateInSaoPaulo } from "@/commons/utils/date";
+import { formatDate, formatDateTime } from "@/commons/utils/format";
 import { CACHE_TAGS, invalidateUserDataCache } from "@/commons/lib/cache/server-cache";
 import * as nextCache from "next/cache";
 
@@ -50,6 +51,18 @@ describe("Controle de Cache Inteligente e Virada de Meia-Noite (Next.js 16)", ()
       const dateStr = getCalendarDateInSaoPaulo(newDay);
 
       expect(dateStr).toBe("2026-11-02");
+    });
+
+    it("REGRESSÃO: formatDateTime e formatDate devem formatar timestamps UTC sempre no fuso America/Sao_Paulo (sem +3h no servidor)", () => {
+      // Cenário real de produção: Caô registrado às 20:46 em Brasília (23:46Z em UTC)
+      const utcTimestamp = "2026-11-05T23:46:00.000Z";
+      const formattedDateTime = formatDateTime(utcTimestamp);
+      const formattedDate = formatDate(utcTimestamp);
+
+      expect(formattedDateTime).toContain("05/11/2026");
+      expect(formattedDateTime).toContain("20:46");
+      expect(formattedDateTime).not.toContain("23:46");
+      expect(formattedDate).toBe("05/11/2026");
     });
   });
 

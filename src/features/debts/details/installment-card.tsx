@@ -57,7 +57,7 @@ export function InstallmentCard({
           </div>
 
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 min-w-0">
               <span className="font-heading font-bold text-sm text-white truncate min-w-0">
                 Parcela {installment.installment_number} de {totalInstallments}
               </span>
@@ -188,15 +188,19 @@ export function InstallmentCard({
                 key={excuse.id}
                 className="bg-background/80 border border-border/60 rounded-xl p-3 space-y-1.5 text-xs font-mono"
               >
-                <div className="flex items-center justify-between text-zinc-500 text-[10px]">
-                  <span>Registrado em {excuse.formattedCreatedAt}</span>
-                  <span className="text-amber-400 font-medium">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-zinc-500 text-[10px]">
+                  <span className="whitespace-nowrap">
+                    Registrado em {excuse.formattedCreatedAt}
+                  </span>
+                  <span className="text-amber-400 font-medium whitespace-nowrap">
                     Nova promessa: {excuse.formattedPromisedDate}
                   </span>
                 </div>
-                <p className="text-zinc-200 italic">
-                  &ldquo;{excuse.excuse_text}&rdquo;
-                </p>
+                {excuse.excuse_text && (
+                  <p className="text-zinc-200 italic wrap-break-word">
+                    &ldquo;{excuse.excuse_text}&rdquo;
+                  </p>
+                )}
               </div>
             ))}
           </div>
