@@ -158,7 +158,9 @@ export function SubscriptionPageFeature({
             </span>
             <span className="font-heading text-sm font-bold text-zinc-200 block truncate">
               {subscription?.current_period_end
-                ? new Date(subscription.current_period_end).toLocaleDateString("pt-BR")
+                ? new Date(subscription.current_period_end).toLocaleDateString("pt-BR", {
+                    timeZone: "America/Sao_Paulo",
+                  })
                 : "Sem renovação automática"}
             </span>
             <span className="text-xs font-mono text-zinc-500">
@@ -178,7 +180,9 @@ export function SubscriptionPageFeature({
               <p className="text-zinc-300 leading-relaxed">
                 Você continuará com todos os benefícios do plano <strong className="text-white">{planName}</strong> até{" "}
                 <strong className="text-white">
-                  {new Date(subscription.current_period_end).toLocaleDateString("pt-BR")}
+                  {new Date(subscription.current_period_end).toLocaleDateString("pt-BR", {
+                    timeZone: "America/Sao_Paulo",
+                  })}
                 </strong>. Após essa data, sua conta passará para o plano {subscription.scheduled_plan?.name || "Tubarão Lixa"}.
               </p>
             </div>

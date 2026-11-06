@@ -671,9 +671,11 @@ export function DebtInvoicePortalFeature({
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-2 text-xs font-mono text-zinc-400 mt-0.5">
-                          <FaCalendarDays className="size-3 text-zinc-500 shrink-0" />
-                          <span>Vencimento: {inst.formattedDueDate}</span>
+                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs font-mono text-zinc-400 mt-0.5">
+                          <span className="flex items-center gap-1">
+                            <FaCalendarDays className="size-3 text-zinc-500 shrink-0" />
+                            <span>Vencimento: {inst.formattedDueDate}</span>
+                          </span>
                           <span className={isLate ? "text-rose-400 font-semibold" : "text-zinc-500"}>
                             • {inst.relativeDueDateLabel}
                           </span>

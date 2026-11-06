@@ -142,7 +142,7 @@ export function DebtDetailsFeature({
       {/* Cabeçalho da Dívida (Solto, sem card, sem ícones no título h2) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="space-y-1 min-w-0">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
             <Link
               href="/painel/dividas"
               className="text-zinc-400 hover:text-white transition-colors p-1.5 -ml-1 rounded-xl hover:bg-zinc-800 shrink-0"

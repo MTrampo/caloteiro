@@ -157,14 +157,14 @@ export function DebtorCard({
           </DropdownMenu>
         </div>
 
-        {/* Faixa de Score Biológico (Tubarão Cabeça Chata) ou Teaser Bloqueado (Lixa / Branco) */}
+        {/* Faixa do Faro do Tubarão (Tubarão Cabeça Chata) ou Teaser Bloqueado (Lixa / Branco) */}
         {riskScore ? (
           <Link
             href={`/painel/devedores/${currentDebtor.id}`}
-            className="flex flex-col min-[350px]:flex-row min-[350px]:items-center justify-between gap-2 rounded-xl border border-zinc-800/90 bg-zinc-950/60 hover:border-zinc-700 px-3 py-2 transition-colors group"
+            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-800/90 bg-zinc-950/60 hover:border-zinc-700 px-3 py-2 transition-colors group"
             title={riskScore.tierDescription}
           >
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-1.5 min-w-0">
               <FaGaugeHigh
                 className="size-3.5 shrink-0"
                 style={{ color: riskScore.colorHex }}
@@ -179,9 +179,9 @@ export function DebtorCard({
               </span>
             </div>
 
-            {/* Nova Inteligência Exclusiva TCC: Arma Engatilhada no Score */}
+            {/* Nova Inteligência Exclusiva TCC: Investida Engatilhada no Faro */}
             <div
-              className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-900/90 border border-zinc-800 text-[11px] font-mono text-zinc-300 shrink-0 self-start min-[350px]:self-auto"
+              className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-900/90 border border-zinc-800 text-[11px] font-mono text-zinc-300 shrink-0"
               title={riskScore.weaponLabel}
             >
               <FaCrosshairs className="size-2.5 text-emerald-400 shrink-0" />
@@ -207,10 +207,10 @@ export function DebtorCard({
             <div className="flex items-center gap-2 text-zinc-400 min-w-0">
               <FaLock className="size-3 text-amber-400 shrink-0" />
               <span className="text-[11px] font-mono font-bold text-zinc-300 whitespace-nowrap">
-                Score ??/100
+                Faro ??/100
               </span>
               <span className="text-[10px] font-mono text-zinc-500 truncate">
-                • Velocímetro Cabeça Chata
+                • Faro do Tubarão
               </span>
             </div>
             <span className="text-[10px] font-mono text-amber-400 font-bold shrink-0 whitespace-nowrap">

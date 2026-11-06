@@ -119,25 +119,36 @@ export function formatBRL(amount: number): string {
  */
 export function formatDate(dateString?: string | null): string {
   if (!dateString) return "";
-  const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (match) {
     const [, year, month, day] = match;
     return `${day}/${month}/${year}`;
   }
   try {
-    return new Intl.DateTimeFormat("pt-BR").format(new Date(dateString));
+    return new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(new Date(dateString));
   } catch {
+    const fallbackMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (fallbackMatch) {
+      const [, year, month, day] = fallbackMatch;
+      return `${day}/${month}/${year}`;
+    }
     return dateString;
   }
 }
 
 /**
- * Formata data e hora para extratos e histórico de auditoria
+ * Formata data e hora para extratos e histórico de auditoria no fuso de Brasília (America/Sao_Paulo)
  */
 export function formatDateTime(dateTimeString?: string | null): string {
   if (!dateTimeString) return "";
   try {
     return new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "America/Sao_Paulo",
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
