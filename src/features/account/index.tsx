@@ -745,7 +745,7 @@ export function AccountFeature({
               <span>Privacidade &amp; Proteção</span>
             </div>
             <p className="text-[11px] text-zinc-400 leading-relaxed">
-              Seus dados de cobrança e informações de devedores são isolados com Row Level Security (RLS) e criptografia de ponta a ponta.
+              Seus dados de cobrança e informações de devedores são isolados individualmente por conta e protegidos com criptografia de ponta a ponta.
             </p>
           </div>
 

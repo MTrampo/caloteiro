@@ -25,7 +25,30 @@ const FAQ_ITEMS: LandingFaqItem[] = [
     id: "faq-main-role",
     question: "Qual é o principal papel do Caloteiro no meu dia a dia?",
     answer:
-      "O papel principal do Caloteiro é acabar com a cegueira financeira e reunir todos os seus devedores em um só quartel-general. Chega de bloco de notas do celular, papel de pão e cobrança de cabeça (onde você só lembra da dívida quando o caloteiro posta foto em praia de luxo). Na sua Gruta, você tem uma visão panorâmica e sem ilusões: sabe na hora quanto ainda tem esperança de voltar (recebíveis na pista), quanto você já arrancou de volta no Pix e quanto já está virando doação involuntária ou lenda urbana. Acaba a ilusão e você passa a ter o controle cirúrgico de cada centavo.",
+      "O papel principal do Caloteiro é acabar com a cegueira financeira e reunir todos os seus devedores em um só quartel-general. Chega de bloco de notas do celular, planilhas de controle de empréstimos confusas e cobrança de cabeça (onde você só lembra da dívida quando o caloteiro posta foto em praia de luxo). Na sua Gruta, você controla dinheiro emprestado, vendas ou acordos com visão panorâmica e sem ilusões: sabe na hora quanto ainda tem esperança de voltar (recebíveis na pista), quanto já voltou no Pix e quanto está em atraso crítico.",
+  },
+  {
+    id: "faq-spreadsheet-vs-system",
+    question: "Por que usar o Caloteiro em vez de uma planilha de controle de empréstimos no Excel?",
+    answer: (
+      <div className="space-y-2.5">
+        <p>
+          Planilhas exigem fórmulas manuais que quebram na tela do celular, não guardam comprovantes de transferência e deixam você perdido quando o devedor paga um valor picado. No Caloteiro, o motor calcula parcelas e juros sozinho (sem juros, % total, taxa fixa em R$ ou % ao mês), faz a{" "}
+          <strong className="text-white">Amortização em Cascata</strong> de pagamentos parciais, guarda os recibos no{" "}
+          <strong className="text-white">Cofre de Comprovantes</strong> e gera as{" "}
+          <strong className="text-white">Investidas de cobrança para o WhatsApp</strong> em 1 clique.
+        </p>
+        <div>
+          <Link
+            href="/documentos/ajuda#planilha-vs-caloteiro"
+            className="inline-flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 font-bold underline underline-offset-4"
+          >
+            <span>Ver comparativo completo: Planilha vs. Caloteiro</span>
+            <FaArrowRight className="size-3 shrink-0" />
+          </Link>
+        </div>
+      </div>
+    ),
   },
   {
     id: "faq-auto-charge",
@@ -63,9 +86,9 @@ const FAQ_ITEMS: LandingFaqItem[] = [
   },
   {
     id: "faq-encryption-lgpd",
-    question: "Os dados sensíveis como CPF e Chave Pix ficam seguros no banco de dados?",
+    question: "Os dados sensíveis como CPF e Chave Pix ficam seguros?",
     answer:
-      "Blindagem absoluta perante a LGPD: todos os CPFs, CNPJs e chaves Pix cadastrados são criptografados em repouso no banco de dados com algoritmo AES-256 (padrão bancário). Nem os desenvolvedores ou administradores da plataforma conseguem visualizar esses dados em texto puro; somente você, autenticado na sua Gruta, tem a chave para visualizá-los.",
+      "Blindagem absoluta perante a LGPD: todos os CPFs, CNPJs e chaves Pix cadastrados são criptografados em repouso (padrão bancário). Nem os desenvolvedores ou administradores da plataforma conseguem visualizar esses dados em texto puro; somente você, autenticado na sua Gruta, tem a chave para visualizá-los.",
   },
   {
     id: "faq-1",

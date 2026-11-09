@@ -52,9 +52,9 @@ const TRUST_PILLARS = [
   {
     icon: FaShieldHalved,
     iconColor: "text-purple-400",
-    title: "Criptografia de Dados (AES-256)",
+    title: "Criptografia de Dados",
     description:
-      "CPFs e chaves Pix são criptografados no banco de dados com padrão militar. Nem a plataforma tem acesso em texto puro; somente você visualiza seus dados.",
+      "CPFs e chaves Pix são criptografados com padrão bancário. Nem a plataforma tem acesso em texto puro; somente você visualiza seus dados.",
   },
 ];
 

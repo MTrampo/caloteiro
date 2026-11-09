@@ -265,7 +265,7 @@ export function PrivacyDocFeature() {
               </p>
               <p className="text-zinc-300">
                 <strong className="text-white">Criptografia de Dados Sensíveis:</strong> Os campos de CPF/CNPJ e Chave Pix
-                são gravados no banco de dados exclusivamente sob o padrão de <em>Criptografia em Repouso (AES-256-GCM)</em>,
+                são gravados no banco de dados exclusivamente sob o padrão de <em>Criptografia em Repouso</em>,
                 impedindo que administradores ou terceiros visualizem dados brutos em texto puro.
               </p>
             </div>
@@ -399,12 +399,12 @@ export function PrivacyDocFeature() {
           <ul className="list-disc list-inside space-y-1.5 text-zinc-300">
             <li>Criptografia ponta a ponta nas conexões via HTTPS/TLS;</li>
             <li>
-              <strong className="text-white">Criptografia em Repouso de Dados Sensíveis (AES-256-GCM):</strong> Números
-              de CPF/CNPJ e Chaves Pix de credores e devedores são criptografados no banco de dados com algoritmo de nível bancário e IV aleatório único. Nem administradores de banco possuem acesso em texto puro; somente a sessão autenticada do usuário detém a chave para visualização;
+              <strong className="text-white">Criptografia em Repouso de Dados Sensíveis:</strong> Números
+              de CPF/CNPJ e Chaves Pix de credores e devedores são criptografados no banco de dados com padrão de nível bancário. Nem administradores de banco possuem acesso em texto puro; somente a sessão autenticada do usuário detém a chave para visualização;
             </li>
             <li>Armazenamento de senhas via mecanismos de hash criptográfico irreversível;</li>
             <li>Políticas rigorosas de controle de acesso aos bancos de dados de produção;</li>
-            <li>Compressão segura de comprovantes Pix e isolamento por identificador de usuário (Row Level Security - RLS).</li>
+            <li>Compressão segura de comprovantes Pix e isolamento por identificador de usuário.</li>
           </ul>
         </section>
 

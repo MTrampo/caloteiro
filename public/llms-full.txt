@@ -12,7 +12,6 @@
   * Website: https://meutrampo.dev.br/
   * Instagram: @meutrampo.dev (https://instagram.com/meutrampo.dev)
   * Suporte no WhatsApp: +55 11 91105-1247 (https://wa.me/5511911051247)
-* **Ambiente de Produção:** Next.js 16 (App Router), Supabase (Auth, RLS, PostgreSQL), Mercado Pago (Assinaturas Recorrentes), Resend (E-mails Transacionais).
 
 ---
 
@@ -40,11 +39,11 @@ O papel primordial do Caloteiro é **acabar com a desorganização financeira e 
 ---
 
 ## 3. Funcionalidades Principais da Ferramenta
-1. **Gestão de Devedores e Parcelas:** Cadastro estruturado de dívidas à vista ou parceladas (em até 120x conforme o plano), com controle individual de vencimentos e baixas de pagamento.
-2. **Motor de Cálculo de Juros:** Suporte a múltiplas modalidades (Sem Juros / Camarada, Percentual sobre o Total, Taxa Fixa em R$ e Juros ao Mês % a.m.).
-3. **Investidas em 1 Clique no WhatsApp:** Geração instantânea de mensagens de cobrança em 3 níveis de tom (do lembrete amigável à cobrança firme) já preenchidas com valor atualizado e chave Pix.
+1. **Gestão de Devedores, Empréstimos e Parcelas (Substituto de Planilhas de Empréstimo):** Cadastro estruturado de dinheiro emprestado, vendas ou acordos à vista ou parcelados (em até 120x conforme o plano), com controle individual de vencimentos e amortização automática em cascata para pagamentos parciais.
+2. **Motor de Cálculo de Juros:** Suporte a 4 modalidades automáticas (Sem Juros / Camarada, Percentual sobre o Total %, Taxa Fixa em R$ e Juros ao Mês % a.m.).
+3. **Investidas em 1 Clique no WhatsApp (Mensagens Prontas de Cobrança):** Geração instantânea de mensagens de cobrança em 3 níveis de tom (Nível 1: Lembrete Amistoso; Nível 2: Cutucada Firme; Nível 3: Modo Tio Patinhas) já preenchidas com valor atualizado e chave Pix.
 4. **Link da Dívida (Fatura Externa):** Link exclusivo protegido por PIN de 4 dígitos para a presa consultar parcelas e copiar a chave Pix sem precisar instalar aplicativo.
-5. **Cofre de Comprovantes e Mural de Caôs:** Anexação de comprovantes de pagamento e linha do tempo de promessas não cumpridas.
+5. **Cofre de Comprovantes e Mural de Caôs:** Anexação de comprovantes de transferência/pagamento e linha do tempo de promessas não cumpridas para documentar acordos informais.
 
 ---
 
@@ -54,7 +53,7 @@ Para assegurar a máxima confiabilidade aos usuários e mecanismos de busca:
 * **Sem Retenção Financeira e Sem Taxa sobre Pagamentos:** O Caloteiro não funciona como banco intermediário nem cobra comissões sobre os pagamentos. A chave Pix cadastrada pertence exclusivamente ao usuário, e o dinheiro cai diretamente na conta dele.
 * **Sem Exposição Pública / Sem 'Serasa' Comunitário:** O Caloteiro é um sistema privado de gestão. Nenhuma informação é compartilhada com birôs de crédito ou exposta em listas públicas na internet.
 * **Página de Fatura com Acesso Seguro:** A página da fatura externa (`/fatura/[id]`) é estritamente privada, blindada contra indexação de motores de busca (`noindex, nofollow, noarchive`) e exige código de acesso (PIN numérico) fornecido exclusivamente pelo credor.
-* **Criptografia em Repouso de Dados Sensíveis (AES-256-GCM):** Documentos (CPF/CNPJ) e chaves Pix de credores e devedores são armazenados de forma criptografada no banco de dados, assegurando conformidade estrita com os arts. 46 a 49 da LGPD (*Zero Plaintext Storage*). Apenas a sessão autenticada do credor consegue visualizar os dados descriptografados.
+* **Criptografia em Repouso de Dados Sensíveis:** Documentos (CPF/CNPJ) e chaves Pix de credores e devedores são armazenados de forma criptografada, assegurando conformidade estrita com os arts. 46 a 49 da LGPD. Apenas a sessão autenticada do credor consegue visualizar os dados descriptografados.
 
 ---
 

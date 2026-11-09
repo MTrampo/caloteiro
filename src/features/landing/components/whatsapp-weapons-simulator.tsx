@@ -211,8 +211,9 @@ export function WhatsappWeaponsSimulator() {
             <p className="text-xs sm:text-sm text-zinc-400 font-mono leading-relaxed">
               O Caloteiro não é um robô de telemarketing — até porque 92% das
               cobranças automáticas são ignoradas ou bloqueadas. O sistema gera
-              a Investida personalizada com valores e Chave Pix calculados, e
-              você dispara do seu próprio WhatsApp com 1 toque.
+              mensagens de cobrança personalizadas (Investidas) com valores e
+              Chave Pix calculados para você cobrar dinheiro emprestado, vendas
+              ou acordos do seu próprio WhatsApp com 1 toque.
             </p>
           </div>
 

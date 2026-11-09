@@ -398,8 +398,9 @@ export function RealFeaturesBento() {
             Frio nos números. Letal na cobrança.
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 font-mono leading-relaxed">
-            Veja como o motor financeiro calcula suas parcelas, abate pagamentos
-            quebrados e fecha o cerco contra desculpas.
+            Esqueça a planilha de controle de empréstimos que quebra no celular:
+            veja como o motor financeiro calcula juros e parcelas, abate
+            pagamentos quebrados e fecha o cerco contra desculpas.
           </p>
         </div>
 

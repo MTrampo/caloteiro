@@ -89,7 +89,7 @@ export function ReceiptAttachmentField({
 
       onChange(res.data.receiptPath);
       setFileSizeText(
-        `Otimizado com sharp (${formatBytes(res.data.compressedSize)})`
+        `Otimizado (${formatBytes(res.data.compressedSize)})`
       );
       toast.success("Comprovante anexado e otimizado com sucesso!");
     } catch {
