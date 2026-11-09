@@ -174,7 +174,7 @@ const LEGAL_FAQ_CATEGORIES: LegalFaqCategory[] = [
         answer: (
           <div className="space-y-4 pt-1">
             <p>
-              Blindagem técnica rigorosa: a plataforma adota o padrão de <strong>Criptografia em Repouso (Encryption-at-Rest) com algoritmo AES-256-GCM</strong> para todos os dados sensíveis armazenados no banco de dados.
+              Blindagem técnica rigorosa: a plataforma adota o padrão de <strong>Criptografia em Repouso</strong> para todos os dados sensíveis armazenados no sistema.
             </p>
 
             {/* Tradução do Tubarão */}
@@ -184,7 +184,7 @@ const LEGAL_FAQ_CATEGORIES: LegalFaqCategory[] = [
                 <span>Tradução do Tubarão:</span>
               </span>
               <p className="text-zinc-300">
-                Nem a equipe de desenvolvimento, nem administradores de banco de dados conseguem ver o CPF ou a chave Pix que você cadastrou. Os dados são transformados em uma sopa de caracteres ilegível. Somente você, logado com a sua conta na sua Gruta, tem a chave de sessão para visualizá-los descriptografados.
+                Nem a equipe de desenvolvimento, nem administradores da plataforma conseguem ver o CPF ou a chave Pix que você cadastrou. Os dados são transformados em uma sopa de caracteres ilegível. Somente você, logado com a sua conta na sua Gruta, tem a chave de sessão para visualizá-los descriptografados.
               </p>
             </div>
 
@@ -198,6 +198,64 @@ const LEGAL_FAQ_CATEGORIES: LegalFaqCategory[] = [
                 Lei Geral de Proteção de Dados (Lei nº 13.709/2018), arts. 46 (medidas de segurança técnicas e administrativas aptas a proteger os dados pessoais contra acessos não autorizados) e 47 (boas práticas de governança e sigilo).
               </p>
             </div>
+          </div>
+        ),
+      },
+      {
+        id: "faq-spreadsheet-vs-system",
+        question: "Qual a vantagem de usar o Caloteiro em vez de uma planilha de controle de empréstimos no Excel?",
+        answer: (
+          <div className="space-y-4 pt-1">
+            <p>
+              <strong>Planilhas de empréstimo quebram no celular, não guardam comprovantes e obrigam você a fazer conta e digitar cobrança na mão.</strong> Quem tenta controlar dinheiro emprestado, vendas parceladas ou acordos em planilha de Excel ou bloco de notas sempre esbarra no mesmo problema: o devedor manda um pagamento parcial picado, pede mais prazo e a planilha inteira vira uma bagunça.
+            </p>
+
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3.5 space-y-1.5 text-xs">
+              <span className="font-heading font-bold text-emerald-400 flex items-center gap-1.5">
+                <FaCalculator className="size-3.5" />
+                <span>Tradução do Tubarão:</span>
+              </span>
+              <p className="text-zinc-300">
+                Na Gruta do Caloteiro, você cadastra o valor, escolhe as parcelas e os juros, e o sistema faz tudo: recalcula saldos parciais em cascata, guarda os comprovantes de transferência, anota as desculpas no <em>Mural de Caôs</em> e gera a <em>Investida</em> pronta para o WhatsApp em 1 clique.{" "}
+                <Link
+                  href="/documentos/ajuda#planilha-vs-caloteiro"
+                  className="underline underline-offset-2 text-white hover:text-emerald-300"
+                >
+                  Veja o comparativo completo aqui
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
+        ),
+      },
+      {
+        id: "faq-calculate-loan-interest",
+        question: "Como controlar dinheiro emprestado e calcular juros (taxa fixa, % total ou juros ao mês)?",
+        answer: (
+          <div className="space-y-4 pt-1">
+            <p>
+              <strong>O motor financeiro do Caloteiro calcula parcelas e juros automaticamente na hora em que você registra a dívida.</strong> Basta informar o valor principal, a quantidade de parcelas (de 1x até 120x conforme o seu plano) e escolher uma das 4 modalidades de retorno:
+            </p>
+
+            <ul className="list-disc list-inside space-y-1.5 text-xs text-zinc-300">
+              <li>
+                <strong>Sem Juros (Modo Camarada):</strong> divide apenas o valor original emprestado nas parcelas;
+              </li>
+              <li>
+                <strong>Percentual sobre o Total (%):</strong> aplica uma porcentagem sobre o montante total e dilui nas parcelas;
+              </li>
+              <li>
+                <strong>Taxa Fixa em Reais (R$):</strong> soma um valor fechado de retorno combinado (ex: emprestou R$ 1.000 para receber R$ 1.150);
+              </li>
+              <li>
+                <strong>Juros ao Mês (% a.m.):</strong> calcula a taxa mensal proporcional ao longo dos meses do parcelamento.
+              </li>
+            </ul>
+
+            <p className="text-xs text-zinc-400">
+              E se a Presa pagar um valor menor ou maior que a parcela do mês, a <strong>Amortização em Cascata</strong> abate o saldo automaticamente sem que você precise refazer uma única conta.
+            </p>
           </div>
         ),
       },
@@ -339,6 +397,59 @@ const LEGAL_FAQ_CATEGORIES: LegalFaqCategory[] = [
             <p>
               Na Gruta do Caloteiro a regra é clara: você só dá baixa na parcela quando o saldo bate na sua conta. Sem comprovante anexado, a presa continua marcada na água.
             </p>
+          </div>
+        ),
+      },
+      {
+        id: "faq-whatsapp-billing-messages",
+        question: "Quais as melhores mensagens de cobrança para cobrar dinheiro emprestado no WhatsApp?",
+        answer: (
+          <div className="space-y-4 pt-1">
+            <p>
+              <strong>A melhor mensagem de cobrança é aquela que já traz o valor exato atualizado, a data de vencimento, a sua chave Pix pronta para cópia e o Link da Dívida.</strong> No Caloteiro, você não precisa quebrar a cabeça inventando texto: o sistema possui as <strong>Investidas no WhatsApp em 3 níveis</strong>:
+            </p>
+
+            <ul className="list-disc list-inside space-y-1.5 text-xs text-zinc-300">
+              <li>
+                <strong>Nível 1 (Lembrete Amistoso):</strong> ideal para o dia do vencimento, avisando com leveza e já entregando a chave Pix;
+              </li>
+              <li>
+                <strong>Nível 2 (Cutucada Firme):</strong> para atrasos leves (1 a 5 dias), cobrando posição sobre a parcela vencida;
+              </li>
+              <li>
+                <strong>Nível 3 (Modo Tio Patinhas):</strong> para atrasos críticos, deixando claro o total de dias em aberto e exigindo regularização imediata.
+              </li>
+            </ul>
+
+            <p className="text-xs text-zinc-400">
+              A partir do plano Tubarão Branco, você também pode personalizar 100% os modelos de mensagem com variáveis automáticas (nome da presa, valor da parcela, dias de atraso e link da fatura externa).
+            </p>
+          </div>
+        ),
+      },
+      {
+        id: "faq-informal-loan-proof",
+        question: "Emprestei dinheiro sem contrato assinado e não me pagam: como organizar as provas para cobrar?",
+        answer: (
+          <div className="space-y-4 pt-1">
+            <p>
+              <strong>Mesmo sem papel assinado em cartório, você pode organizar um dossiê completo de provas digitais da dívida.</strong> Para transformar um empréstimo ou venda informal em uma cobrança estruturada:
+            </p>
+
+            <ol className="list-decimal list-inside space-y-1.5 text-xs text-zinc-300">
+              <li>
+                Registre a dívida na sua Gruta e anexe o <strong>comprovante da transferência ou Pix inicial</strong> que você fez para o devedor;
+              </li>
+              <li>
+                Envie o <strong>Link da Dívida (Fatura Externa)</strong> pelo WhatsApp para formalizar o cronograma de parcelas e valores;
+              </li>
+              <li>
+                Sempre que a Presa pedir mais prazo ou inventar uma desculpa, registre no <strong>Mural de Caôs</strong> com a nova data prometida;
+              </li>
+              <li>
+                Guarde os comprovantes de pagamentos parciais no <strong>Cofre de Comprovantes</strong>. Esse histórico cronológico serve tanto para pressionar no acordo amigável quanto para instruir ação no Juizado Especial.
+              </li>
+            </ol>
           </div>
         ),
       },
@@ -501,7 +612,7 @@ const LEGAL_FAQ_CATEGORIES: LegalFaqCategory[] = [
                 O devedor costuma usar uma técnica clássica de inversão de culpa: atrasa meses, mas quando você cobra, diz que &ldquo;você não tem consideração&rdquo;. O segredo para acabar com isso é <strong>despersonalizar a cobrança</strong>.
               </p>
               <p className="text-zinc-400">
-                Quando você cobra &ldquo;de boca&rdquo;, parece perseguição pessoal. Quando você envia o link do portal da dívida do Caloteiro com o cronograma limpo e a chave Pix, o sistema vira o seu auditor financeiro particular. Você não está brigando: você só está enviando o extrato do sistema.
+                Quando você cobra &ldquo;de boca&rdquo;, parece perseguição pessoal. Quando você envia o Link da Dívida (fatura externa) do Caloteiro com o cronograma limpo e a chave Pix, o sistema vira o seu auditor financeiro particular. Você não está brigando: você só está enviando o extrato do sistema.
               </p>
             </div>
           </div>

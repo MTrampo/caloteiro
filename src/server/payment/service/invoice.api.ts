@@ -45,7 +45,7 @@ export const saveInvoiceFromAuthorizedPaymentApi = async (
     if (error) {
       console.error("[saveInvoiceFromAuthorizedPaymentApi] Erro ao salvar fatura:", error);
       return ApiResponse.InternalError({
-        message: "Falha ao salvar fatura no banco de dados",
+        message: "Falha ao salvar fatura",
         error: error.message,
       });
     }

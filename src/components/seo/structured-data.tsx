@@ -15,7 +15,19 @@ export function StructuredData() {
         "operatingSystem": "Web, Android, iOS",
         "url": APP_URL,
         "description":
-          "Sistema de gestão de dívidas, parcelas e controle financeiro de recebíveis. Centralize devedores em um só lugar, calcule juros e parcelas, guarde comprovantes, registre histórico de promessas e envie cobranças em 1 clique pelo WhatsApp.",
+          "Sistema de gestão de dívidas, controle de dinheiro emprestado, parcelas e recebíveis. Substitua planilhas de controle de empréstimos: centralize devedores em um só lugar, calcule juros e parcelas automaticamente, guarde comprovantes, registre histórico de promessas e envie mensagens de cobrança em 1 clique pelo WhatsApp.",
+        "featureList": [
+          "Controle de dinheiro emprestado, dívidas e acordos parcelados",
+          "Substituto de planilha de controle de empréstimos com cálculo automático de juros",
+          "Calculadora de parcelas sem juros, percentual sobre o total (%), taxa fixa (R$) e juros ao mês (% a.m.)",
+          "Amortização automática em cascata para pagamentos parciais",
+          "Gerador de mensagens de cobrança prontas para WhatsApp em 1 clique (Investidas em 3 níveis)",
+          "Cofre de comprovantes de transferência e pagamento por parcela",
+          "Mural de Caôs (histórico cronológico de desculpas e promessas de pagamento)",
+          "Link da Dívida (fatura externa protegida por PIN de 4 dígitos)",
+          "Faro do Tubarão (pontuação comportamental de 0 a 100 pontos por devedor)",
+          "Termômetro da Gruta (diagnóstico geral de risco da carteira)"
+        ],
         "creator": {
           "@type": "Organization",
           "name": "Meu Trampo",
@@ -68,6 +80,30 @@ export function StructuredData() {
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "O principal papel do Caloteiro é centralizar todos os seus devedores em um único sistema de gestão financeira (a Gruta), proporcionando visão clara de recebíveis em aberto, valores já recuperados, cálculo de parcelas e juros, arquivo de comprovantes e cobrança em 1 clique no WhatsApp."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Qual a vantagem de usar o Caloteiro em vez de uma planilha de controle de empréstimos no Excel?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Planilhas de controle de empréstimos quebram fórmulas no celular, não anexam comprovantes de transferência e exigem recálculo manual em pagamentos parciais. O Caloteiro calcula parcelas e juros automaticamente, faz amortização em cascata, guarda comprovantes por parcela, registra o histórico de desculpas (Mural de Caôs) e gera mensagens de cobrança prontas para o WhatsApp em 1 clique."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Como controlar dinheiro emprestado e calcular juros no sistema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Ao registrar uma dívida na Gruta, você define o valor, o número de parcelas (até 120x conforme o plano) e escolhe entre 4 modalidades automáticas: Sem Juros (Modo Camarada), Percentual sobre o Total (%), Taxa Fixa em Reais (R$) ou Juros ao Mês (% a.m.)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Quais as melhores mensagens de cobrança para cobrar dinheiro emprestado no WhatsApp?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "O Caloteiro gera Investidas no WhatsApp em 3 níveis de pressão (Nível 1: Lembrete Amistoso no vencimento; Nível 2: Cutucada Firme para atrasos leves; Nível 3: Modo Tio Patinhas para atrasos críticos), já preenchidas com o valor atualizado da parcela, sua chave Pix e o Link da Dívida."
             }
           },
           {

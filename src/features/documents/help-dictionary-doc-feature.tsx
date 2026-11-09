@@ -14,6 +14,7 @@ import {
   FaFileInvoiceDollar,
   FaCrown,
   FaCheck,
+  FaXmark,
   FaUserPlus,
   FaCalculator,
 } from "react-icons/fa6";
@@ -156,7 +157,7 @@ const QUICK_STEPS = [
     step: "01",
     title: "Cadastre a Presa",
     description:
-      "Registre o nome, WhatsApp e vínculo de quem te deve. Os dados sensíveis ficam protegidos com criptografia AES-256 na sua Gruta.",
+      "Registre o nome, WhatsApp e vínculo de quem te deve. Os dados sensíveis ficam protegidos com criptografia na sua Gruta.",
   },
   {
     step: "02",
@@ -175,6 +176,68 @@ const QUICK_STEPS = [
     title: "Baixe a Parcela ('Pingou o Pix?')",
     description:
       "Recebeu o pagamento? Dê baixa na parcela em segundos, anexe o comprovante no cofre e deixe o sistema atualizar todos os saldos automaticamente.",
+  },
+];
+
+const SPREADSHEET_COMPARISON = [
+  {
+    criterion: "Cálculo de Juros e Parcelas",
+    spreadsheet:
+      "Fórmulas manuais no Excel que quebram facilmente no celular e exigem recalcular tudo quando o devedor paga um valor quebrado.",
+    caloteiro:
+      "Motor financeiro automático (sem juros, % no total, taxa fixa em R$ ou juros ao mês % a.m.) com amortização automática em cascata.",
+  },
+  {
+    criterion: "Comprovantes de Empréstimo e Pix",
+    spreadsheet:
+      "Prints de transferência perdidos no rolo da câmera do celular, impossíveis de achar meses depois quando o devedor diz que já pagou.",
+    caloteiro:
+      "Cofre de Comprovantes vinculado diretamente ao acordo inicial e a cada parcela paga, pronto para conferência em 1 toque.",
+  },
+  {
+    criterion: "Mensagens de Cobrança no WhatsApp",
+    spreadsheet:
+      "Abrir a planilha, somar quanto falta de cabeça, abrir o WhatsApp, procurar o contato e digitar a mensagem do zero toda vez.",
+    caloteiro:
+      "Investidas em 1 clique com 3 níveis de pressão: o texto já sai pronto com valor atualizado, sua chave Pix e o Link da Dívida.",
+  },
+  {
+    criterion: "Histórico de Promessas e Risco",
+    spreadsheet:
+      "Anotações soltas que não mostram quantas vezes a pessoa já furou o prazo nem qual o risco real de tomar novo calote.",
+    caloteiro:
+      "Mural de Caôs carimbado com data e hora + Faro do Tubarão (0 a 100 pts) que calcula automaticamente a confiabilidade de cada Presa.",
+  },
+];
+
+const INTEREST_MODALITIES_GUIDE = [
+  {
+    title: "1. Sem Juros (Modo Camarada)",
+    badge: "Tubarão Lixa+",
+    badgeClass: "bg-zinc-800 text-zinc-300 border-zinc-700",
+    description:
+      "Divide apenas o valor principal emprestado ou combinado pelo número de parcelas, sem acréscimos. Ideal para quando você só quer garantir que cada centavo volte no prazo.",
+  },
+  {
+    title: "2. Percentual sobre o Total (%)",
+    badge: "Tubarão Lixa+",
+    badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/25",
+    description:
+      "Aplica uma porcentagem única sobre o valor total (ex: emprestou R$ 1.000 com +20% = R$ 1.200) e divide igualmente entre as parcelas do acordo.",
+  },
+  {
+    title: "3. Taxa Fixa em Reais (R$)",
+    badge: "Tubarão Branco+",
+    badgeClass: "bg-sky-500/10 text-sky-300 border-sky-500/25",
+    description:
+      "Adiciona um valor fechado em Reais ao acordo (ex: emprestou R$ 500 com retorno combinado de +R$ 100 = R$ 600), sem precisar calcular porcentagens.",
+  },
+  {
+    title: "4. Juros ao Mês (% a.m.)",
+    badge: "Cabeça Chato",
+    badgeClass: "bg-amber-500/10 text-amber-300 border-amber-500/25",
+    description:
+      "Calcula a rentabilidade mensal proporcional ao prazo de parcelamento escolhido (até 120x), garantindo exatidão de centavos em acordos mais longos.",
   },
 ];
 
@@ -338,7 +401,91 @@ export function HelpDictionaryDocFeature() {
         </div>
       </div>
 
-      {/* 5. CTA Final */}
+      {/* 5. Comparativo: Planilha de Controle de Empréstimos vs. A Gruta do Caloteiro */}
+      <div id="planilha-vs-caloteiro" className="space-y-4 pt-2 scroll-mt-24">
+        <div className="space-y-1">
+          <h3 className="font-heading text-base sm:text-lg font-bold text-white">
+            Por que trocar a Planilha de Controle de Empréstimos pela Gruta do Caloteiro?
+          </h3>
+          <p className="text-xs sm:text-sm text-zinc-400 font-mono">
+            Planilhas de Excel e blocos de notas funcionam até o segundo caloteiro pedir prazo ou mandar pagamento picado:
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {SPREADSHEET_COMPARISON.map((row) => (
+            <div
+              key={row.criterion}
+              className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-3 flex flex-col justify-between"
+            >
+              <h4 className="font-heading text-sm sm:text-base font-bold text-white">
+                {row.criterion}
+              </h4>
+
+              <div className="space-y-2.5 text-xs font-mono">
+                <div className="rounded-xl border border-rose-500/20 bg-rose-950/15 p-3 space-y-1">
+                  <div className="flex items-center gap-1.5 text-rose-400 font-bold text-[11px]">
+                    <FaXmark className="size-3 shrink-0" />
+                    <span>Na Planilha / Bloco de Notas:</span>
+                  </div>
+                  <p className="text-zinc-400 leading-relaxed">
+                    {row.spreadsheet}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-emerald-500/25 bg-emerald-950/15 p-3 space-y-1">
+                  <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-[11px]">
+                    <FaCheck className="size-3 shrink-0" />
+                    <span>Na Gruta do Caloteiro:</span>
+                  </div>
+                  <p className="text-zinc-200 leading-relaxed">
+                    {row.caloteiro}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 6. Como Calcular Juros de Dinheiro Emprestado e Parcelamentos no Sistema */}
+      <div id="calculo-de-juros" className="space-y-4 pt-2 scroll-mt-24">
+        <div className="space-y-1">
+          <h3 className="font-heading text-base sm:text-lg font-bold text-white">
+            Como calcular juros de dinheiro emprestado, vendas ou acordos parcelados
+          </h3>
+          <p className="text-xs sm:text-sm text-zinc-400 font-mono">
+            Escolha entre 4 modalidades automáticas de cálculo na hora de registrar a dívida:
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {INTEREST_MODALITIES_GUIDE.map((mode) => (
+            <div
+              key={mode.title}
+              className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-2.5 flex flex-col justify-between"
+            >
+              <div className="space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <h4 className="font-heading text-sm sm:text-base font-bold text-white">
+                    {mode.title}
+                  </h4>
+                  <span
+                    className={`self-start sm:self-auto text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border whitespace-nowrap shrink-0 ${mode.badgeClass}`}
+                  >
+                    {mode.badge}
+                  </span>
+                </div>
+                <p className="text-xs font-mono text-zinc-400 leading-relaxed">
+                  {mode.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 7. CTA Final */}
       <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5 sm:p-8 text-center space-y-3">
         <h3 className="font-heading text-lg sm:text-xl font-bold text-white">
           Pronto para colocar ordem nas suas cobranças?

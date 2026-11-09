@@ -95,7 +95,7 @@ export function DeleteDebtorDialog({
             <span>Atenção: Ação Irreversível</span>
           </div>
           <p className="text-[11px] leading-relaxed text-zinc-300">
-            A exclusão desta presa removerá definitivamente do banco de dados todo o histórico financeiro, acordos, parcelas e promessas vinculadas a este devedor.
+            A exclusão desta presa removerá definitivamente todo o histórico financeiro, acordos, parcelas e promessas vinculadas a este devedor.
           </p>
         </div>
 
