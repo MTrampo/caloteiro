@@ -37,7 +37,7 @@ export function TriageKPIsGrid({ kpis }: TriageKPIsProps) {
             </span>
           </div>
           <p className="text-xs text-zinc-400 font-mono">
-            No prazo, mas merecem vigilância matinal.
+            No prazo, mas merecem vigilância constante.
           </p>
         </div>
 

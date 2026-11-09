@@ -34,6 +34,7 @@ export function HomeCommandFeature({
     initialPunchline ??
     "Dia de teste de paciência: hora de mostrar os dentes e recuperar o que é seu.";
   const timeGreeting = initialTimeGreeting ?? "Olá";
+
   const wisdom = data.wisdomQuote;
 
   const isAccountEmpty = data.totalDebtsCount === 0;

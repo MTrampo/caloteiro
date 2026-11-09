@@ -4,6 +4,10 @@ import {
   buildHomeCommandFeed,
   getHomeCommandDataApi,
 } from "../service/home-command.api";
+import {
+  getTimeGreeting,
+  generateDynamicPunchline,
+} from "@/features/home-command/utils/greeting-helper";
 import * as homeCommandSupabase from "../repository/home-command.supabase";
 import * as creditorSettingsSupabase from "@/server/account/repository/creditor-settings.supabase";
 import type {
@@ -455,6 +459,39 @@ describe("Serviço do Painel Principal / Central de Comando (home-command.api.ts
       expect(result.feed[0].type).toBe("due_today");
       expect(result.feed[0].pixKey).toBe("chave-pix-tubarao@banco.com");
       expect(result.counts.dueSoonCount).toBe(1);
+    });
+  });
+
+  describe("Saudações e Horário Oficial (getTimeGreeting e Punchlines)", () => {
+    it("REGRESSÃO: getTimeGreeting deve respeitar o fuso America/Sao_Paulo mesmo quando o servidor roda em UTC", () => {
+      // 18:03 UTC = 15:03 em São Paulo (tarde) -> deve retornar 'Boa tarde', NUNCA 'Boa noite'
+      const tardeEmSp = new Date("2026-11-09T18:03:00.000Z");
+      expect(getTimeGreeting(tardeEmSp)).toBe("Boa tarde");
+
+      // 13:00 UTC = 10:00 em São Paulo (manhã) -> deve retornar 'Bom dia'
+      const manhaEmSp = new Date("2026-11-09T13:00:00.000Z");
+      expect(getTimeGreeting(manhaEmSp)).toBe("Bom dia");
+
+      // 23:30 UTC = 20:30 em São Paulo (noite) -> deve retornar 'Boa noite'
+      const noiteEmSp = new Date("2026-11-09T23:30:00.000Z");
+      expect(getTimeGreeting(noiteEmSp)).toBe("Boa noite");
+
+      // 05:00 UTC = 02:00 em São Paulo (madrugada) -> deve retornar 'Boa noite'
+      const madrugadaEmSp = new Date("2026-11-09T05:00:00.000Z");
+      expect(getTimeGreeting(madrugadaEmSp)).toBe("Boa noite");
+    });
+
+    it("REGRESSÃO: punchline dinâmica não deve conter 'cobrança matinal' fixa fora de contexto", () => {
+      // Roda múltiplas vezes para cobrir o array aleatório
+      for (let i = 0; i < 20; i++) {
+        const punchline = generateDynamicPunchline({
+          overdueCount: 1,
+          criticalCount: 0,
+          dueSoonCount: 0,
+          totalCount: 1,
+        });
+        expect(punchline).not.toContain("cobrança matinal");
+      }
     });
   });
 });

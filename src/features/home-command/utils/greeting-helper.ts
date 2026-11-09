@@ -3,7 +3,7 @@ export type GreetingScenario = "overdue" | "due_soon" | "all_clear" | "empty"
 const OVERDUE_PUNCHLINES = [
   "Hoje temos {overdue} promessas vencidas e {critical} sumidos esperando aquele 'bom dia, sumido'.",
   "Acorda, Tubarão! Tem devedor postando foto no churrasco enquanto a sua parcela continua no vácuo.",
-  "Dia de teste de paciência: {overdue} devedores já fingiram demência. Hora de mostrar os dentes e mandar a cobrança matinal.",
+  "Dia de teste de paciência: {overdue} devedores já fingiram demência. Hora de mostrar os dentes e cobrar o que é seu.",
   "O silêncio do caloteiro é ensurdecedor. Não deixe eles esquecerem que tubarão não dorme de barriga vazia.",
   "Cheiro de calote na água: {overdue} parcelas atrasadas. Nadou, nadou e morreu na praia do 'te pago amanhã'.",
   "Tubarão paciente vira comida de peixe pequeno. Tem {critical} devedores achando que seu dinheiro foi doação.",
@@ -114,10 +114,21 @@ export const CREDITOR_WISDOM_QUOTES = [
 ]
 
 export function getTimeGreeting(now = new Date()): string {
-  const hour = now.getHours()
-  if (hour >= 5 && hour < 12) return "Bom dia"
-  if (hour >= 12 && hour < 18) return "Boa tarde"
-  return "Boa noite"
+  // Extrai a hora no fuso horário oficial de Brasília (America/Sao_Paulo)
+  // para evitar que o servidor UTC (ex: Vercel) considere 15h como 18h ("Boa noite")
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Sao_Paulo",
+    hour12: false,
+    hour: "numeric",
+  });
+  const parts = formatter.formatToParts(now);
+  const hourPart = parts.find((p) => p.type === "hour")?.value || "0";
+  let hour = Number(hourPart);
+  if (hour === 24) hour = 0;
+
+  if (hour >= 5 && hour < 12) return "Bom dia";
+  if (hour >= 12 && hour < 18) return "Boa tarde";
+  return "Boa noite";
 }
 
 export function generateDynamicPunchline(params: {

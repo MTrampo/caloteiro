@@ -22,15 +22,3 @@ export type {
 };
 
 export type PriorityDebtor = PriorityDebtorData;
-
-export type DebtsFinancialData = {
-  kpis: {
-    emAberto: FinancialKpiItem;
-    emDia: FinancialKpiItem;
-    emAtraso: FinancialKpiItem;
-    caloteiros: FinancialKpiItem;
-  };
-  priorityDebtor: PriorityDebtor | null;
-  portfolio: PortfolioDistributionData;
-  efficiency: DebtEfficiencyData;
-};

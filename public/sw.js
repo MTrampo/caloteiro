@@ -1,7 +1,7 @@
 // Service Worker do Caloteiro (Next.js 16 + PWA com Modo de Conferência Offline e Cache de Comprovantes)
-const CACHE_NAME = 'caloteiro-cache-v4';
-const PAGES_CACHE = 'caloteiro-pages-v4';
-const RECEIPTS_CACHE = 'caloteiro-receipts-v3';
+const CACHE_NAME = 'caloteiro-cache-v5';
+const PAGES_CACHE = 'caloteiro-pages-v5';
+const RECEIPTS_CACHE = 'caloteiro-receipts-v4';
 const OFFLINE_URL = '/offline.html';
 
 const PRECACHE_ASSETS = [

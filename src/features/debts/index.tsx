@@ -1,8 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
-import { toast } from "sonner"
-import type { FinancialPeriod, FinancialAnalyticsResult } from "./types"
+import type { FinancialAnalyticsResult } from "./types"
 import { DebtsHeader } from "./components/debts-header"
 import { FinancialKpiGrid } from "./components/financial-kpi-grid"
 import { PriorityDebtorCard } from "./components/priority-debtor-card"
@@ -11,9 +9,7 @@ import { DebtsEfficiency } from "./components/debts-efficiency"
 import { MobileFloatingAction } from "@/components/buttons/mobile-floating-action"
 import { FaFileCirclePlus, FaLock } from "react-icons/fa6"
 import Link from "next/link"
-import { getFinancialAnalyticsAction } from "@/actions/financial"
 import type { UserPlanLimits } from "@/commons/models/subscription"
-import { cn } from "@/commons/lib/utils"
 
 interface DebtsFeatureProps {
   initialData: FinancialAnalyticsResult
@@ -21,35 +17,12 @@ interface DebtsFeatureProps {
 }
 
 export function DebtsFeature({ initialData, planLimits }: DebtsFeatureProps) {
-  const [period, setPeriod] = useState<FinancialPeriod>("month")
-  const [customData, setCustomData] = useState<FinancialAnalyticsResult>(initialData)
-  const [isPending, startTransition] = useTransition()
-
-  // Se estiver no período padrão ("month"), a fonte da verdade é sempre initialData do servidor
-  const data = period === "month" ? initialData : customData
-
-  const handlePeriodChange = (newPeriod: FinancialPeriod) => {
-    if (newPeriod === period) return
-    setPeriod(newPeriod)
-
-    startTransition(async () => {
-      const res = await getFinancialAnalyticsAction({ period: newPeriod })
-      if (res.success && res.data) {
-        setCustomData(res.data)
-      } else if (!res.success) {
-        toast.error(res.error || "Erro ao atualizar dados do período.")
-      }
-    })
-  }
+  const data = initialData
 
   return (
-    <div className={cn("flex-1 p-4 sm:p-6 space-y-6 w-full transition-opacity duration-200 pb-24 sm:pb-6", isPending && "opacity-70")}>
-      {/* 1. Cabeçalho com Título, Seletor de Períodos e Ação Global */}
-      <DebtsHeader
-        period={period}
-        onPeriodChange={handlePeriodChange}
-        planLimits={planLimits}
-      />
+    <div className="flex-1 p-4 sm:p-6 space-y-6 w-full pb-24 sm:pb-6">
+      {/* 1. Cabeçalho com Título e Ação Global */}
+      <DebtsHeader planLimits={planLimits} />
 
       {/* Banner de Presas Trancadas na Jaula (Cota Excedida) */}
       {data.lockedQuotaSummary?.isOverQuota && (
